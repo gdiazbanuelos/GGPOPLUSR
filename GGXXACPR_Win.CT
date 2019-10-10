@@ -369,9 +369,36 @@
         <CheatEntry>
           <ID>36</ID>
           <Description>"P2 Palette"</Description>
-          <LastState Value="2" RealAddress="012FADD0"/>
+          <LastState Value="10" RealAddress="012FADD0"/>
           <VariableType>Byte</VariableType>
           <Address>GGXXACPR_Win.exe+50ADD0</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>41</ID>
+          <Description>"Stage"</Description>
+          <DropDownList DisplayValueAsItem="1">0:London
+1:Colony
+2:Russia
+3:China
+4:May Ship
+5:Zepp
+6:Nirvana
+7:Paris
+8:Hell
+9:Grove
+10:Verdant
+11:Castle
+12:Babylon
+13:Phantom City
+14:Unknown
+15:Frasco
+16:AD. 2172
+17:Grave
+18:Heaven
+</DropDownList>
+          <LastState Value="0" RealAddress="01345C44"/>
+          <VariableType>Byte</VariableType>
+          <Address>GGXXACPR_Win.exe+555C44</Address>
         </CheatEntry>
       </CheatEntries>
     </CheatEntry>
