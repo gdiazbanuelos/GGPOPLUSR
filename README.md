@@ -1,6 +1,6 @@
 ## GGAC+R GGPO-BASED CASTER
 
-(TODO: insert ggpo repo link)
+GGPO Repo Link: https://github.com/pond3r/ggpo
 
 It's happening, but no code will be written that hooks up with GGPO until we understand the game state completely.
 
@@ -43,6 +43,8 @@ Feel free to answer.  Please. :D
 
 #### Less big problems
 
+* Will Faust and Zappa's RNG be deterministic or set to be so?
+    * If not, rip unless we replace it with our rng lmao
 * Where's Player 2's buffer?
 * Which of the (currently 3) input buffers gets written to first?
     * If you intercept the first, will the others follow suit?
