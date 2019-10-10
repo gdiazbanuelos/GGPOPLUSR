@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<CheatTable CheatEngineTableVersion="29">
+<CheatTable CheatEngineTableVersion="26">
   <CheatEntries>
     <CheatEntry>
       <ID>18</ID>
@@ -10,56 +10,56 @@
         <CheatEntry>
           <ID>3</ID>
           <Description>"Difficulty"</Description>
-          <LastState Value="5" RealAddress="005B6164"/>
+          <LastState Value="2" RealAddress="01166164"/>
           <VariableType>4 Bytes</VariableType>
           <Address>GGXXACPR_Win.exe+4E6164+0</Address>
         </CheatEntry>
         <CheatEntry>
           <ID>5</ID>
           <Description>"Time"</Description>
-          <LastState Value="2" RealAddress="005B617C"/>
+          <LastState Value="2" RealAddress="0116617C"/>
           <VariableType>4 Bytes</VariableType>
           <Address>GGXXACPR_Win.exe+4E6164+18</Address>
         </CheatEntry>
         <CheatEntry>
           <ID>7</ID>
           <Description>"Rounds"</Description>
-          <LastState Value="1" RealAddress="005B6194"/>
+          <LastState Value="1" RealAddress="01166194"/>
           <VariableType>4 Bytes</VariableType>
           <Address>GGXXACPR_Win.exe+4E6164+30</Address>
         </CheatEntry>
         <CheatEntry>
           <ID>9</ID>
           <Description>"Victory BGM"</Description>
-          <LastState Value="0" RealAddress="005B61AC"/>
+          <LastState Value="0" RealAddress="011661AC"/>
           <VariableType>4 Bytes</VariableType>
           <Address>GGXXACPR_Win.exe+4E6164+48</Address>
         </CheatEntry>
         <CheatEntry>
           <ID>11</ID>
           <Description>"Sol VA"</Description>
-          <LastState Value="0" RealAddress="005B61C4"/>
+          <LastState Value="0" RealAddress="011661C4"/>
           <VariableType>4 Bytes</VariableType>
           <Address>GGXXACPR_Win.exe+4E6164+60</Address>
         </CheatEntry>
         <CheatEntry>
           <ID>13</ID>
           <Description>"HOS VA"</Description>
-          <LastState Value="0" RealAddress="005B61DC"/>
+          <LastState Value="0" RealAddress="011661DC"/>
           <VariableType>4 Bytes</VariableType>
           <Address>GGXXACPR_Win.exe+4E6164+78</Address>
         </CheatEntry>
         <CheatEntry>
           <ID>15</ID>
           <Description>"Language"</Description>
-          <LastState Value="1" RealAddress="005B61F4"/>
+          <LastState Value="1" RealAddress="011661F4"/>
           <VariableType>4 Bytes</VariableType>
           <Address>GGXXACPR_Win.exe+4E6164+90</Address>
         </CheatEntry>
         <CheatEntry>
           <ID>17</ID>
           <Description>"+R on/off"</Description>
-          <LastState Value="1" RealAddress="005B620C"/>
+          <LastState Value="1" RealAddress="0116620C"/>
           <VariableType>4 Bytes</VariableType>
           <Address>GGXXACPR_Win.exe+4E6164+A8</Address>
         </CheatEntry>
@@ -72,30 +72,33 @@
       <GroupHeader>1</GroupHeader>
       <CheatEntries>
         <CheatEntry>
-          <ID>21</ID>
-          <Description>"P1 Buf1"</Description>
-          <LastState Value="0000" RealAddress="00551570"/>
-          <ShowAsHex>1</ShowAsHex>
-          <VariableType>2 Bytes</VariableType>
-          <Address>"GGXXACPR_Win.exe"+481570</Address>
-        </CheatEntry>
-        <CheatEntry>
-          <ID>22</ID>
-          <Description>"P1 Buf2"</Description>
-          <LastState Value="0000" RealAddress="00551574"/>
-          <ShowAsHex>1</ShowAsHex>
-          <VariableType>2 Bytes</VariableType>
-          <Address>GGXXACPR_Win.exe+481574</Address>
-        </CheatEntry>
-        <CheatEntry>
-          <ID>23</ID>
-          <Description>"P1 Buf3"</Description>
-          <LastState Value="0000" RealAddress="00566288"/>
-          <ShowAsHex>1</ShowAsHex>
-          <VariableType>2 Bytes</VariableType>
-          <Address>"GGXXACPR_Win.exe"+496288</Address>
-        </CheatEntry>
-      </CheatEntries>
+      <ID>21</ID>
+      <Description>"P1 Buf1"</Description>
+      <LastState Value="00 00" RealAddress="01181570"/>
+      <ShowAsHex>1</ShowAsHex>
+      <VariableType>Array of byte</VariableType>
+      <ByteLength>2</ByteLength>
+      <Address>GGXXACPR_Win.exe+501570</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>22</ID>
+      <Description>"P1 Buf2"</Description>
+      <LastState Value="00 00" RealAddress="01181574"/>
+      <ShowAsHex>1</ShowAsHex>
+      <VariableType>Array of byte</VariableType>
+      <ByteLength>2</ByteLength>
+      <Address>GGXXACPR_Win.exe+501574</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>23</ID>
+      <Description>"P1 Buf3"</Description>
+      <LastState Value="00 00" RealAddress="01196288"/>
+      <ShowAsHex>1</ShowAsHex>
+      <VariableType>Array of byte</VariableType>
+      <ByteLength>2</ByteLength>
+      <Address>GGXXACPR_Win.exe+516288</Address>
+    </CheatEntry>
+  </CheatEntries>
     </CheatEntry>
     <CheatEntry>
       <ID>20</ID>
@@ -106,96 +109,96 @@
         <CheatEntry>
       <ID>24</ID>
       <Description>"P1 Cursor X"</Description>
-      <LastState Value="7.28701589E16" RealAddress="0055ACE0"/>
+      <LastState Value="280" RealAddress="0118ACE0"/>
       <VariableType>Float</VariableType>
-      <Address>"GGXXACPR_Win.exe"+48ACE0</Address>
+      <Address>GGXXACPR_Win.exe+50ACE0</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>25</ID>
       <Description>"P1 Cursor Y"</Description>
-      <LastState Value="1.985726283E25" RealAddress="0055ACE4"/>
+      <LastState Value="297" RealAddress="0118ACE4"/>
       <VariableType>Float</VariableType>
-      <Address>GGXXACPR_Win.exe+48ACE4</Address>
+      <Address>GGXXACPR_Win.exe+50ACE4</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>26</ID>
       <Description>"P2 Cursor X"</Description>
-      <LastState Value="0" RealAddress="0055AD88"/>
+      <LastState Value="360" RealAddress="0118AD88"/>
       <VariableType>Float</VariableType>
-      <Address>"GGXXACPR_Win.exe"+48AD88</Address>
+      <Address>GGXXACPR_Win.exe+50AD88</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>27</ID>
       <Description>"P2 Cursor Y"</Description>
-      <LastState Value="0" RealAddress="0055AD8C"/>
+      <LastState Value="297" RealAddress="0118AD8C"/>
       <VariableType>Float</VariableType>
-      <Address>GGXXACPR_Win.exe+48AD8C</Address>
-    </CheatEntry>
-    <CheatEntry>
-      <ID>28</ID>
-      <Description>"P1 Color Group"</Description>
-      <LastState Value="0" RealAddress="00668C7C"/>
-      <VariableType>Byte</VariableType>
-      <Address>"GGXXACPR_Win.exe"+598C7C</Address>
+      <Address>GGXXACPR_Win.exe+50AD8C</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>29</ID>
       <Description>"P1 Character (1)"</Description>
-      <LastState Value="0" RealAddress="0055AD04"/>
+      <LastState Value="0" RealAddress="0118AD04"/>
       <VariableType>Byte</VariableType>
-      <Address>"GGXXACPR_Win.exe"+48AD04</Address>
+      <Address>GGXXACPR_Win.exe+50AD04</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>30</ID>
       <Description>"P1 Character (2)"</Description>
-      <LastState Value="0" RealAddress="0055AD08"/>
+      <LastState Value="0" RealAddress="0118AD08"/>
       <VariableType>Byte</VariableType>
-      <Address>GGXXACPR_Win.exe+48AD08</Address>
+      <Address>GGXXACPR_Win.exe+50AD08</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>31</ID>
       <Description>"P1 Character (3)"</Description>
-      <LastState Value="0" RealAddress="0055AD0C"/>
+      <LastState Value="0" RealAddress="0118AD0C"/>
       <VariableType>Byte</VariableType>
-      <Address>GGXXACPR_Win.exe+48AD0C</Address>
+      <Address>GGXXACPR_Win.exe+50AD0C</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>32</ID>
       <Description>"P1 Palette"</Description>
-      <LastState Value="0" RealAddress="0055AD24"/>
+      <LastState Value="2" RealAddress="0118AD24"/>
       <VariableType>Byte</VariableType>
-      <Address>"GGXXACPR_Win.exe"+48AD24</Address>
+      <Address>GGXXACPR_Win.exe+50AD24</Address>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>37</ID>
+      <Description>"P1 Palette Group"</Description>
+      <LastState Value="0" RealAddress="011D5C7C"/>
+      <VariableType>Byte</VariableType>
+      <Address>GGXXACPR_Win.exe+555C7C</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>33</ID>
       <Description>"P2 Character (1)"</Description>
-      <LastState Value="0" RealAddress="0055ADB0"/>
+      <LastState Value="1" RealAddress="0118ADB0"/>
       <VariableType>Byte</VariableType>
-      <Address>GGXXACPR_Win.exe+48ADB0</Address>
+      <Address>GGXXACPR_Win.exe+50ADB0</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>34</ID>
       <Description>"P2 Character (2)"</Description>
-      <LastState Value="0" RealAddress="0055ADB4"/>
+      <LastState Value="1" RealAddress="0118ADB4"/>
       <VariableType>Byte</VariableType>
-      <Address>GGXXACPR_Win.exe+48ADB4</Address>
+      <Address>GGXXACPR_Win.exe+50ADB4</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>35</ID>
       <Description>"P2 Character (3)"</Description>
-      <LastState Value="0" RealAddress="0055ADB8"/>
+      <LastState Value="0" RealAddress="0118ADB8"/>
       <VariableType>Byte</VariableType>
-      <Address>GGXXACPR_Win.exe+48ADB8</Address>
+      <Address>GGXXACPR_Win.exe+50ADB8</Address>
     </CheatEntry>
     <CheatEntry>
       <ID>36</ID>
       <Description>"P2 Palette"</Description>
-      <LastState Value="0" RealAddress="0055ADD0"/>
+      <LastState Value="2" RealAddress="0118ADD0"/>
       <VariableType>Byte</VariableType>
-      <Address>GGXXACPR_Win.exe+48ADD0</Address>
+      <Address>GGXXACPR_Win.exe+50ADD0</Address>
     </CheatEntry>
-      </CheatEntries>
-    </CheatEntry>
+  </CheatEntries<name />
+        </CheatEntry>
   </CheatEntries>
   <UserdefinedSymbols/>
 </CheatTable>
