@@ -396,9 +396,54 @@
 17:Grave
 18:Heaven
 </DropDownList>
-          <LastState Value="0" RealAddress="01345C44"/>
+          <LastState Value="15" RealAddress="01345C44"/>
           <VariableType>Byte</VariableType>
           <Address>GGXXACPR_Win.exe+555C44</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>42</ID>
+          <Description>"BGM"</Description>
+          <DropDownList DisplayValueAsItem="1">0:Random
+1:Character
+2:Stage
+3:01 Noontide -Sol VS Ky-
+4:02 Keep Your Self Alive II -Sol-
+5:03 Holy Orders (Be Just or Be Dead) -Ky-
+6:04 Blue Sky -May-
+7:05 Writhe In Pain -Millia-
+8:06 Feel A Fear -Eddie-
+9:07 Burly Heart -Potemkin-
+10:08 Suck A Sage -Chipp-
+11:09 The Original -Faust-
+12:10 Make Oneself -Axl-
+13:11 Momentary Life -Baiken-
+14:12 風雅 -Anji-
+15:13 A Solitude That Asks Nothing In Return -Venom-
+16:14 Liquor Bar &amp; Drunkard -Johnny-
+17:15 Babel Nose -Jam-
+18:16 Bloodstained Lineage -Testament-
+19:17 Awe of She -Dizzy-
+20:18 Simple Life -Bridget-
+21:19 Haven't You Got Eyes In Your Head? - Slayer-
+22:20 Good Manners and Customs -Zappa-
+23:21 影祭り-I-no-
+24:22 Nothing Out of the Orginary -Same Character-
+25:23 Existence -Assassins-
+26:24 Midnight Carnaval -Last Battle-
+27:25 No Mercy -Sol vs Ky Type-EX-
+28:26 Holy Orders? -Robo-Ky Type-EX-
+29:27 Fatal Duel -Same Character Type-EX-
+30:28 Still In The Dark -Millia vs Eddie Type-EX-
+31:29 Under Construction -Robo-Ky-
+32:30 Keep In Gates -A.B.A.-
+33:31 Get Down To Business -Order-Sol-
+34:32 Keep The Flag Flying -Sol vs Ky-
+35:33 Pride and Glory -Kliff-
+36:34 Meet Again -Justice-
+</DropDownList>
+          <LastState Value="0" RealAddress="011DACDC"/>
+          <VariableType>Byte</VariableType>
+          <Address>GGXXACPR_Win.exe+3EACDC</Address>
         </CheatEntry>
       </CheatEntries>
     </CheatEntry>
