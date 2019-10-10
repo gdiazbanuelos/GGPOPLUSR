@@ -1,5 +1,7 @@
 # GGAC+R GGPO-BASED CASTER
 
+GGPO Repo Link: https://github.com/pond3r/ggpo
+
 It's happening, but no code will be written that hooks up with GGPO until we understand the game state completely.
 
 Thanks to [GGPO](https://www.ggpo.net)'s recent switch to [open-source](https://github.com/pond3r/ggpo), it is now possible to write casters without building an entire netcode from the ground up.
@@ -39,6 +41,15 @@ Feel free to answer. Please. :D
 
 ## Less big problems
 
+=======
+
+- Will Faust and Zappa's RNG be deterministic or set to be so?
+  - If not, rip unless we replace it with our rng lmao
+- Where's Player 2's buffer?
+- Which of the (currently 3) input buffers gets written to first?
+  - If you intercept the first, will the others follow suit?
+- Caster first which launches +R, but will it work launching the raw +R exe with some stuff in it?
+- Find out stage IDs, still unknown, will be useful.
 - Where's Player 2's buffer?
 - Which of the (currently 3) input buffers gets written to first?
   - If you intercept the first, will the others follow suit?
