@@ -59,17 +59,22 @@ Currently there are three of them for P1 (AFAIK)
     * May cause KB vs Controller issues...
 * All three are 2 Bytes Long
 
-Up < Right < Left < Down (first byte somewhere)
+Directions: (Bytes)
+
+* Up: 10 00
+* Right: 20 00
+* Down: 40 00
+* Left: 80 00
 
 Buttons: (second byte)
-* P: 0x40
-* K: 0x20
+* P: 00 40
+* K: 00 20
 
 (these next three i need to check)
 
-* S: 0x80
-* H: 0x100
-* D: 0x10
+* S: 00 80
+* H: 00 02
+* D: 00 01
 
 Start needs to be blocked at all times, select only when a player hasn't picked a character yet (or maybe also blocked all the time, I don't know...)
 
