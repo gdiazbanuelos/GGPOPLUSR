@@ -74,49 +74,195 @@
         <CheatEntry>
           <ID>21</ID>
           <Description>"P1 Buf1"</Description>
-          <LastState Value="00 00" RealAddress="012F1570"/>
+          <LastState Value="00 00" RealAddress="00F61574"/>
           <ShowAsHex>1</ShowAsHex>
           <ShowAsSigned>0</ShowAsSigned>
-          <VariableType>Array of byte</VariableType>
-          <ByteLength>2</ByteLength>
-          <Address>GGXXACPR_Win.exe+501570</Address>
-        </CheatEntry>
-        <CheatEntry>
-          <ID>22</ID>
-          <Description>"P1 Buf2"</Description>
-          <LastState Value="00 00" RealAddress="012F1574"/>
-          <ShowAsHex>1</ShowAsHex>
           <VariableType>Array of byte</VariableType>
           <ByteLength>2</ByteLength>
           <Address>GGXXACPR_Win.exe+501574</Address>
         </CheatEntry>
         <CheatEntry>
-          <ID>23</ID>
-          <Description>"P1 Buf3"</Description>
-          <LastState Value="00 00" RealAddress="01306288"/>
+          <ID>22</ID>
+          <Description>"P1 Buf2"</Description>
+          <LastState Value="00 00" RealAddress="00F61578"/>
           <ShowAsHex>1</ShowAsHex>
           <VariableType>Array of byte</VariableType>
           <ByteLength>2</ByteLength>
-          <Address>GGXXACPR_Win.exe+516288</Address>
+          <Address>GGXXACPR_Win.exe+501578</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>23</ID>
+          <Description>"P1 Buf3"</Description>
+          <LastState Value="00 00" RealAddress="00F7628C"/>
+          <ShowAsHex>1</ShowAsHex>
+          <VariableType>Array of byte</VariableType>
+          <ByteLength>2</ByteLength>
+          <Address>GGXXACPR_Win.exe+51628C</Address>
         </CheatEntry>
         <CheatEntry>
           <ID>38</ID>
           <Description>"P2 Buf1"</Description>
-          <LastState Value="00 00" RealAddress="012F1580"/>
+          <LastState Value="00 00" RealAddress="00F61584"/>
           <ShowAsHex>1</ShowAsHex>
           <ShowAsSigned>0</ShowAsSigned>
           <VariableType>Array of byte</VariableType>
           <ByteLength>2</ByteLength>
-          <Address>GGXXACPR_Win.exe+501580</Address>
+          <Address>GGXXACPR_Win.exe+501584</Address>
         </CheatEntry>
         <CheatEntry>
           <ID>39</ID>
           <Description>"P2 Buf2"</Description>
-          <LastState Value="00 00" RealAddress="012F1584"/>
+          <LastState Value="00 00" RealAddress="00F61588"/>
           <ShowAsHex>1</ShowAsHex>
           <VariableType>Array of byte</VariableType>
           <ByteLength>2</ByteLength>
-          <Address>GGXXACPR_Win.exe+501584</Address>
+          <Address>GGXXACPR_Win.exe+501588</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>80</ID>
+          <Description>"P1 State"</Description>
+          <LastState Value="1" RealAddress="16CAB000"/>
+          <VariableType>Byte</VariableType>
+          <Address>GGXXACPR_Win.exe+516778</Address>
+          <Offsets>
+            <Offset>0</Offset>
+          </Offsets>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>83</ID>
+              <Description>"P1 Character Facing"</Description>
+              <LastState Value="1" RealAddress="16CAB002"/>
+              <VariableType>Byte</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>2</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>84</ID>
+              <Description>"P1 Character Side"</Description>
+              <LastState Value="1" RealAddress="16CAB003"/>
+              <VariableType>Byte</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>3</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>77</ID>
+              <Description>"P1 X Position"</Description>
+              <LastState Value="43697" RealAddress="16CAB0B0"/>
+              <ShowAsSigned>1</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>B0</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>82</ID>
+              <Description>"P1 Y Position"</Description>
+              <LastState Value="0" RealAddress="16CAB0B4"/>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>B4</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>85</ID>
+              <Description>"P1 X Velocity"</Description>
+              <LastState Value="0" RealAddress="16CAB0B8"/>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>B8</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>86</ID>
+              <Description>"P1 Y Velocity"</Description>
+              <LastState Value="0" RealAddress="16CAB0BC"/>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>BC</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>81</ID>
+          <Description>"P2 State"</Description>
+          <LastState Value="2" RealAddress="16CAB130"/>
+          <VariableType>Byte</VariableType>
+          <Address>GGXXACPR_Win.exe+516778</Address>
+          <Offsets>
+            <Offset>0+130</Offset>
+          </Offsets>
+          <CheatEntries>
+            <CheatEntry>
+              <ID>87</ID>
+              <Description>"P2 Character Facing"</Description>
+              <LastState Value="0" RealAddress="16CAB132"/>
+              <VariableType>Byte</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>130+2</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>88</ID>
+              <Description>"P2 Character Side"</Description>
+              <LastState Value="0" RealAddress="16CAB133"/>
+              <VariableType>Byte</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>130+3</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>89</ID>
+              <Description>"P2 X Position"</Description>
+              <LastState Value="49697" RealAddress="16CAB1E0"/>
+              <ShowAsSigned>1</ShowAsSigned>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>130+B0</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>90</ID>
+              <Description>"P2 Y Position"</Description>
+              <LastState Value="0" RealAddress="16CAB1E4"/>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>130+B4</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>91</ID>
+              <Description>"P2 X Velocity"</Description>
+              <LastState Value="0" RealAddress="16CAB1E8"/>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>130+B8</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>92</ID>
+              <Description>"P2 Y Velocity"</Description>
+              <LastState Value="0" RealAddress="16CAB1EC"/>
+              <VariableType>4 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>130+BC</Offset>
+              </Offsets>
+            </CheatEntry>
+          </CheatEntries>
         </CheatEntry>
       </CheatEntries>
     </CheatEntry>
