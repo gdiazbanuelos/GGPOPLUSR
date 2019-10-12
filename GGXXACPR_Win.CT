@@ -202,9 +202,23 @@
             <CheatEntry>
               <ID>95</ID>
               <Description>"P1 Tension"</Description>
-              <LastState Value="105" RealAddress="00F7A038"/>
+              <LastState Value="10000" RealAddress="00F7A038"/>
               <VariableType>2 Bytes</VariableType>
               <Address>GGXXACPR_Win.exe+51A038</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>99</ID>
+              <Description>"P1 Burst"</Description>
+              <LastState Value="15000" RealAddress="00F7A130"/>
+              <VariableType>2 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+51A130</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>105</ID>
+              <Description>"P1 Guard Bar"</Description>
+              <LastState Value="0" RealAddress="00F7A052"/>
+              <VariableType>2 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+51A052</Address>
             </CheatEntry>
           </CheatEntries>
         </CheatEntry>
@@ -295,6 +309,21 @@
               <LastState Value="0" RealAddress="00F7A180"/>
               <VariableType>2 Bytes</VariableType>
               <Address>GGXXACPR_Win.exe+51A180</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>103</ID>
+              <Description>"P2 Burst"</Description>
+              <LastState Value="15000" RealAddress="00F7A278"/>
+              <VariableType>2 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+51A278</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>104</ID>
+              <Description>"P2 Guard Bar"</Description>
+              <LastState Value="0" RealAddress="00F7A19A"/>
+              <ShowAsSigned>1</ShowAsSigned>
+              <VariableType>2 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+51A19A</Address>
             </CheatEntry>
           </CheatEntries>
         </CheatEntry>
