@@ -706,6 +706,29 @@
         </CheatEntry>
       </CheatEntries>
     </CheatEntry>
+     <CheatEntry>
+      <ID>43</ID>
+      <Description>"Disable IsDebuggerPresent"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>define(address,"KERNELBASE.IsDebuggerPresent")
+define(bytes, 64 A1 30 00 00 00 0F B6 40 02)
+[ENABLE]
+assert(address, bytes)
+
+address:
+        mov eax, 0
+        nop
+        nop
+        nop
+        nop
+        nop
+
+[DISABLE]
+address:
+         db bytes
+</AssemblerScript>
+    </CheatEntry>
   </CheatEntries>
   <UserdefinedSymbols/>
 </CheatTable>
