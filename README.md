@@ -19,7 +19,7 @@ Twitter: [@MemeMongerBPM](https://twitter.com/MemeMongerBPM)
 
 Discord: @Labryz#5752
 
-Looking for C++ devs that can hook ASM and/or navigate GGPO source.
+Looking for C++ devs that can hook and navigate x86 ASM and/or navigate GGPO source.
 
 Also looking for people like me who can take this game apart to try and understand what's going on under the hood.
 
@@ -31,30 +31,29 @@ Feel free to answer. Please. :D
 
 ## Bigger Problems
 
-- Skipping straight to 2P versus
-- If we can't skip to PvP, how will this get to vs?
-  - If unable to skip, find a menu input buffer and lock everyone out until 2P Vs.
-- Synchronizing match start after stage pick
-  - Uneven load times might even affect inter-round time as well
-- What do we synchronize on mid-match?
-- How do we stop the game without it not responding for slower loaders (into or out of the match) to catch up?
 
-## Less big problems
+* Skipping straight to 2P versus
+* If we can't skip to PvP, how will this get to vs?
+    * Find out how to disable rendering (step 1)
+    * Find out how to disable Intro Sound/Main Menu BGM (step 1b)
+    * Find out how to hijack input method messages to the exe
+        *First purpose: prevent pausing in vs
+        *Second purpose: prevent backing out of 2P vs with select
+        *Third purpose: tool-assist path from press start screen to 2P vs character select
+        *Fourth purpose(?): Send configured inputs from input -> caster -> game, will make all 3 easier
+* Synchronizing match start after stage pick
+    * Uneven load times might even affect inter-round time as well
+* What do we synchronize on mid-match?    
+* How do we stop the game without it not responding for slower loaders (into or out of the match) to catch up?
 
-=======
 
-- Will Faust and Zappa's RNG be deterministic or set to be so?
-  - If not, rip unless we replace it with our rng lmao
-- Where's Player 2's buffer?
-- Which of the (currently 3) input buffers gets written to first?
-  - If you intercept the first, will the others follow suit?
-- Caster first which launches +R, but will it work launching the raw +R exe with some stuff in it?
-- Find out stage IDs, still unknown, will be useful.
-- Where's Player 2's buffer?
-- Which of the (currently 3) input buffers gets written to first?
-  - If you intercept the first, will the others follow suit?
-- Caster first which launches +R, but will it work launching the raw +R exe with some stuff in it?
-- Find out stage IDs, still unknown, will be useful.
+
+* Will Faust and Zappa's RNG be deterministic or will there be a seed we need to set?
+    * If not, rip unless we replace it with our rng lmao
+* Where's Player 2's buffer?
+* Which of the (currently 3) input buffers gets written to first?
+    * If you intercept the first one, will the others follow suit?
+
 
 ## Input Buffer
 
