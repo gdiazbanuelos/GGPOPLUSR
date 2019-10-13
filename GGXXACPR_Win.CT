@@ -465,6 +465,28 @@
         <CheatEntry>
           <ID>32</ID>
           <Description>"P1 Palette"</Description>
+          <DropDownList DisplayValueAsItem="1">
+          0:AC P
+          1:AC K
+          2:AC S
+          3:AC H
+          4:AC D
+          5:EX P
+          6:EX K
+          7:EX S
+          8:EX H
+          9:EX D
+          10:Slash P
+          11:Slash K
+          12:Slash S
+          13:Slash H
+          14:Slash D
+          15:Reload P
+          16:Reload K
+          17:Reload S
+          18:Reload H
+          19:Reload D
+          </DropDownList>
           <LastState Value="2" RealAddress="012FAD24"/>
           <VariableType>Byte</VariableType>
           <Address>GGXXACPR_Win.exe+50AD24</Address>
@@ -473,6 +495,12 @@
           <ID>37</ID>
           <Description>"P1 Palette Group"</Description>
           <LastState Value="0" RealAddress="01345C7C"/>
+          <DropDownList DisplayValueAsItem="1">
+          0:AC
+          1:EX
+          2:Slash
+          3:Reload
+          </DropDownList>
           <VariableType>Byte</VariableType>
           <Address>GGXXACPR_Win.exe+555C7C</Address>
         </CheatEntry>
@@ -578,6 +606,28 @@
         <CheatEntry>
           <ID>36</ID>
           <Description>"P2 Palette"</Description>
+          <DropDownList DisplayValueAsItem="1">
+          0:AC P
+          1:AC K
+          2:AC S
+          3:AC H
+          4:AC D
+          5:EX P
+          6:EX K
+          7:EX S
+          8:EX H
+          9:EX D
+          10:Slash P
+          11:Slash K
+          12:Slash S
+          13:Slash H
+          14:Slash D
+          15:Reload P
+          16:Reload K
+          17:Reload S
+          18:Reload H
+          19:Reload D
+          </DropDownList>
           <LastState Value="10" RealAddress="012FADD0"/>
           <VariableType>Byte</VariableType>
           <Address>GGXXACPR_Win.exe+50ADD0</Address>
@@ -655,6 +705,29 @@
           <Address>GGXXACPR_Win.exe+3EACDC</Address>
         </CheatEntry>
       </CheatEntries>
+    </CheatEntry>
+     <CheatEntry>
+      <ID>43</ID>
+      <Description>"Disable IsDebuggerPresent"</Description>
+      <LastState/>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>define(address,"KERNELBASE.IsDebuggerPresent")
+define(bytes, 64 A1 30 00 00 00 0F B6 40 02)
+[ENABLE]
+assert(address, bytes)
+
+address:
+        mov eax, 0
+        nop
+        nop
+        nop
+        nop
+        nop
+
+[DISABLE]
+address:
+         db bytes
+</AssemblerScript>
     </CheatEntry>
   </CheatEntries>
   <UserdefinedSymbols/>
