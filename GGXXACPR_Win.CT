@@ -2,8 +2,31 @@
 <CheatTable CheatEngineTableVersion="29">
   <CheatEntries>
     <CheatEntry>
+      <ID>43</ID>
+      <Description>"Disable IsDebuggerPresent"</Description>
+      <VariableType>Auto Assembler Script</VariableType>
+      <AssemblerScript>define(address,"KERNELBASE.IsDebuggerPresent")
+define(bytes, 64 A1 30 00 00 00 0F B6 40 02)
+[ENABLE]
+assert(address, bytes)
+
+address:
+        mov eax, 0
+        nop
+        nop
+        nop
+        nop
+        nop
+
+[DISABLE]
+address:
+         db bytes
+</AssemblerScript>
+    </CheatEntry>
+    <CheatEntry>
       <ID>18</ID>
       <Description>"Settings"</Description>
+      <Options moHideChildren="1" />
       <GroupHeader>1</GroupHeader>
       <CheatEntries>
         <CheatEntry>
@@ -59,6 +82,7 @@
     <CheatEntry>
       <ID>19</ID>
       <Description>"In-Game Values"</Description>
+      <Options moHideChildren="1" />
       <GroupHeader>1</GroupHeader>
       <CheatEntries>
         <CheatEntry>
@@ -104,14 +128,20 @@
           <Address>GGXXACPR_Win.exe+501588</Address>
         </CheatEntry>
         <CheatEntry>
-          <ID>80</ID>
+          <ID>107</ID>
           <Description>"P1 State"</Description>
-          <VariableType>Byte</VariableType>
-          <Address>GGXXACPR_Win.exe+516778</Address>
-          <Offsets>
-            <Offset>0</Offset>
-          </Offsets>
+          <Options moHideChildren="1" />
+          <GroupHeader>1</GroupHeader>
           <CheatEntries>
+            <CheatEntry>
+              <ID>106</ID>
+              <Description>"P1 Player Flag"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>0</Offset>
+              </Offsets>
+            </CheatEntry>
             <CheatEntry>
               <ID>83</ID>
               <Description>"P1 Character Facing"</Description>
@@ -197,14 +227,20 @@
           </CheatEntries>
         </CheatEntry>
         <CheatEntry>
-          <ID>81</ID>
+          <ID>108</ID>
           <Description>"P2 State"</Description>
-          <VariableType>Byte</VariableType>
-          <Address>GGXXACPR_Win.exe+516778</Address>
-          <Offsets>
-            <Offset>0+130</Offset>
-          </Offsets>
+          <Options moHideChildren="1" />
+          <GroupHeader>1</GroupHeader>
           <CheatEntries>
+            <CheatEntry>
+              <ID>81</ID>
+              <Description>"P2 Player Flag"</Description>
+              <VariableType>Byte</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>0+130</Offset>
+              </Offsets>
+            </CheatEntry>
             <CheatEntry>
               <ID>87</ID>
               <Description>"P2 Character Facing"</Description>
@@ -295,6 +331,7 @@
     <CheatEntry>
       <ID>20</ID>
       <Description>"Character Select Values"</Description>
+      <Options moHideChildren="1" />
       <GroupHeader>1</GroupHeader>
       <CheatEntries>
         <CheatEntry>
@@ -420,8 +457,7 @@
         <CheatEntry>
           <ID>32</ID>
           <Description>"P1 Palette"</Description>
-          <DropDownList DisplayValueAsItem="1">
-          0:AC P
+          <DropDownList DisplayValueAsItem="1">0:AC P
           1:AC K
           2:AC S
           3:AC H
@@ -441,19 +477,20 @@
           17:Reload S
           18:Reload H
           19:Reload D
-          </DropDownList>
+          
+</DropDownList>
           <VariableType>Byte</VariableType>
           <Address>GGXXACPR_Win.exe+50AD24</Address>
         </CheatEntry>
         <CheatEntry>
           <ID>37</ID>
           <Description>"P1 Palette Group"</Description>
-          <DropDownList DisplayValueAsItem="1">
-          0:AC
+          <DropDownList DisplayValueAsItem="1">0:AC
           1:EX
           2:Slash
           3:Reload
-          </DropDownList>
+          
+</DropDownList>
           <VariableType>Byte</VariableType>
           <Address>GGXXACPR_Win.exe+555C7C</Address>
         </CheatEntry>
@@ -556,8 +593,7 @@
         <CheatEntry>
           <ID>36</ID>
           <Description>"P2 Palette"</Description>
-          <DropDownList DisplayValueAsItem="1">
-          0:AC P
+          <DropDownList DisplayValueAsItem="1">0:AC P
           1:AC K
           2:AC S
           3:AC H
@@ -577,7 +613,8 @@
           17:Reload S
           18:Reload H
           19:Reload D
-          </DropDownList>
+          
+</DropDownList>
           <VariableType>Byte</VariableType>
           <Address>GGXXACPR_Win.exe+50ADD0</Address>
         </CheatEntry>
@@ -652,28 +689,6 @@
           <Address>GGXXACPR_Win.exe+3EACDC</Address>
         </CheatEntry>
       </CheatEntries>
-    </CheatEntry>
-     <CheatEntry>
-      <ID>43</ID>
-      <Description>"Disable IsDebuggerPresent"</Description>
-      <VariableType>Auto Assembler Script</VariableType>
-      <AssemblerScript>define(address,"KERNELBASE.IsDebuggerPresent")
-define(bytes, 64 A1 30 00 00 00 0F B6 40 02)
-[ENABLE]
-assert(address, bytes)
-
-address:
-        mov eax, 0
-        nop
-        nop
-        nop
-        nop
-        nop
-
-[DISABLE]
-address:
-         db bytes
-</AssemblerScript>
     </CheatEntry>
   </CheatEntries>
   <UserdefinedSymbols />
