@@ -224,6 +224,140 @@ address:
               <VariableType>2 Bytes</VariableType>
               <Address>GGXXACPR_Win.exe+51A052</Address>
             </CheatEntry>
+            <CheatEntry>
+              <ID>144</ID>
+              <Description>"P1 Stun"</Description>
+              <VariableType>2 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+51A0B4</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>147</ID>
+              <Description>"P1 Dizzy"</Description>
+              <VariableType>2 Bytes</VariableType>
+              <Address>0150A0B6</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>111</ID>
+              <Description>"Character Specific"</Description>
+              <Options moHideChildren="1" />
+              <GroupHeader>1</GroupHeader>
+              <CheatEntries>
+                <CheatEntry>
+                  <ID>109</ID>
+                  <Description>"Order Sol Gauge"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0CE</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>110</ID>
+                  <Description>"Order Sol Remaining Gauge"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0C8</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>115</ID>
+                  <Description>"Eddie Gauge"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0C4</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>117</ID>
+                  <Description>"Testament Dolls"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0C4</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>133</ID>
+                  <Description>"Testament Curse"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0C8</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>119</ID>
+                  <Description>"Robo-Ky Heat Gauge"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0C4</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>122</ID>
+                  <Description>"Johnny Coins (Invert)"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0C4</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>123</ID>
+                  <Description>"Johnny Mist Finer Level"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0C0</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>125</ID>
+                  <Description>"ABA Moroha Mode"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0C0</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>127</ID>
+                  <Description>"ABA Blood Packs"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>0109A0C2</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>126</ID>
+                  <Description>"ABA Moroha Gauge"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0C8</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>131</ID>
+                  <Description>"Chipp Shuriken"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0C6</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>135</ID>
+                  <Description>"Zappa Countdown?"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0C6</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>136</ID>
+                  <Description>"Zappa RNG?"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>0109A0C2</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>137</ID>
+                  <Description>"Zappa Active Summon"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0C0</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>138</ID>
+                  <Description>"Jam 22K Card"</Description>
+                  <VariableType>Byte</VariableType>
+                  <Address>0109A0C2</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>140</ID>
+                  <Description>"Jam 22H Card"</Description>
+                  <VariableType>Byte</VariableType>
+                  <Address>0109A0C4</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>139</ID>
+                  <Description>"Jam 22S Card"</Description>
+                  <VariableType>Byte</VariableType>
+                  <Address>0109A0C5</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>148</ID>
+                  <Description>"Justice Omega Shift"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A0C0</Address>
+                </CheatEntry>
+              </CheatEntries>
+            </CheatEntry>
           </CheatEntries>
         </CheatEntry>
         <CheatEntry>
@@ -323,6 +457,122 @@ address:
               <ShowAsSigned>1</ShowAsSigned>
               <VariableType>2 Bytes</VariableType>
               <Address>GGXXACPR_Win.exe+51A19A</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>145</ID>
+              <Description>"P2 Stun"</Description>
+              <VariableType>2 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+51A1FC</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>146</ID>
+              <Description>"P2 Dizzy"</Description>
+              <VariableType>2 Bytes</VariableType>
+              <Address>0150A1FE</Address>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>114</ID>
+              <Description>"Character Specific"</Description>
+              <Options moHideChildren="1" />
+              <GroupHeader>1</GroupHeader>
+              <CheatEntries>
+                <CheatEntry>
+                  <ID>113</ID>
+                  <Description>"Order Sol Gauge"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A216</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>112</ID>
+                  <Description>"Order Sol Remaining Gauge"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A210</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>116</ID>
+                  <Description>"Eddie Gauge"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A20C</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>118</ID>
+                  <Description>"Testament Dolls"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A20C</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>134</ID>
+                  <Description>"Testament Curse"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A210</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>120</ID>
+                  <Description>"Robo-Ky Heat Gauge"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A20C</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>121</ID>
+                  <Description>"Johnny Coins (Invert)"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A20C</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>124</ID>
+                  <Description>"Johnny Mist Finer Level"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A208</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>130</ID>
+                  <Description>"ABA Moroha Mode"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A208</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>129</ID>
+                  <Description>"ABA Blood Packs"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A20A</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>128</ID>
+                  <Description>"ABA Moroha Gauge"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A210</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>132</ID>
+                  <Description>"Chipp Shuriken"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A20E</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>141</ID>
+                  <Description>"Jam 22K Card"</Description>
+                  <VariableType>Byte</VariableType>
+                  <Address>0109A20A</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>143</ID>
+                  <Description>"Jam 22H Card"</Description>
+                  <VariableType>Byte</VariableType>
+                  <Address>0109A20C</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>142</ID>
+                  <Description>"Jam 22S Card"</Description>
+                  <VariableType>Byte</VariableType>
+                  <Address>0109A20D</Address>
+                </CheatEntry>
+                <CheatEntry>
+                  <ID>149</ID>
+                  <Description>"Justice Omega Shift"</Description>
+                  <VariableType>2 Bytes</VariableType>
+                  <Address>GGXXACPR_Win.exe+51A208</Address>
+                </CheatEntry>
+              </CheatEntries>
             </CheatEntry>
           </CheatEntries>
         </CheatEntry>
