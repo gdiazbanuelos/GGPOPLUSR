@@ -234,7 +234,7 @@ address:
               <ID>147</ID>
               <Description>"P1 Dizzy"</Description>
               <VariableType>2 Bytes</VariableType>
-              <Address>0150A0B6</Address>
+              <Address>GGXXACPR_Win.exe+51A0B4+2</Address>
             </CheatEntry>
             <CheatEntry>
               <ID>111</ID>
@@ -468,7 +468,7 @@ address:
               <ID>146</ID>
               <Description>"P2 Dizzy"</Description>
               <VariableType>2 Bytes</VariableType>
-              <Address>0150A1FE</Address>
+              <Address>GGXXACPR_Win.exe+51A1FC+2</Address>
             </CheatEntry>
             <CheatEntry>
               <ID>114</ID>
