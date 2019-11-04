@@ -77,6 +77,22 @@ address:
           <VariableType>4 Bytes</VariableType>
           <Address>GGXXACPR_Win.exe+4E6164+A8</Address>
         </CheatEntry>
+        <CheatEntry>
+          <ID>169</ID>
+          <Description>"P1 Controller Binds"</Description>
+          <ShowAsHex>1</ShowAsHex>
+          <VariableType>Array of byte</VariableType>
+          <ByteLength>35</ByteLength>
+          <Address>GGXXACPR_Win.exe+51A081</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>168</ID>
+          <Description>"P2 Controller Binds"</Description>
+          <ShowAsHex>1</ShowAsHex>
+          <VariableType>Array of byte</VariableType>
+          <ByteLength>72</ByteLength>
+          <Address>GGXXACPR_Win.exe+513529</Address>
+        </CheatEntry>
       </CheatEntries>
     </CheatEntry>
     <CheatEntry>
@@ -593,6 +609,45 @@ address:
               </CheatEntries>
             </CheatEntry>
           </CheatEntries>
+        </CheatEntry>
+      </CheatEntries>
+    </CheatEntry>
+    <CheatEntry>
+      <ID>170</ID>
+      <Description>"Training Mode Values"</Description>
+      <Options moAllowManualCollapseAndExpand="1" moHideChildren="1" />
+      <GroupHeader>1</GroupHeader>
+      <CheatEntries>
+        <CheatEntry>
+          <ID>159</ID>
+          <Description>"Input History Countdown"</Description>
+          <VariableType>Byte</VariableType>
+          <Address>GGXXACPR_Win.exe+4FDC48</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>158</ID>
+          <Description>"Input History"</Description>
+          <VariableType>Array of byte</VariableType>
+          <ByteLength>71</ByteLength>
+          <Address>GGXXACPR_Win.exe+4FDC00</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>164</ID>
+          <Description>"Dummy Recording Disabled"</Description>
+          <VariableType>4 Bytes</VariableType>
+          <Address>GGXXACPR_Win.exe+4FDD2C</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>165</ID>
+          <Description>"Dummy Recording Player"</Description>
+          <VariableType>Byte</VariableType>
+          <Address>GGXXACPR_Win.exe+4FDD28</Address>
+        </CheatEntry>
+        <CheatEntry>
+          <ID>157</ID>
+          <Description>"Framecount of Recording/Playback"</Description>
+          <VariableType>2 Bytes</VariableType>
+          <Address>GGXXACPR_Win.exe+4FDD26</Address>
         </CheatEntry>
       </CheatEntries>
     </CheatEntry>
