@@ -13,14 +13,31 @@ from tkinter import (
     messagebox,
     ttk,
 )
+import threading
 
 from memory_reader import MemoryReader
 
 reader = MemoryReader()
-
+reader.getProcess()
+proc_open = False
 
 def read_config():
-    print("".join("0x{:02x} ".format(x) for x in bytearray(reader.readConfig())))
+    config = reader.readConfig()
+    if config is not None:
+        print("Config Values: ")
+        for b in config.buttons:
+            print(hex(b))
+
+def wait_for_process():
+    global reader, proc_open
+    while True:
+        if proc_open != reader.hasWorkingPID():
+            proc_open = not proc_open
+            if proc_open:
+                loadstatus.set("+R Open!")
+            else:
+                loadstatus.set("+R Closed!")
+
 
 
 # define ui-activated methods here
@@ -69,7 +86,7 @@ root.option_add("*tearOff", FALSE)
 
 loadstatus = StringVar()
 loadstatus.set(
-    "No Recording Loaded"
+    "+R Closed!"
 )  # may want to adjust based on game open-ness among other things
 
 root.geometry("400x400+200+200")
@@ -90,6 +107,10 @@ Button(mainframe, text="Read Config", command=read_config).grid(
     column=1, row=2, sticky=(N, W, E)
 )
 Label(mainframe, textvariable=loadstatus).grid(column=1, row=1, sticky=(N, W, E))
+
+proc_status_t = threading.Thread(target=wait_for_process)
+proc_status_t.daemon = True
+proc_status_t.start()
 
 root.mainloop()
 # anything that executes after mainloop is post-termination

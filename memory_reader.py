@@ -34,15 +34,37 @@ process_name = "GGXXACPR_Win.exe"
 PROCESS_VM_READ = 0x10
 PROCESS_VM_WRITE = 0x20
 
-OFFSET_CONFIG = 0x51A081
+OFFSET_CONFIG = 0x51A080
+OFFSET_RECORDING = 0x4FDD28
 
+
+class Input(c.Structure):
+    _fields_ = [
+        ("direction", c.c_ubyte),
+        ("button", c.c_ubyte),
+        ("pad", c.c_ushort)
+    ]
+
+class Recording(c.Structure):
+    _fields_ = [
+        ("player", c.c_ubyte),
+        ("unknown", c.c_ubyte * 3),
+        ("inputs", Input * 899)
+    ]
+
+class Config(c.Structure):
+    _fields_ = [
+        ("buttons", c.c_ushort * 5),
+    ]
 
 class MemoryReader:
+
     def __init__(self):
         self.pid = -1
         self.needReaquireGameState = True
         self.needReacquireModule = True
         self.module = 0
+        self.pHandle = None
 
     def getValueFromAddress(
         self, processHandle, address, isFloat=False, is64bit=False, isString=False,
@@ -104,23 +126,41 @@ class MemoryReader:
     def hasWorkingPID(self):
         return self.pid > -1
 
-    def readConfig(self):
+    def getProcess(self):
         if not self.hasWorkingPID():
             self.pid = self.get_pid()
             if not self.hasWorkingPID():
-                print("Unable to find process")
-                return
-        if self.needReacquireModule:
+                return False
             self.module = getModuleAddressByPIDandName(self.pid, process_name)
-            if self.module == None:
-                print("{} not found.".format(process_name))
-                self.reacquireEverything()
-                return
-            self.needReacquireModule = False
-        if self.module != None:
-            process = OpenProcess(PROCESS_VM_READ, False, self.pid)
-            try:
-                config = self.getBlockOfData(process, self.module + OFFSET_CONFIG, 35)
-                return config
-            finally:
-                CloseHandle(process)
+            self.pHandle = OpenProcess(PROCESS_VM_READ, False, self.pid)
+            return True
+
+    def readConfig(self):
+        if not self.hasWorkingPID():
+            if not self.getProcess():
+                return None
+        conf = Config()
+        bytes_read = c.c_ulonglong(c.sizeof(conf))
+        successful = ReadProcessMemory(
+            self.pHandle, OFFSET_CONFIG + self.module, c.byref(conf), c.sizeof(conf), c.byref(bytes_read)
+        )
+        if not successful:
+            e = GetLastError()
+            print("Reading Configuration Error: Code " + str(e))
+        return conf
+
+    def readRecording(self, slot):
+        if not self.hasWorkingPID():
+            if not self.getProcess():
+                return None
+        rec = Recording()
+        addr = OFFSET_RECORDING + (slot - 1) * c.sizeof(Recording) + self.module
+        bytes_read = c.c_ulonglong(c.sizeof(Recording))
+        successful = ReadProcessMemory(
+            self.pHandle, addr, c.byref(rec), c.sizeof(rec), c.byref(bytes_read)
+        )
+        if not successful:
+            e = GetLastError()
+            print("Reading Recording {} Error: Code {}".format(slot, e))
+            return None
+        return rec
