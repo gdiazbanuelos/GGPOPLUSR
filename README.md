@@ -25,12 +25,23 @@ Also looking for people like me who can take this game apart to try and understa
 
 You don't have to be either of the above, just reach out with your questions/comments/concerns.
 
-Below are the big TODOS/Requirements that need to be finished and questions that need to be answered.
+## Building
 
-Feel free to answer. Please. :D
+GGPOPLUSR uses [CMake](https://cmake.org/) as a build engine and
+[Detours](https://github.com/microsoft/Detours) as a method of installing
+code at runtime, and depends on the Win32 SDK. To build the launcher:
+1. Clone and build Detours.
+2. Download and generate a CMake file.
+3. Use Visual Studio (or your preferred CMake generator) to actually build it.
+
+## Running
+
+1. Create a `steam_appid.txt` file in the Guilty Gear folder, with the contents "348550".
+2. Run the launcher.
+3. Point the launcher at the Guilty Gear folder.
+4. Click Launch.
 
 ## Bigger Problems
-
 
 * Skipping straight to 2P versus
 * If we can't skip to PvP, how will this get to vs?
@@ -45,11 +56,6 @@ Feel free to answer. Please. :D
     * Uneven load times might even affect inter-round time as well
 * What do we synchronize on mid-match?    
 * How do we stop the game without it not responding for slower loaders (into or out of the match) to catch up?
-
-
-
-* Will Faust and Zappa's RNG be deterministic or will there be a seed we need to set?
-    * If not, rip unless we replace it with our rng lmao
 * Where's Player 2's buffer?
 * Which of the (currently 3) input buffers gets written to first?
     * If you intercept the first one, will the others follow suit?
