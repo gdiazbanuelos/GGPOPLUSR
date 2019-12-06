@@ -215,6 +215,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		if (HIWORD(wParam) == BN_CLICKED) {
 			GetWindowText(hPathBox, g_szWorkingDirBuffer, 512);
 			CreateGuiltyGearProcess(g_szWorkingDirBuffer);
+			// XXX Translate this to a quit message? Install into
+			// Guilty dir?
 			return 0;
 		}
 	}
