@@ -11,10 +11,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(Detours 4 REQUIRED)
+find_package(ValveFileVDF 1 REQUIRED)
 
-add_executable(Launcher WIN32 src/launcher/launcher.cxx)
+add_executable(Launcher WIN32
+    src/launcher/discovery.cxx
+    src/launcher/discovery.hxx
+    src/launcher/launcher.cxx)
 target_link_libraries(Launcher
 	PRIVATE Detours
+	PRIVATE ValveFileVDF
 	PRIVATE "shlwapi"
 )
 

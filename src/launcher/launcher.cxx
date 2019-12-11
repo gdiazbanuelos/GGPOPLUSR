@@ -12,75 +12,79 @@
 
 #include <detours.h>
 
-static wchar_t g_szWorkingDirBuffer[512] = { 0 };
+#include "discovery.hxx"
 
-static HINSTANCE hinst;
-static HWND hPathBox;
+void FindSidecar(LPSTR szDllPathA) {
+	char szCwdBuffer[1024] = { 0 };
+	GetCurrentDirectoryA(1024, szCwdBuffer);
+	PathCombineA(szDllPathA, szCwdBuffer, "Sidecar.dll");
+}
 
-int CreateGuiltyGearProcess(LPCWSTR szWorkingDir) {
-	wchar_t szCwdBuffer[512] = { 0 };
-	wchar_t szDllPathW[512] = { 0 };
-	wchar_t szExePath[512] = { 0 };
-	char szDllPathA[512] = { 0 };
-	wchar_t szErrorString[1024] = { 0 };
+void CreateAppIDFile(LPWSTR szGuiltyDirectory) {
+	wchar_t szAppIDPath[1024] = { 0 };
+	DWORD nBytesWritten = 0;
 
-	GetCurrentDirectory(512, szCwdBuffer);
-	PathCombine(szDllPathW, szCwdBuffer, L"Sidecar.dll");
-	WideCharToMultiByte(
-		CP_ACP,
+	PathCombine(szAppIDPath, szGuiltyDirectory, L"steam_appid.txt");
+
+	HANDLE hAppIDHandle = CreateFile(
+		szAppIDPath,
+		GENERIC_READ | GENERIC_WRITE,
 		0,
-		szDllPathW,
-		-1,
-		szDllPathA,
-		512,
 		NULL,
+		CREATE_NEW,
+		FILE_ATTRIBUTE_NORMAL,
 		NULL
 	);
 
-	PathCombine(szExePath, szWorkingDir, L"GGXXACPR_Win.exe");
 
-	SetLastError(0);
+	if (hAppIDHandle != INVALID_HANDLE_VALUE) {
+		// Didn't exist, auto-created the file.
+		WriteFile(hAppIDHandle, "348550", 6, &nBytesWritten, NULL);
+		if (nBytesWritten != 6) {
+			// Error!
+		}
+		CloseHandle(hAppIDHandle);
+	}
+}
 
-	LPCSTR dllsToLoad[1];
-	dllsToLoad[0] = szDllPathA;
-
-	PCHAR pszFilePart = NULL;
-	PCHAR pszFilePartExe = NULL;
+void CreateGuiltyGearProcess(
+	LPWSTR szGuiltyDirectory,
+	LPWSTR szGuiltyExePath,
+	LPSTR szSidecarDllPathA
+) {
+	wchar_t szErrorString[1024] = { 0 };
+	DWORD dwError;
+	LPCSTR dllsToLoad[1] = { szSidecarDllPathA };
 	STARTUPINFOW si;
 	PROCESS_INFORMATION pi;
-	DWORD dwFlags = CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED;
-	DWORD dwResult = 0;
-	DWORD nDlls = 1;
-
 	ZeroMemory(&si, sizeof(si));
 	ZeroMemory(&pi, sizeof(pi));
 	si.cb = sizeof(si);
 
+	SetLastError(0);
+
 	if (
 		!DetourCreateProcessWithDllsW(
-			szExePath,
+			szGuiltyExePath,
 			NULL,
 			NULL,
 			NULL,
 			TRUE,
-			dwFlags,
+			CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED,
 			NULL,
-			szWorkingDir,
+			szGuiltyDirectory,
 			&si,
 			&pi,
-			nDlls,
+			1,
 			dllsToLoad,
 			NULL
 		)) {
-		DWORD dwError = GetLastError();
-
+		dwError = GetLastError();
 		StringCchPrintf(szErrorString, 1024, L"DetourCreateProcessWithDllEx failed: %d", dwError);
-
 		MessageBox(NULL, szErrorString, NULL, MB_OK);
-		MessageBox(NULL, szExePath, NULL, MB_OK);
-		MessageBox(NULL, szWorkingDir, NULL, MB_OK);
-		MessageBox(NULL, szDllPathW, NULL, MB_OK);
-
+		MessageBox(NULL, szGuiltyDirectory, NULL, MB_OK);
+		MessageBox(NULL, szGuiltyExePath, NULL, MB_OK);
+		MessageBoxA(NULL, szSidecarDllPathA, NULL, MB_OK);
 		if (dwError == ERROR_INVALID_HANDLE) {
 			MessageBox(NULL, L"Can't detour a 64-bit target process from a 32-bit parent process or vice versa.", NULL, MB_OK);
 		}
@@ -88,136 +92,17 @@ int CreateGuiltyGearProcess(LPCWSTR szWorkingDir) {
 	}
 
 	ResumeThread(pi.hThread);
-	WaitForSingleObject(pi.hProcess, INFINITE);
-
-	if (!GetExitCodeProcess(pi.hProcess, &dwResult)) {
-		printf("GetExitCodeProcess failed: %d\n", GetLastError());
-		return 9010;
-	}
-	return 0;
 }
-
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow)
 {
-	hinst = hInstance;
+	wchar_t szGuiltyDirectory[1024] = { 0 };
+	wchar_t szGuiltyExePath[1024] = { 0 };
+	char szSidecarDllPathA[1024] = { 0 };
 
-	const wchar_t CLASS_NAME[] = L"GGPOPLUSR Launcher";
-
-	WNDCLASS wc = { };
-
-	wc.lpfnWndProc = WindowProc;
-	wc.hInstance = hInstance;
-	wc.lpszClassName = CLASS_NAME;
-
-	RegisterClass(&wc);
-
-	// Create the window.
-	HWND hwndMain = CreateWindowEx(
-		0,
-		CLASS_NAME,
-		L"GGPOPLUSR Launcher",
-		WS_OVERLAPPEDWINDOW,
-
-		// Size and position
-		CW_USEDEFAULT, CW_USEDEFAULT, 600, 200,
-
-		NULL,
-		NULL,
-		hInstance,
-		NULL
-	);
-
-
-	if (!hwndMain)
-	{
-		return 0;
-	}
-
-	ShowWindow(hwndMain, nCmdShow);
-
-	// Run the message loop.
-	MSG msg = { };
-	while (GetMessage(&msg, NULL, 0, 0))
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-
+	FindGuilty(szGuiltyDirectory, szGuiltyExePath);
+	FindSidecar(szSidecarDllPathA);
+	CreateAppIDFile(szGuiltyDirectory);
+	CreateGuiltyGearProcess(szGuiltyDirectory, szGuiltyExePath, szSidecarDllPathA);
 	return 0;
-}
-
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg)
-	{
-	case WM_CREATE:
-
-		CreateWindowEx(
-			0,
-			L"STATIC",
-			L"Path to Guilty Gear working dir",
-			WS_CHILD | WS_BORDER | WS_VISIBLE,
-
-			0,
-			0,
-			300,
-			50,
-
-			hwnd,
-			NULL,
-			hinst,
-			NULL
-		);
-
-		hPathBox = CreateWindowEx(
-			0,
-			L"EDIT",
-			L"E:\\Steam\\steamapps\\common\\Guilty Gear XX Accent Core Plus R",
-			WS_CHILD | WS_BORDER | WS_VISIBLE,
-
-			0,
-			50,
-			600,
-			50,
-
-			hwnd,
-			NULL,
-			hinst,
-			NULL
-		);
-
-		// Button to kick off
-		CreateWindowEx(
-			0,
-			L"BUTTON",
-			L"Launch",
-			WS_CHILD | WS_BORDER | WS_VISIBLE,
-
-			0,
-			100,
-			300,
-			50,
-
-			hwnd,
-			NULL,
-			hinst,
-			NULL
-		);
-		break;
-
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		return 0;
-
-	case WM_COMMAND:
-		if (HIWORD(wParam) == BN_CLICKED) {
-			GetWindowText(hPathBox, g_szWorkingDirBuffer, 512);
-			CreateGuiltyGearProcess(g_szWorkingDirBuffer);
-			return 0;
-		}
-	}
-
-	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
