@@ -83,7 +83,7 @@ with C++ development, x86 assembly, Win32 APIs, reverse engineering, and
 networking code, we need many non-technical skills as well! **You, the reader,**
 can help us directly by:
 
-* Reading [CONTRIBUTING.md](https://github.com/adanducci/GGPOPLUSR/blob/master/README.md)
+* Reading [CONTRIBUTING.md](https://github.com/adanducci/GGPOPLUSR/blob/master/CONTRIBUTING.md)
   and submitting new pull requests
 * Updating and organizing the [wiki](https://github.com/adanducci/GGPOPLUSR/wiki)
 * Testing early-access releases and reporting issues on the
