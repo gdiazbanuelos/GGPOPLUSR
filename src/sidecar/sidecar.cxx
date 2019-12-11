@@ -12,7 +12,6 @@
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
 #include <imgui_demo.cpp>
-//#include <imgui_memory_editor.h>
 #include <d3d9.h>
 #include <dinput.h>
 #include <tchar.h>
@@ -28,6 +27,9 @@ static HWND g_hwnd;
 static BOOL(WINAPI* RealIsDebuggerPresent)() = IsDebuggerPresent;
 
 static byte* g_lpPEHeaderRoot;
+static void(WINAPI* RealDrawStage)();
+static void(__fastcall* RealDrawGameUI)(DWORD);
+static void(WINAPI* RealD3DSceneSetting)(int);
 static void(WINAPI* RealGenerateAndShadePrimitives)();
 static DWORD(WINAPI* RealInitializeLibraries)();
 static int(WINAPI* RealSetupD3D9)();
@@ -40,17 +42,13 @@ static ExampleAppLog p2state_log;
 short prev_p1action;
 short prev_p2action;
 
-//static MemoryEditor mem_edit_1;
-
-
+static BOOL bIsBackgroundEnabled = true;
 
 DWORD FakeInitializeLibraries() {
 	g_hwnd = *(HWND*)(g_lpPEHeaderRoot + (0xeb6554 - 0x9b0000));
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	//ImGuiIO &g_io = ImGui::GetIO();
-	//g_io.MouseDrawCursor = TRUE;
 	ImGui::StyleColorsDark();
 	ImGuiStyle &style = ImGui::GetStyle();
 	style.Alpha = DEFAULT_ALPHA;
@@ -70,6 +68,28 @@ int FakeSetupD3D9() {
 	g_pd3dDevice = *(LPDIRECT3DDEVICE9*)(g_lpPEHeaderRoot + (0xf05b94 - 0x9b0000));
 	ImGui_ImplDX9_Init(g_pd3dDevice);
 	return out;
+}
+
+void WINAPI FakeDrawStage() {
+	if (bIsBackgroundEnabled) {
+		RealDrawStage();
+	}
+}
+
+void __fastcall FakeDrawGameUI(DWORD param1) {
+	if (bIsBackgroundEnabled) {
+		RealDrawGameUI(param1);
+	}
+}
+
+void SetCleanBackgroundState() {
+	long error;
+	wchar_t szMessage[512] = { 0 };
+	PVOID lpGuiltyEntryPoint;
+
+	DWORD* lpnSceneClearColor = (DWORD*)((byte*)g_lpPEHeaderRoot + 0x5476E8);
+	*lpnSceneClearColor = 0x00ff00ff;
+	bIsBackgroundEnabled = false;
 }
 
 LPDIRECT3DSURFACE9 GetGameRenderTarget() {
@@ -113,6 +133,12 @@ void FakeGenerateAndShadePrimitives() {
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(ImVec2(320, 150), ImGuiCond_FirstUseEver);
 
+	ImGui::Begin("SetCleanBackgroundState", NULL, ImGuiWindowFlags_None);
+	if (ImGui::Button("Set")) {
+		SetCleanBackgroundState();
+	}
+	ImGui::End();
+
 	ImGui::Begin("Player 1 State", NULL, ImGuiWindowFlags_None);
 	ImGui::Text("Base Address:\t%p", g_lpPEHeaderRoot);
 
@@ -153,10 +179,6 @@ void FakeGenerateAndShadePrimitives() {
 	p2state_log.Draw("P2 Action ID Log");
 	ImGui::End();
 
-	//if (*pstate != 0) {
-	//	mem_edit_1.DrawContents(*pstate, 0x260, (size_t)*pstate);
-	//}
-
 	ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
@@ -175,6 +197,12 @@ void FakeSteamAPI_Init() {
 	RealInitializeLibraries = (DWORD(WINAPI*)())(g_lpPEHeaderRoot + (0xaf6c90 - 0x9b0000));
 	RealSetupD3D9 = (int(WINAPI*)())(g_lpPEHeaderRoot + (0xaf8b60 - 0x9b0000));
 	RealWindowFunc = (LRESULT(WINAPI*)(HWND, UINT, WPARAM, LPARAM))(g_lpPEHeaderRoot + (0xaf6a00 - 0x9b0000));
+	RealDrawStage = (void(WINAPI*)())(
+		g_lpPEHeaderRoot + (0x00af5130 - 0x9b0000)
+		);
+	RealDrawGameUI = (void(__fastcall*)(DWORD))(
+		g_lpPEHeaderRoot + (0x00ac4050 - 0x9b0000)
+		);
 
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
@@ -182,6 +210,8 @@ void FakeSteamAPI_Init() {
 	DetourAttach(&(PVOID&)RealInitializeLibraries, FakeInitializeLibraries);
 	DetourAttach(&(PVOID&)RealSetupD3D9, FakeSetupD3D9);
 	DetourAttach(&(PVOID&)RealWindowFunc, FakeWindowFunc);
+	DetourAttach(&(PVOID&)RealDrawStage, FakeDrawStage);
+	DetourAttach(&(PVOID&)RealDrawGameUI, FakeDrawGameUI);
 	error = DetourTransactionCommit();
 	if (error != NO_ERROR) {
 		MessageBox(NULL, TEXT("Detour failure!"), NULL, 0);
