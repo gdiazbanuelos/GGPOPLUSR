@@ -64,9 +64,9 @@ void FakeGenerateAndShadePrimitives() {
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(320, 150), ImGuiCond_FirstUseEver);
 	ImGui::Begin("Log", NULL, ImGuiWindowFlags_None);
-	ImGui::SetWindowPos(ImVec2(0, 0), ImGuiCond_Always);
-	ImGui::SetWindowSize(ImVec2(320, 150), ImGuiCond_Always);
 	for (int n = 0; n < 3; n++) {
 		ImGui::Text("%04d: Some text", n);
 	}
