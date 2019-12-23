@@ -183,6 +183,17 @@ address:
               </Offsets>
             </CheatEntry>
             <CheatEntry>
+              <ID>174</ID>
+              <Description>"P1 Current Action ID"</Description>
+              <LastState Value="0000" RealAddress="10BEF018"/>
+              <ShowAsHex>1</ShowAsHex>
+              <VariableType>2 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>18</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
               <ID>93</ID>
               <Description>"P1 Health"</Description>
               <VariableType>4 Bytes</VariableType>
@@ -419,6 +430,17 @@ address:
               <Address>GGXXACPR_Win.exe+516778</Address>
               <Offsets>
                 <Offset>130+3</Offset>
+              </Offsets>
+            </CheatEntry>
+            <CheatEntry>
+              <ID>175</ID>
+              <Description>"P2 Current Action ID"</Description>
+              <LastState Value="0000" RealAddress="10BEF148"/>
+              <ShowAsHex>1</ShowAsHex>
+              <VariableType>2 Bytes</VariableType>
+              <Address>GGXXACPR_Win.exe+516778</Address>
+              <Offsets>
+                <Offset>130+18</Offset>
               </Offsets>
             </CheatEntry>
             <CheatEntry>
@@ -800,7 +822,7 @@ address:
           17:Reload S
           18:Reload H
           19:Reload D
-          
+
 </DropDownList>
           <VariableType>Byte</VariableType>
           <Address>GGXXACPR_Win.exe+50AD24</Address>
@@ -812,7 +834,7 @@ address:
           1:EX
           2:Slash
           3:Reload
-          
+
 </DropDownList>
           <VariableType>Byte</VariableType>
           <Address>GGXXACPR_Win.exe+555C7C</Address>
@@ -936,7 +958,7 @@ address:
           17:Reload S
           18:Reload H
           19:Reload D
-          
+
 </DropDownList>
           <VariableType>Byte</VariableType>
           <Address>GGXXACPR_Win.exe+50ADD0</Address>
@@ -1097,4 +1119,4 @@ address:
 </Comment>
     </DisassemblerComment>
   </DisassemblerComments>
-</CheatTable>
+  </CheatTable>
