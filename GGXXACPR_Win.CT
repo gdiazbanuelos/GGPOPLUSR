@@ -185,7 +185,6 @@ address:
             <CheatEntry>
               <ID>174</ID>
               <Description>"P1 Current Action ID"</Description>
-              <LastState Value="0000" RealAddress="10BEF018"/>
               <ShowAsHex>1</ShowAsHex>
               <VariableType>2 Bytes</VariableType>
               <Address>GGXXACPR_Win.exe+516778</Address>
@@ -1119,4 +1118,4 @@ address:
 </Comment>
     </DisassemblerComment>
   </DisassemblerComments>
-  </CheatTable>
+</CheatTable>

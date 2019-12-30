@@ -11,9 +11,12 @@
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
+//#include <imgui_memory_editor.h>
 #include <d3d9.h>
 #include <dinput.h>
 #include <tchar.h>
+
+#define DEFAULT_ALPHA 0.87f
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -31,15 +34,18 @@ static int(WINAPI* RealInitProcess)(int p1, int p2);
 static bool(__cdecl* RealSteamAPI_Init)();
 static LRESULT(WINAPI* RealWindowFunc)(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static ImGuiIO g_io;
+//static MemoryEditor mem_edit_1;
 
 DWORD FakeInitializeLibraries() {
 	g_hwnd = *(HWND*)(g_lpPEHeaderRoot + (0xeb6554 - 0x9b0000));
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	g_io = ImGui::GetIO();
+	ImGuiIO &g_io = ImGui::GetIO();
+	g_io.MouseDrawCursor = TRUE;
 	ImGui::StyleColorsDark();
+	ImGuiStyle &style = ImGui::GetStyle();
+	style.Alpha = DEFAULT_ALPHA;
 	ImGui_ImplWin32_Init(g_hwnd);
 
 	return RealInitializeLibraries();
@@ -66,6 +72,8 @@ void FakeGenerateAndShadePrimitives() {
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(ImVec2(320, 150), ImGuiCond_FirstUseEver);
+	//mem_edit_1.DrawWindow("Memory Editor", g_lpPEHeaderRoot + 0x3C7000, 0x11F800, 0x0000);
+
 	ImGui::Begin("Log", NULL, ImGuiWindowFlags_None);
 	for (int n = 0; n < 3; n++) {
 		ImGui::Text("%04d: Some text", n);
