@@ -64,15 +64,40 @@ int FakeSetupD3D9() {
 	return out;
 }
 
+LPDIRECT3DSURFACE9 GetGameRenderTarget() {
+	return *(LPDIRECT3DSURFACE9*)(g_lpPEHeaderRoot + (0xeb5ae0 - 0x9b0000));
+}
+
+LPDIRECT3DSURFACE9 GetUIRenderTarget() {
+	return *(LPDIRECT3DSURFACE9*)(g_lpPEHeaderRoot + (0xf05b98 - 0x9b0000));
+}
+
+LPDIRECT3DDEVICE9 GetD3DDevice() {
+	return *(LPDIRECT3DDEVICE9*)(g_lpPEHeaderRoot + (0xf05b94 - 0x9b0000));
+}
+
 void FakeGenerateAndShadePrimitives() {
 	// Guilty should've started the scene already.
+	LPDIRECT3DDEVICE9 d3dDevice = GetD3DDevice();
+
+	// This method temporarily sets the render target to the UI render target
+	// to draw the UI elements like the sidebars, then sets the render target
+	// back to the game render target so that other methods can rely on the
+	// invariant that the device's current render target is always the "game"
+	// surface.
+	RealGenerateAndShadePrimitives();
+
+	// Since we want to draw Imgui as if it were a UI element (ex. with the
+	// full, unscaled window as the viewport), set the render target while we
+	// draw Imgui.
+	d3dDevice->SetRenderTarget(0, GetUIRenderTarget());
+
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(ImVec2(320, 150), ImGuiCond_FirstUseEver);
-	//mem_edit_1.DrawWindow("Memory Editor", g_lpPEHeaderRoot + 0x3C7000, 0x11F800, 0x0000);
 
 	ImGui::Begin("Log", NULL, ImGuiWindowFlags_None);
 	for (int n = 0; n < 3; n++) {
@@ -84,7 +109,10 @@ void FakeGenerateAndShadePrimitives() {
 	ImGui::Render();
 	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 
-	RealGenerateAndShadePrimitives();
+	// Preserve the original method's invariant by setting the render target
+	// back to the "game" surface.
+	d3dDevice->SetRenderTarget(0, GetGameRenderTarget());
+
 	// Guilty will end the scene after this call finishes.
 }
 
