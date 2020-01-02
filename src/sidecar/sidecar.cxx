@@ -11,6 +11,7 @@
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
+#include <imgui_demo.cpp>
 //#include <imgui_memory_editor.h>
 #include <d3d9.h>
 #include <dinput.h>
@@ -34,15 +35,22 @@ static int(WINAPI* RealInitProcess)(int p1, int p2);
 static bool(__cdecl* RealSteamAPI_Init)();
 static LRESULT(WINAPI* RealWindowFunc)(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+static ExampleAppLog p1state_log;
+static ExampleAppLog p2state_log;
+short prev_p1action;
+short prev_p2action;
+
 //static MemoryEditor mem_edit_1;
+
+
 
 DWORD FakeInitializeLibraries() {
 	g_hwnd = *(HWND*)(g_lpPEHeaderRoot + (0xeb6554 - 0x9b0000));
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO &g_io = ImGui::GetIO();
-	g_io.MouseDrawCursor = TRUE;
+	//ImGuiIO &g_io = ImGui::GetIO();
+	//g_io.MouseDrawCursor = TRUE;
 	ImGui::StyleColorsDark();
 	ImGuiStyle &style = ImGui::GetStyle();
 	style.Alpha = DEFAULT_ALPHA;
@@ -96,14 +104,58 @@ void FakeGenerateAndShadePrimitives() {
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+	DWORD** pstate = (DWORD**)(g_lpPEHeaderRoot + 0x516778);
+	DWORD* p1state = *pstate;
+	DWORD* p2state = (DWORD*)((int)*pstate + 0x130);
+	short* p1action = (short*)((int)p1state + 0x18);
+	short* p2action = (short*)((int)p2state + 0x18);
+
 	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowSize(ImVec2(320, 150), ImGuiCond_FirstUseEver);
 
-	ImGui::Begin("Log", NULL, ImGuiWindowFlags_None);
-	for (int n = 0; n < 3; n++) {
-		ImGui::Text("%04d: Some text", n);
+	ImGui::Begin("Player 1 State", NULL, ImGuiWindowFlags_None);
+	ImGui::Text("Base Address:\t%p", g_lpPEHeaderRoot);
+
+	if (*pstate != 0) {
+		ImGui::Text("Player Array Address Location:\t%p", pstate);
+		ImGui::Text("Player 1 Array Address:\t%p", p1state);
+		ImGui::Text("Player 1 Character ID:\t%02X", *((byte*)(int)p1state));
+		ImGui::Text("Player 1 Action ID Address:\t%X", p1action);
+		ImGui::Text("Player 1 Action ID Value:\t%04X", *p1action);
+		if(*p1action != prev_p1action){
+		p1state_log.AddLog("Action ID: %04X\n", *p1action);
+		prev_p1action = *p1action;
+		}
 	}
+	else {
+		ImGui::Text("Player 1 State not initialized");
+	}
+	p1state_log.Draw("P1 Action ID Log");
 	ImGui::End();
+
+	ImGui::Begin("Player 2 State", NULL, ImGuiWindowFlags_None);
+	ImGui::Text("Base Address:\t%p", g_lpPEHeaderRoot);
+
+	if (*pstate != 0) {
+		ImGui::Text("Player Array Address Location:\t%p", pstate);
+		ImGui::Text("Player 2 Array Address:\t%p", p2state);
+		ImGui::Text("Player 2 Character ID:\t%02X", *((byte*)(int)p2state));
+		ImGui::Text("Player 2 Action ID Address:\t%X", p2action);
+		ImGui::Text("Player 2 Action ID Value:\t%04X", *p2action);
+		if (*p2action != prev_p2action) {
+			p2state_log.AddLog("Action ID:%04X\n", *p2action);
+			prev_p2action = *p2action;
+		}
+	}
+	else {
+		ImGui::Text("Player 2 State not initialized");
+	}
+	p2state_log.Draw("P2 Action ID Log");
+	ImGui::End();
+
+	//if (*pstate != 0) {
+	//	mem_edit_1.DrawContents(*pstate, 0x260, (size_t)*pstate);
+	//}
 
 	ImGui::EndFrame();
 	ImGui::Render();
