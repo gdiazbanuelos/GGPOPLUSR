@@ -1,9 +1,10 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <CheatTable CheatEngineTableVersion="29">
   <CheatEntries>
     <CheatEntry>
       <ID>43</ID>
       <Description>"Disable IsDebuggerPresent"</Description>
+      <LastState/>
       <VariableType>Auto Assembler Script</VariableType>
       <AssemblerScript>define(address,"KERNELBASE.IsDebuggerPresent")
 define(bytes, 64 A1 30 00 00 00 0F B6 40 02)
@@ -26,7 +27,8 @@ address:
     <CheatEntry>
       <ID>18</ID>
       <Description>"Settings"</Description>
-      <Options moHideChildren="1" />
+      <Options moHideChildren="1"/>
+      <LastState Value="" RealAddress="00000000"/>
       <GroupHeader>1</GroupHeader>
       <CheatEntries>
         <CheatEntry>
@@ -98,7 +100,8 @@ address:
     <CheatEntry>
       <ID>19</ID>
       <Description>"In-Game Values"</Description>
-      <Options moHideChildren="1" />
+      <Options moHideChildren="1"/>
+      <LastState Value="" RealAddress="00000000"/>
       <GroupHeader>1</GroupHeader>
       <CheatEntries>
         <CheatEntry>
@@ -152,7 +155,8 @@ address:
         <CheatEntry>
           <ID>107</ID>
           <Description>"P1 State"</Description>
-          <Options moHideChildren="1" />
+          <Options moHideChildren="1"/>
+          <LastState Value="" RealAddress="00000000"/>
           <GroupHeader>1</GroupHeader>
           <CheatEntries>
             <CheatEntry>
@@ -277,7 +281,8 @@ address:
             <CheatEntry>
               <ID>111</ID>
               <Description>"Character Specific"</Description>
-              <Options moHideChildren="1" />
+              <Options moHideChildren="1"/>
+              <LastState Value="" RealAddress="00000000"/>
               <GroupHeader>1</GroupHeader>
               <CheatEntries>
                 <CheatEntry>
@@ -401,7 +406,8 @@ address:
         <CheatEntry>
           <ID>108</ID>
           <Description>"P2 State"</Description>
-          <Options moHideChildren="1" />
+          <Options moHideChildren="1"/>
+          <LastState Value="" RealAddress="00000000"/>
           <GroupHeader>1</GroupHeader>
           <CheatEntries>
             <CheatEntry>
@@ -434,7 +440,6 @@ address:
             <CheatEntry>
               <ID>175</ID>
               <Description>"P2 Current Action ID"</Description>
-              <LastState Value="0000" RealAddress="10BEF148"/>
               <ShowAsHex>1</ShowAsHex>
               <VariableType>2 Bytes</VariableType>
               <Address>GGXXACPR_Win.exe+516778</Address>
@@ -528,7 +533,8 @@ address:
             <CheatEntry>
               <ID>114</ID>
               <Description>"Character Specific"</Description>
-              <Options moHideChildren="1" />
+              <Options moHideChildren="1"/>
+              <LastState Value="" RealAddress="00000000"/>
               <GroupHeader>1</GroupHeader>
               <CheatEntries>
                 <CheatEntry>
@@ -631,12 +637,19 @@ address:
             </CheatEntry>
           </CheatEntries>
         </CheatEntry>
+        <CheatEntry>
+          <ID>179</ID>
+          <Description>"Enable Hitboxes"</Description>
+          <VariableType>Byte</VariableType>
+          <Address>GGXXACPR_WIN.EXE+520B3C</Address>
+        </CheatEntry>
       </CheatEntries>
     </CheatEntry>
     <CheatEntry>
       <ID>170</ID>
       <Description>"Training Mode Values"</Description>
-      <Options moAllowManualCollapseAndExpand="1" moHideChildren="1" />
+      <Options moHideChildren="1" moAllowManualCollapseAndExpand="1"/>
+      <LastState Value="" RealAddress="00000000"/>
       <GroupHeader>1</GroupHeader>
       <CheatEntries>
         <CheatEntry>
@@ -675,7 +688,8 @@ address:
     <CheatEntry>
       <ID>20</ID>
       <Description>"Character Select Values"</Description>
-      <Options moHideChildren="1" />
+      <Options moHideChildren="1"/>
+      <LastState Value="" RealAddress="00000000"/>
       <GroupHeader>1</GroupHeader>
       <CheatEntries>
         <CheatEntry>
@@ -1035,19 +1049,20 @@ address:
       </CheatEntries>
     </CheatEntry>
     <CheatEntry>
-      <ID>112</ID>
+      <ID>176</ID>
       <Description>"Game State"</Description>
-      <Options moHideChildren="1" />
+      <Options moHideChildren="1"/>
+      <LastState Value="" RealAddress="00000000"/>
       <GroupHeader>1</GroupHeader>
       <CheatEntries>
         <CheatEntry>
-          <ID>111</ID>
+          <ID>177</ID>
           <Description>"Game Mode"</Description>
           <VariableType>4 Bytes</VariableType>
           <Address>GGXXACPR_Win.exe+51B8CC</Address>
         </CheatEntry>
         <CheatEntry>
-          <ID>109</ID>
+          <ID>178</ID>
           <Description>"Enable 2P Controls"</Description>
           <VariableType>4 Bytes</VariableType>
           <Address>GGXXACPR_Win.exe+50BF68</Address>
@@ -1055,7 +1070,7 @@ address:
       </CheatEntries>
     </CheatEntry>
   </CheatEntries>
-  <UserdefinedSymbols />
+  <UserdefinedSymbols/>
   <DisassemblerComments>
     <DisassemblerComment>
       <Address>"GGXXACPR_Win.exe"+E881C</Address>
