@@ -1,18 +1,19 @@
 #pragma once
 
 #include <windows.h>
+#include <d3d9.h>
+#include <dinput.h>
 
-//put respect here
 enum gameinputs : unsigned short {
-			Up = 0x10,
-			Right = 0x20,
-			Down = 0x40,
-			Left = 0x80,
-			Punch = 0x4000,
-			Kick = 0x2000,
-			Slash = 0x8000,
-			HSlash = 0x200,
-			Dust = 0x100
+	Up = 0x10,
+	Right = 0x20,
+	Down = 0x40,
+	Left = 0x80,
+	Punch = 0x4000,
+	Kick = 0x2000,
+	Slash = 0x8000,
+	HSlash = 0x200,
+	Dust = 0x100
 };
 
 typedef unsigned char   undefined;
@@ -24,6 +25,27 @@ typedef unsigned char    undefined1;
 typedef unsigned short    undefined2;
 typedef unsigned int    undefined4;
 typedef struct GameObjectData GameObjectData;
+
+typedef struct GameMethods {
+    void(WINAPI* GenerateAndShadePrimitives)();
+    int(WINAPI* SetupD3D9)();
+    bool(__cdecl* SteamAPI_Init)();
+    LRESULT(WINAPI* WindowFunc)(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    BOOL(WINAPI* IsDebuggerPresent)();
+} GameMethods;
+
+typedef struct GameState {
+    LPDIRECT3DSURFACE9* gameRenderTarget;
+    LPDIRECT3DSURFACE9* uiRenderTarget;
+    LPDIRECT3DDEVICE9* d3dDevice;
+    HWND* hWnd;
+    GameObjectData** arrCharacters;
+    DWORD* bHitboxDisplayEnabled;
+} GameState;
+
+HMODULE LocatePERoot();
+HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* methods);
+HRESULT LocateGameState(HMODULE peRoot, GameState* state);
 
 typedef enum XInputButtonEnum {
     XINPUTBTN_A = 16384,

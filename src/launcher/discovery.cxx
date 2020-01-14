@@ -9,7 +9,6 @@
 int FindGuilty(LPWSTR szGuiltyDirectory, LPWSTR szGuiltyExePath) {
 	DWORD dwDataRead = 1024;
 	DWORD dwRegValueType;
-	HKEY hRegKey;
 	LSTATUS lQueryStatus;
 	wchar_t szError[1024];
 	const wchar_t* szGuiltySuffix = L"steamapps\\common\\Guilty Gear XX Accent Core Plus R";
