@@ -25,7 +25,7 @@ target_link_libraries(Launcher
 	PRIVATE "shlwapi"
 )
 
-add_library(Sidecar SHARED src/sidecar/sidecar.cxx)
+add_library(Sidecar SHARED src/sidecar/sidecar.cxx src/game.h)
 target_link_libraries(Sidecar PRIVATE
     Detours
     DearImgui

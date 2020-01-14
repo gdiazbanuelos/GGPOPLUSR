@@ -17,6 +17,8 @@
 #include <dinput.h>
 #include <tchar.h>
 
+#include "../game.h"
+
 #define DEFAULT_ALPHA 0.87f
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -35,15 +37,6 @@ static int(WINAPI* RealInitProcess)(int p1, int p2);
 static bool(__cdecl* RealSteamAPI_Init)();
 static LRESULT(WINAPI* RealWindowFunc)(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static void	createImguiWindows();
-
-static ExampleAppLog p1state_log;
-static ExampleAppLog p2state_log;
-short prev_p1action;
-short prev_p2action;
-
-//static MemoryEditor mem_edit_1;
-
-
 
 DWORD FakeInitializeLibraries() {
 	g_hwnd = *(HWND*)(g_lpPEHeaderRoot + (0xeb6554 - 0x9b0000));
@@ -118,181 +111,119 @@ void FakeGenerateAndShadePrimitives() {
 	// Guilty will end the scene after this call finishes.
 }
 
-void createImguiWindows() {
+void DrawPlayerStateWindow(GameObjectData* lpGameObject) {
+	ImGui::Begin(
+		lpGameObject->playerIndex == 0 ? "Player 1 State" : "Player 2 State",
+		NULL,
+		ImGuiWindowFlags_None
+	);
 
-	DWORD** pstate = (DWORD**)(g_lpPEHeaderRoot + 0x516778);
-	DWORD*	hstate = (DWORD*)(g_lpPEHeaderRoot + 0x520B3C);
-	DWORD* p1state = *pstate;
-	DWORD* p2state = (DWORD*)((int)*pstate + 0x130);
-	short* p1action = (short*)((int)p1state + 0x18);
-	short* p2action = (short*)((int)p2state + 0x18);
-	DWORD* ctdiff = (DWORD*)(g_lpPEHeaderRoot + 0x4E6164);
-	DWORD* cttime = (DWORD*)(g_lpPEHeaderRoot + 0x4E6164 + 0x18);
-	DWORD* ctrand = (DWORD*)(g_lpPEHeaderRoot + 0x565F20);
-	char p1binds[0x35];
-	char p2binds[0x72];
-	memcpy(p1binds, ((DWORD*)(g_lpPEHeaderRoot + 0x51A081)), 0x35 - 0x0);
-	memcpy(p2binds, ((DWORD*)(g_lpPEHeaderRoot + 0x513529)), 0x72 - 0x0);
+	ImGui::Columns(2, NULL, false);
 
+	ImGui::Text("Object address:");
+	ImGui::Text("Object ID:");
+	ImGui::Text("Action ID:");
+	ImGui::Text("Current Health:");
+	ImGui::Text("Current Tension:");
+	ImGui::Text("Character Facing:");
+	ImGui::Text("Character Side:");
+	ImGui::Text("Guard Balance:");
+	ImGui::Text("Dizzy Value:");
+	ImGui::Text("Character X Position:");
+	ImGui::Text("Character Y Position:");
+	ImGui::Text("Character X Velocity:");
+	ImGui::Text("Character Y Velocity:");
 
+	ImGui::NextColumn();
 
-
-	static bool show_pstates = false;
-	static bool show_hboxes = false;
-	static bool show_ctable = false;
-	ImGuiWindowFlags window_flags = 1080;
-
-	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowSize(ImVec2(320, 150), ImGuiCond_FirstUseEver);
-
-	ImGui::Begin("GGPO Plus R", NULL, window_flags);
-		if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("Menu"))
-			{
-				ImGui::Text("Placeholder");
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Tools"))
-			{
-				ImGui::Checkbox("Player States", &show_pstates);
-				ImGui::Checkbox("Show Hitboxes", &show_hboxes);
-				ImGui::Checkbox("Cheat Table", &show_ctable);
-				ImGui::EndMenu();
-			}
-			ImGui::EndMenuBar();
-		}
+	ImGui::Text("%p", lpGameObject);
+	ImGui::Text("%X", lpGameObject->objectID);
+	ImGui::Text("%X", lpGameObject->actNo);
+	ImGui::Text("%i", lpGameObject->field_0x1e);
+	ImGui::Text("%hi", lpGameObject->playerData->currentTension);
+	ImGui::Text("%X", lpGameObject->field_0x2);
+	ImGui::Text("%X", lpGameObject->field_0x3);
+	ImGui::Text("%hi", lpGameObject->playerData->guardBalance);
+	ImGui::Text("%hi", lpGameObject->playerData->currentFaint);
+	ImGui::Text("%i", lpGameObject->xPos);
+	ImGui::Text("%i", lpGameObject->ypos);
+	ImGui::Text("%i", lpGameObject->xvel);
+	ImGui::Text("%i", lpGameObject->yvel);
 
 	ImGui::End();
+}
 
-		if(show_pstates){
-		ImGui::Begin("Player 1 State", NULL, ImGuiWindowFlags_None);
+void DrawActionLogWindow(GameObjectData* lpGameObject) {
+	static int lastAction[2] = { 0, 0 };
+	static ExampleAppLog actionLogs[2];
+
+	if (lpGameObject->actNo != lastAction[lpGameObject->playerIndex]) {
+		actionLogs[lpGameObject->playerIndex].AddLog("Action ID: %04X\n", lpGameObject->actNo);
+		lastAction[lpGameObject->playerIndex] = lpGameObject->actNo;
+	}
+
+	actionLogs[lpGameObject->playerIndex].Draw(
+		lpGameObject->playerIndex == 0 ? "Player 1 Action Log" : "Player 2 Action Log"
+	);
+}
 
 
-		if (*pstate != 0) {
-			ImGui::Columns(2, NULL, false);
-			ImGui::Text("Base Address:");
-			ImGui::Text("Player Array Address Location:");
-			ImGui::Text("Player 1 Array Address:");
-			ImGui::Text("Player 1 Character ID:");
-			ImGui::Text("Player 1 Action ID Address:");
-			ImGui::Text("Player 1 Action ID Value:");
-			ImGui::NextColumn();
-			ImGui::Text("%p", g_lpPEHeaderRoot);
-			ImGui::Text("%p", pstate);
-			ImGui::Text("%p", p1state);
-			ImGui::Text("%02X", *((byte*)(int)p1state));
-			ImGui::Text("%X", p1action);
-			ImGui::Text("%04X", *p1action);
 
-			if (*p1action != prev_p1action) {
-				p1state_log.AddLog("Action ID: %04X\n", *p1action);
-				prev_p1action = *p1action;
+void createImguiWindows() {
+	static bool show_p1_state = false;
+	static bool show_p1_log = false;
+	static bool show_p2_state = false;
+	static bool show_p2_log = false;
+	static bool show_hitboxes = false;
+	static bool show_cheattable = false;
+
+	GameObjectData* lpPlayerRoot = *(GameObjectData**)(g_lpPEHeaderRoot + 0x516778);
+	DWORD* bHitboxDisplayEnabled = (DWORD*)(g_lpPEHeaderRoot + 0x520B3C);
+
+	if (ImGui::IsMousePosValid() && ImGui::GetIO().MousePos.y < 200) {
+		if (ImGui::BeginMainMenuBar()) {
+			if (ImGui::BeginMenu("Windows")) {
+				if (ImGui::BeginMenu("Player State")) {
+					ImGui::MenuItem("Player 1 State", NULL, &show_p1_state, lpPlayerRoot != 0);
+					ImGui::MenuItem("Player 1 Action Log", NULL, &show_p1_log, lpPlayerRoot != 0);
+					ImGui::MenuItem("Player 2 State", NULL, &show_p2_state, lpPlayerRoot != 0);
+					ImGui::MenuItem("Player 2 Action Log", NULL, &show_p2_log, lpPlayerRoot != 0);
+					ImGui::EndMenu();
+				}
+				ImGui::EndMenu();
 			}
+
+			ImGui::MenuItem(
+				show_hitboxes ? "Hide Hitboxes" : "Show Hitboxes",
+				NULL,
+				&show_hitboxes
+			);
+			ImGui::EndMainMenuBar();
 		}
-		else {
-			ImGui::Text("Player 1 State not initialized");
-		}
-		p1state_log.Draw("P1 Action ID Log");
-		ImGui::End();
+	}
 
-		ImGui::Begin("Player 2 State", NULL, ImGuiWindowFlags_None);
-
-		if (*pstate != 0) {
-			ImGui::Columns(2, NULL, false);
-			ImGui::Text("Base Address:");
-			ImGui::Text("Player Array Address Location:");
-			ImGui::Text("Player 2 Array Address:");
-			ImGui::Text("Player 2 Character ID:");
-			ImGui::Text("Player 2 Action ID Address:");
-			ImGui::Text("Player 2 Action ID Value:");
-			ImGui::NextColumn();
-			ImGui::Text("%p", g_lpPEHeaderRoot);
-			ImGui::Text("%p", pstate);
-			ImGui::Text("%p", p2state);
-			ImGui::Text("%02X", *((byte*)(int)p2state));
-			ImGui::Text("%X", p2action);
-			ImGui::Text("%04X", *p2action);
-
-			if (*p2action != prev_p2action) {
-				p2state_log.AddLog("Action ID:%04X\n", *p2action);
-				prev_p2action = *p2action;
-			}
+	if (show_p1_state) {
+		DrawPlayerStateWindow(&lpPlayerRoot[0]);
+	}
+	if (show_p1_log) {
+		DrawActionLogWindow(&lpPlayerRoot[0]);
+	}
+	if (show_p2_state) {
+		DrawPlayerStateWindow(&lpPlayerRoot[1]);
+	}
+	if (show_p2_log) {
+		DrawActionLogWindow(&lpPlayerRoot[1]);
+	}
+	if (show_hitboxes) {
+		if (*bHitboxDisplayEnabled == 0) {
+			*bHitboxDisplayEnabled = 1;
 		}
-		else {
-			ImGui::Text("Player 2 State not initialized");
+	}
+	else {
+		if (*bHitboxDisplayEnabled != 0) {
+			*bHitboxDisplayEnabled = 0;
 		}
-		p2state_log.Draw("P2 Action ID Log");
-		ImGui::End();
-		}
-
-		if(show_hboxes){
-			ImGui::Begin("Hitbox Address");
-			if (*pstate != 0) {
-				*hstate = 1;
-				ImGui::Text("Hitbox View Address:\t%p", hstate);
-				ImGui::Text("Hitboxes enabled?:\t%s", "True");
-			}
-			else {
-				*hstate = 0;
-				ImGui::Text("Hitbox View Address:\t%p", *hstate);
-				ImGui::Text("Characters are not Initialized yet.");
-			}
-			ImGui::End();
-		}
-		else {
-			*hstate = 0;
-		}
-
-		if (show_ctable) {
-			ImGui::Begin("Cheat Table", &show_ctable);
-			if (ImGui::CollapsingHeader("Settings")) {
-				ImGui::Columns(2, NULL, false);
-				ImGui::Text("Difficulty:");
-				ImGui::Text("Time:");
-				ImGui::Text("Rounds:");
-				ImGui::Text("Victory BGM:");
-				ImGui::Text("Sol VA:");
-				ImGui::Text("HOS VA:");
-				ImGui::Text("Language:");
-				ImGui::Text("+R on/off:");
-				ImGui::Text("P1 Controller Binds:");
-				ImGui::Text("P2 Controller Binds:");
-				ImGui::NextColumn();
-				ImGui::Text("%4X", *ctdiff);
-				ImGui::Text("%4X", *cttime);
-				ImGui::Text("%4X", *(ctdiff+0x30));
-				ImGui::Text("%4X", *(ctdiff + 0x48));
-				ImGui::Text("%4X", *(ctdiff + 0x60));
-				ImGui::Text("%4X", *(ctdiff + 0x78));
-				ImGui::Text("%4X", *(ctdiff + 0x90));
-				ImGui::Text("%4X", *(ctdiff + 0xA8));
-				ImGui::Text("%X", p1binds);
-				ImGui::Text("%X", p2binds);
-				ImGui::Columns(1, NULL, false);
-			}
-			if (ImGui::CollapsingHeader("In Game Values")) {
-				ImGui::Columns(2, NULL, false);
-				ImGui::Text("Rand:");
-				ImGui::NextColumn();
-				ImGui::Text("%02X", *((short*)ctrand));
-				ImGui::Columns(1, NULL, false);
-			}
-			if (ImGui::CollapsingHeader("Training Mode Values")) {
-			
-			}
-			if (ImGui::CollapsingHeader("Character Select Values")) {
-			
-			}
-			if (ImGui::CollapsingHeader("Game State")) {
-			
-			}
-			ImGui::End();
-		}
-
-	//if (*pstate != 0) {
-	//	mem_edit_1.drawcontents(*pstate, 0x260, (size_t)*pstate);
-	//}
+	}
 }
 
 void FakeSteamAPI_Init() {
