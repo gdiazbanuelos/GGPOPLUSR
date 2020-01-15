@@ -37,6 +37,7 @@ typedef unsigned char    undefined1;
 typedef unsigned short    undefined2;
 typedef unsigned int    undefined4;
 typedef struct GameObjectData GameObjectData;
+typedef struct PlayerData PlayerData;
 
 typedef struct GameMethods {
     void(WINAPI* GenerateAndShadePrimitives)();
@@ -52,7 +53,21 @@ typedef struct GameState {
     LPDIRECT3DDEVICE9* d3dDevice;
     HWND* hWnd;
     GameObjectData** arrCharacters;
+    GameObjectData** arrNpcObjects;
     DWORD* bHitboxDisplayEnabled;
+
+    unsigned int* nCameraHoldTimer;
+    unsigned int* nCameraZoom;
+    float* fCameraXPos;
+
+    PlayerData* arrPlayerData;
+    int* nRoundTimeRemaining;
+    DWORD* nRandomTable;
+    GameObjectData* projectileOwner;
+    GameObjectData* effectOwner;
+    GameObjectData* unknownOwner;
+    int* nPlayfieldLeftEdge;
+    int* nPlayfieldTopEdge;
 } GameState;
 
 HMODULE LocatePERoot();

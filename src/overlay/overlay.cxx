@@ -9,6 +9,30 @@
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam); 
 
+void DrawGlobalStateWindow(GameState* lpGameState) {
+	ImGui::Begin("Global State", NULL, ImGuiWindowFlags_None);
+
+	ImGui::Columns(2, NULL, false);
+
+	ImGui::Text("Hitbox display enabled:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->bHitboxDisplayEnabled); ImGui::NextColumn();
+	ImGui::Text("Camera x position:"); ImGui::NextColumn(); ImGui::Text("%f", *lpGameState->fCameraXPos); ImGui::NextColumn();
+	ImGui::Text("Camera hold timer:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nCameraHoldTimer); ImGui::NextColumn();
+	ImGui::Text("Camera zoom:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nCameraZoom); ImGui::NextColumn();
+	ImGui::Text("Playfield left edge:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nPlayfieldLeftEdge); ImGui::NextColumn();
+	ImGui::Text("Playfield top edge:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nPlayfieldTopEdge); ImGui::NextColumn();
+	ImGui::Text("Round time remaining:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nRoundTimeRemaining); ImGui::NextColumn();
+	ImGui::Text("RNG index:"); ImGui::NextColumn(); ImGui::Text("%d", lpGameState->nRandomTable[0]); ImGui::NextColumn();
+	ImGui::Text("Character root:"); ImGui::NextColumn(); ImGui::Text("%p", *lpGameState->arrCharacters); ImGui::NextColumn();
+	ImGui::Text("NPC root:"); ImGui::NextColumn(); ImGui::Text("%p", *lpGameState->arrNpcObjects); ImGui::NextColumn();
+	ImGui::Text("Player data root:"); ImGui::NextColumn(); ImGui::Text("%p", lpGameState->arrPlayerData); ImGui::NextColumn();
+	ImGui::Text("Window handle:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->hWnd); ImGui::NextColumn();
+
+	ImGui::Columns(1);
+
+	ImGui::End();
+
+}
+
 void DrawObjectStateWindow(GameObjectData* lpGameObject) {
 	ImGui::Begin(
 		lpGameObject->playerIndex == 0 ? "Player 1 Object State" : "Player 2 Object State",
@@ -108,6 +132,7 @@ void InitializeOverlay(GameState* lpGameState) {
 }
 
 void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
+	static bool show_global_state = false;
 	static bool show_p1_object_state = false;
 	static bool show_p1_state = false;
 	static bool show_p1_log = false;
@@ -124,6 +149,7 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	if (ImGui::IsMousePosValid() && ImGui::GetIO().MousePos.y < 200) {
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("Windows")) {
+				ImGui::MenuItem("Global State", NULL, &show_global_state);
 				if (ImGui::BeginMenu("Player State")) {
 					ImGui::MenuItem("Player 1 State", NULL, &show_p1_state, *lpGameState->arrCharacters != 0);
 					ImGui::MenuItem("Player 1 Object State", NULL, &show_p1_object_state, *lpGameState->arrCharacters != 0);
@@ -144,7 +170,9 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 			ImGui::EndMainMenuBar();
 		}
 	}
-
+	if (show_global_state) {
+		DrawGlobalStateWindow(lpGameState);
+	}
 	if (show_p1_state) {
 		DrawPlayerStateWindow(&(*lpGameState->arrCharacters)[0]);
 	}

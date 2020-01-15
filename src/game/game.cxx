@@ -29,6 +29,18 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->hWnd = (HWND*)(peRootOffset + 0x506554);
 	dest->bHitboxDisplayEnabled = (DWORD*)(peRootOffset + 0x520B3C);
 	dest->arrCharacters = (GameObjectData**)(peRootOffset + 0x516778);
+	dest->arrNpcObjects = (GameObjectData**)(peRootOffset + 0x51677c);
+	dest->nCameraHoldTimer = (unsigned int*)(peRootOffset + 0x51B114);
+	dest->fCameraXPos = (float*)(peRootOffset + 0x51B14C);
+	dest->nCameraZoom = (unsigned int*)(peRootOffset + 0x51B110);
+	dest->arrPlayerData = (PlayerData*)(peRootOffset + 0x51A038);
+	dest->nRoundTimeRemaining = (int*)(peRootOffset + 0x50F800);
+	dest->nRandomTable = (DWORD*)(peRootOffset + 0x565F20);
+	dest->projectileOwner = (GameObjectData*)(peRootOffset + 0x517A78);
+	dest->effectOwner = (GameObjectData*)(peRootOffset + 0x565F20);
+	dest->unknownOwner = (GameObjectData*)(peRootOffset + 0x517BA8);
+	dest->nPlayfieldLeftEdge = (int*)(peRootOffset + 0x51B0F4);
+	dest->nPlayfieldTopEdge = (int*)(peRootOffset + 0x51B0F8);
 
 	return S_OK;
 }
