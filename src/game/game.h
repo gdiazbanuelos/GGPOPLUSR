@@ -4,6 +4,18 @@
 #include <d3d9.h>
 #include <dinput.h>
 
+const unsigned short MIN_TENSION = 0;
+const unsigned short MAX_TENSION = 10000;
+const unsigned short MIN_BURST = 0;
+const unsigned short MAX_BURST = 15000;
+const unsigned short MIN_HEALTH = 00;
+const unsigned short MAX_HEALTH = 460;
+const short MAX_GUARD_BALANCE = 128;
+const short MIN_GUARD_BALANCE = -128;
+const int MIN_FAINT = 0;
+const short MIN_NEGATIVE_PENALTY = 0;
+const short MAX_NEGATIVE_PENALTY = 10000;
+
 enum gameinputs : unsigned short {
 	Up = 0x10,
 	Right = 0x20,
@@ -47,20 +59,19 @@ HMODULE LocatePERoot();
 HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* methods);
 HRESULT LocateGameState(HMODULE peRoot, GameState* state);
 
-typedef enum XInputButtonEnum {
-    XINPUTBTN_A = 16384,
-    XINPUTBTN_B = 8192,
-    XINPUTBTN_BACK = 1,
-    XINPUTBTN_LB = 1024,
-    XINPUTBTN_LS = 2,
-    XINPUTBTN_LT = 256,
-    XINPUTBTN_RB = 2048,
-    XINPUTBTN_RS = 4,
-    XINPUTBTN_RT = 512,
-    XINPUTBTN_START = 8,
-    XINPUTBTN_X = 32768,
-    XINPUTBTN_Y = 4096
-} XInputButtonEnum;
+typedef unsigned short XInputButton;
+const XInputButton XINPUTBTN_A = 16384;
+const XInputButton XINPUTBTN_B = 8192;
+const XInputButton XINPUTBTN_BACK = 1;
+const XInputButton XINPUTBTN_LB = 1024;
+const XInputButton XINPUTBTN_LS = 2;
+const XInputButton XINPUTBTN_LT = 256;
+const XInputButton XINPUTBTN_RB = 2048;
+const XInputButton XINPUTBTN_RS = 4;
+const XInputButton XINPUTBTN_RT = 512;
+const XInputButton XINPUTBTN_START = 8;
+const XInputButton XINPUTBTN_X = 32768;
+const XInputButton XINPUTBTN_Y = 4096;
 
 struct GameObjectSubStruct2 {
     undefined field_0x0;
@@ -152,8 +163,8 @@ struct GameObjectSubStruct2 {
 
 struct GameObjectData {
     WORD objectID;
-    char field_0x2;
-    char field_0x3;
+    char facing;
+    char side;
     struct GameObjectData* field_0x4;
     struct GameObjectData* nextObject;
     DWORD stateFlags;
@@ -335,7 +346,7 @@ struct PlayerData {
     byte field_0x2;
     byte field_0x3;
     unsigned short field_0x4;
-    unsigned short field_0x6;
+    short negativePenaltyCounter;
     undefined field_0x8;
     undefined field_0x9;
     WORD field_0xa;
@@ -366,7 +377,8 @@ struct PlayerData {
     undefined field_0x2c;
     undefined field_0x2d;
     undefined field_0x2e;
-    unsigned short field_0x2f;
+    undefined field_0x2f;
+    undefined field_0x30;
     undefined field_0x31;
     undefined field_0x32;
     undefined field_0x33;
@@ -381,25 +393,25 @@ struct PlayerData {
     undefined field_0x3f;
     void* field_0x40;
     struct GameObjectData* otherPlayerGameObject;
-    enum XInputButtonEnum ctrlP;
-    enum XInputButtonEnum unc_ctrls_K;
-    enum XInputButtonEnum unc_ctrls_S;
-    enum XInputButtonEnum unc_ctrls_H;
-    enum XInputButtonEnum unc_ctrls_D;
-    enum XInputButtonEnum unc_ctrls_Respect;
-    enum XInputButtonEnum unc_ctrls_Reset;
-    enum XInputButtonEnum unc_ctrls_Pause;
-    enum XInputButtonEnum unc_ctrls_RecPlayer;
-    enum XInputButtonEnum unc_ctrls_RecEnemy;
-    enum XInputButtonEnum unc_ctrls_PlayMemory;
-    enum XInputButtonEnum unc_ctrls_Switch;
-    enum XInputButtonEnum unc_ctrls_EnemyWalk;
-    enum XInputButtonEnum unc_ctrls_EnemyJump;
-    enum XInputButtonEnum unc_ctrls_PKMacro;
-    enum XInputButtonEnum unc_ctrls_PDMacro;
-    enum XInputButtonEnum unc_ctrls_PKSMacro;
-    enum XInputButtonEnum unc_ctrls_PKSHMacro;
-    unsigned short unc_currentLife;
+    XInputButton ctrlP;
+    XInputButton ctrlK;
+    XInputButton ctrlS;
+    XInputButton ctrlH;
+    XInputButton ctrlD;
+    XInputButton ctrlRespect;
+    XInputButton ctrlReset;
+    XInputButton ctrlPause;
+    XInputButton ctrlRecPlayer;
+    XInputButton ctrlRecEnemy;
+    XInputButton ctrlPlayMemory;
+    XInputButton ctrlSwitch;
+    XInputButton ctrlEnemyWalk;
+    XInputButton ctrlEnemyJump;
+    XInputButton ctrlPKMacro;
+    XInputButton ctrlPDMacro;
+    XInputButton ctrlPKSMacro;
+    XInputButton ctrlPKSHMacro;
+    unsigned short currentHealth;
     unsigned short redHealth;
     byte nAirJumpsRemaining;
     byte nAirDashesRemaining;
@@ -412,8 +424,7 @@ struct PlayerData {
     undefined field_0x79;
     undefined field_0x7a;
     undefined field_0x7b;
-    undefined1 currentFaint;
-    undefined field_0x7d;
+    short currentFaint;
     undefined field_0x7e;
     undefined field_0x7f;
     void* unc_funcPtr9;
@@ -527,7 +538,7 @@ struct PlayerData {
     undefined field_0x116;
     undefined field_0x117;
     int gameObjectYOffset;
-    int field_0x11c;
+    int numTimesCleanHit;
     int field_0x120;
     undefined field_0x124;
     undefined field_0x125;
