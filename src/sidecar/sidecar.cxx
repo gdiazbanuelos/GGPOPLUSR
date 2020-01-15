@@ -39,6 +39,20 @@ int FakeSetupD3D9() {
 	return out;
 }
 
+GameObjectData* FakeSpawnNewEffect(GameObjectData* lpObject, unsigned int objectID, uint* unkPtr) {
+	if (g_gameState.bIsEffectsEnabled) {
+		return g_gameMethods.SpawnNewEffect(lpObject, objectID, unkPtr);
+	}
+	return NULL;
+}
+
+GameObjectData* FakeSpawnNewProjectile(GameObjectData* lpObject, unsigned int objectID, uint* unkPtr) {
+	if (g_gameState.bIsEffectsEnabled) {
+		return g_gameMethods.SpawnNewProjectile(lpObject, objectID, unkPtr);
+	}
+	return NULL;
+}
+
 void FakeGenerateAndShadePrimitives() {
 	// Guilty should've started the scene already.
 	//
@@ -81,6 +95,18 @@ BOOL FakeIsDebuggerPresent() {
 	return FALSE;
 }
 
+void WINAPI FakeDrawStage() {
+	if (g_gameState.bIsBackgroundEnabled) {
+		g_gameMethods.DrawStage();
+	}
+}
+
+void __fastcall FakeDrawGameUI(DWORD param1) {
+	if (g_gameState.bIsBackgroundEnabled) {
+		g_gameMethods.DrawGameUI(param1);
+	}
+}
+
 HRESULT AttachInitialFunctionDetours(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->IsDebuggerPresent, FakeIsDebuggerPresent);
 	DetourAttach(&(PVOID&)src->SteamAPI_Init, FakeSteamAPI_Init);
@@ -92,6 +118,10 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->GenerateAndShadePrimitives, FakeGenerateAndShadePrimitives);
 	DetourAttach(&(PVOID&)src->SetupD3D9, FakeSetupD3D9);
 	DetourAttach(&(PVOID&)src->WindowFunc, FakeWindowFunc);
+	DetourAttach(&(PVOID&)src->SpawnNewEffect, FakeSpawnNewEffect);
+	DetourAttach(&(PVOID&)src->SpawnNewProjectile, FakeSpawnNewProjectile);
+	DetourAttach(&(PVOID&)src->DrawStage, FakeDrawStage);
+	DetourAttach(&(PVOID&)src->DrawGameUI, FakeDrawGameUI);
 
 	return S_OK;
 }

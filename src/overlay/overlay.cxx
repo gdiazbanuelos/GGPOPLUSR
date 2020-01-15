@@ -81,7 +81,7 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	static bool show_p2_state = false;
 	static bool show_p2_log = false;
 	static bool show_hitboxes = false;
-	static bool show_cheattable = false;
+	static bool show_background = true;
 
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -104,6 +104,16 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 				show_hitboxes ? "Hide Hitboxes" : "Show Hitboxes",
 				NULL,
 				&show_hitboxes
+			);
+			ImGui::MenuItem(
+				show_background ? "Hide Background" : "Show Background",
+				NULL,
+				&show_background
+			);
+			ImGui::MenuItem(
+				lpGameState->bIsEffectsEnabled ? "Hide Effects" : "Show Effects",
+				NULL,
+				&lpGameState->bIsEffectsEnabled
 			);
 			ImGui::EndMainMenuBar();
 		}
@@ -130,6 +140,14 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 		if (*lpGameState->bHitboxDisplayEnabled != 0) {
 			*lpGameState->bHitboxDisplayEnabled = 0;
 		}
+	}
+	if (show_background) {
+		lpGameState->bIsBackgroundEnabled = true;
+		*lpGameState->nSceneClearColor = 0;
+	}
+	else {
+		lpGameState->bIsBackgroundEnabled = false;
+		*lpGameState->nSceneClearColor = 0x00ff00ff;
 	}
 
 	ImGui::EndFrame();

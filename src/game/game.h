@@ -32,15 +32,23 @@ typedef struct GameMethods {
     bool(__cdecl* SteamAPI_Init)();
     LRESULT(WINAPI* WindowFunc)(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     BOOL(WINAPI* IsDebuggerPresent)();
+    GameObjectData*(*SpawnNewEffect)(GameObjectData*, unsigned int, uint*);
+    GameObjectData*(*SpawnNewProjectile)(GameObjectData*, unsigned int, uint*);
+    void(WINAPI* DrawStage)();
+    void(__fastcall* DrawGameUI)(DWORD);
+    void(WINAPI* D3DSceneSetting)(int);
 } GameMethods;
 
 typedef struct GameState {
+    bool bIsBackgroundEnabled;
+    bool bIsEffectsEnabled;
     LPDIRECT3DSURFACE9* gameRenderTarget;
     LPDIRECT3DSURFACE9* uiRenderTarget;
     LPDIRECT3DDEVICE9* d3dDevice;
     HWND* hWnd;
     GameObjectData** arrCharacters;
     DWORD* bHitboxDisplayEnabled;
+    DWORD* nSceneClearColor;
 } GameState;
 
 HMODULE LocatePERoot();
