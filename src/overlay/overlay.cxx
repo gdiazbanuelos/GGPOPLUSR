@@ -67,9 +67,7 @@ void DrawObjectStateWindow(GameObjectData* lpGameObject) {
 	ImGui::End();
 }
 
-void DrawPlayerStateWindow(GameObjectData* lpGameObject) {
-	PlayerData* lpPlayerData = lpGameObject->playerData;
-
+void DrawPlayerStateWindow(PlayerData* lpPlayerData) {
 	// Current faint gets stored as a short and divided by 100 before compared
 	// to the character's maxFaint, which is stored as a single byte. Be careful
 	// with integer truncation- comparing currentFaint to maxFaint*100 is not the
@@ -150,13 +148,18 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("Windows")) {
 				ImGui::MenuItem("Global State", NULL, &show_global_state);
+
 				if (ImGui::BeginMenu("Player State")) {
-					ImGui::MenuItem("Player 1 State", NULL, &show_p1_state, *lpGameState->arrCharacters != 0);
+					ImGui::MenuItem("Player 1 State", NULL, &show_p1_state);
+					ImGui::MenuItem("Player 2 State", NULL, &show_p2_state);
+					ImGui::EndMenu();
+				}
+
+				if (ImGui::BeginMenu("Object State")) {
 					ImGui::MenuItem("Player 1 Object State", NULL, &show_p1_object_state, *lpGameState->arrCharacters != 0);
-					ImGui::MenuItem("Player 1 Action Log", NULL, &show_p1_log, *lpGameState->arrCharacters != 0);
-					ImGui::MenuItem("Player 2 State", NULL, &show_p2_state, *lpGameState->arrCharacters != 0);
+					ImGui::MenuItem("Player 1 Object Action Log", NULL, &show_p1_log, *lpGameState->arrCharacters != 0);
 					ImGui::MenuItem("Player 2 Object State", NULL, &show_p2_object_state, *lpGameState->arrCharacters != 0);
-					ImGui::MenuItem("Player 2 Action Log", NULL, &show_p2_log, *lpGameState->arrCharacters != 0);
+					ImGui::MenuItem("Player 2 Object Action Log", NULL, &show_p2_log, *lpGameState->arrCharacters != 0);
 					ImGui::EndMenu();
 				}
 				ImGui::EndMenu();
@@ -174,7 +177,7 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 		DrawGlobalStateWindow(lpGameState);
 	}
 	if (show_p1_state) {
-		DrawPlayerStateWindow(&(*lpGameState->arrCharacters)[0]);
+		DrawPlayerStateWindow(&lpGameState->arrPlayerData[0]);
 	}
 	if (show_p1_object_state) {
 		DrawObjectStateWindow(&(*lpGameState->arrCharacters)[0]);
@@ -183,7 +186,7 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 		DrawActionLogWindow(&(*lpGameState->arrCharacters)[0]);
 	}
 	if (show_p2_state) {
-		DrawPlayerStateWindow(&(*lpGameState->arrCharacters)[1]);
+		DrawPlayerStateWindow(&lpGameState->arrPlayerData[1]);
 	}
 	if (show_p2_object_state) {
 		DrawObjectStateWindow(&(*lpGameState->arrCharacters)[1]);
