@@ -38,6 +38,7 @@ typedef unsigned short    undefined2;
 typedef unsigned int    undefined4;
 typedef struct GameObjectData GameObjectData;
 typedef struct PlayerData PlayerData;
+typedef struct SavedGameState SavedGameState;
 
 typedef struct GameMethods {
     void(WINAPI* GenerateAndShadePrimitives)();
@@ -68,8 +69,12 @@ typedef struct GameState {
     GameObjectData* unknownOwner;
     int* nPlayfieldLeftEdge;
     int* nPlayfieldTopEdge;
+    int* nCameraPlayerXPositionHistory;
+    int* nCameraPlayerXMovementMagnitudeHistory;
 } GameState;
 
+void SaveGameState(GameState* gameState, SavedGameState* dest);
+void LoadGameState(GameState* gameState, SavedGameState* src);
 HMODULE LocatePERoot();
 HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* methods);
 HRESULT LocateGameState(HMODULE peRoot, GameState* state);
@@ -676,3 +681,26 @@ struct UNC_PlayerSubStructure {
     undefined field_0x52;
     undefined field_0x53;
 };
+
+typedef struct SavedGameState {
+    struct GameObjectData arrCharacters[2];
+    struct GameObjectData arrNpcObjects[60];
+    DWORD bHitboxDisplayEnabled;
+
+    unsigned int nCameraHoldTimer;
+    unsigned int nCameraZoom;
+    float fCameraXPos;
+
+    struct PlayerData arrPlayerData[2];
+    int nRoundTimeRemaining;
+    DWORD nRandomTable[0x272];
+
+    struct GameObjectData projectileOwner;
+    struct GameObjectData effectOwner;
+    struct GameObjectData unknownOwner;
+    int nPlayfieldLeftEdge;
+    int nPlayfieldTopEdge;
+
+    int nCameraPlayerXPositionHistory[2];
+    int nCameraPlayerXMovementMagnitudeHistory[2];
+} SavedGameState;

@@ -4,6 +4,42 @@
 
 #include "./game.h"
 
+void SaveGameState(GameState* gameState, SavedGameState* dest) {
+	CopyMemory(dest->arrCharacters, *gameState->arrCharacters, sizeof(GameObjectData) * 2);
+	CopyMemory(dest->arrNpcObjects, *gameState->arrNpcObjects, sizeof(GameObjectData) * 60);
+	CopyMemory(dest->arrPlayerData, gameState->arrPlayerData, sizeof(PlayerData) * 2);
+	CopyMemory(&dest->projectileOwner, gameState->projectileOwner, sizeof(GameObjectData));
+	CopyMemory(&dest->effectOwner, gameState->effectOwner, sizeof(GameObjectData));
+	CopyMemory(&dest->unknownOwner, gameState->unknownOwner, sizeof(GameObjectData));
+	dest->fCameraXPos = *gameState->fCameraXPos;
+	dest->nCameraHoldTimer = *gameState->nCameraHoldTimer;
+	dest->nCameraZoom = *gameState->nCameraZoom;
+	dest->nRoundTimeRemaining = *gameState->nRoundTimeRemaining;
+	CopyMemory(dest->nRandomTable, gameState->nRandomTable, sizeof(DWORD) * 0x272);
+	dest->nPlayfieldLeftEdge = *gameState->nPlayfieldLeftEdge;
+	dest->nPlayfieldTopEdge = *gameState->nPlayfieldTopEdge;
+	CopyMemory(&dest->nCameraPlayerXPositionHistory, gameState->nCameraPlayerXPositionHistory, sizeof(int) * 2);
+	CopyMemory(&dest->nCameraPlayerXMovementMagnitudeHistory, gameState->nCameraPlayerXMovementMagnitudeHistory, sizeof(int) * 2);
+}
+
+void LoadGameState(GameState* gameState, SavedGameState* src) {
+	CopyMemory(*gameState->arrCharacters, src->arrCharacters, sizeof(GameObjectData) * 2);
+	CopyMemory(*gameState->arrNpcObjects, src->arrNpcObjects, sizeof(GameObjectData) * 60);
+	CopyMemory(gameState->arrPlayerData, src->arrPlayerData, sizeof(PlayerData) * 2);
+	CopyMemory(gameState->projectileOwner, &src->projectileOwner, sizeof(GameObjectData));
+	CopyMemory(gameState->effectOwner, &src->effectOwner, sizeof(GameObjectData));
+	CopyMemory(gameState->unknownOwner, &src->unknownOwner, sizeof(GameObjectData));
+	*gameState->fCameraXPos = src->fCameraXPos;
+	*gameState->nCameraHoldTimer = src->nCameraHoldTimer;
+	*gameState->nCameraZoom = src->nCameraZoom;
+	*gameState->nRoundTimeRemaining = src->nRoundTimeRemaining;
+	CopyMemory(gameState->nRandomTable, src->nRandomTable, sizeof(DWORD) * 0x272);
+	*gameState->nPlayfieldLeftEdge = src->nPlayfieldLeftEdge;
+	*gameState->nPlayfieldTopEdge = src->nPlayfieldTopEdge;
+	CopyMemory(gameState->nCameraPlayerXPositionHistory, &src->nCameraPlayerXPositionHistory, sizeof(int) * 2);
+	CopyMemory(gameState->nCameraPlayerXMovementMagnitudeHistory, &src->nCameraPlayerXMovementMagnitudeHistory, sizeof(int) * 2);
+}
+
 HMODULE LocatePERoot() {
 	return DetourGetContainingModule(DetourGetEntryPoint(NULL));
 }
@@ -41,6 +77,8 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->unknownOwner = (GameObjectData*)(peRootOffset + 0x517BA8);
 	dest->nPlayfieldLeftEdge = (int*)(peRootOffset + 0x51B0F4);
 	dest->nPlayfieldTopEdge = (int*)(peRootOffset + 0x51B0F8);
+	dest->nCameraPlayerXPositionHistory = (int*)(peRootOffset + 0x51B12C);
+	dest->nCameraPlayerXMovementMagnitudeHistory = (int*)(peRootOffset + 0x51B138);
 
 	return S_OK;
 }

@@ -123,6 +123,24 @@ void DrawActionLogWindow(GameObjectData* lpGameObject, bool* pOpen) {
 	);
 }
 
+void DrawSaveLoadStateWindow(GameState* lpGameState, bool* pOpen) {
+	static SavedGameState savedState;
+
+	ImGui::Begin("Save/Load State", pOpen, ImGuiWindowFlags_None);
+
+	if (ImGui::Button("Save")) {
+		SaveGameState(lpGameState, &savedState);
+	}
+
+	if (ImGui::Button("Load")) {
+		// This should probably trigger a load on the _next_ frame, or we're
+		// likely to do something bad to graphics memory.
+		LoadGameState(lpGameState, &savedState);
+	}
+
+	ImGui::End();
+}
+
 void DrawHelpWindow(bool* pOpen) {
 	ImGui::Begin(
 		"ImGui Help", 
@@ -154,7 +172,7 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	static bool show_p2_state = false;
 	static bool show_p2_log = false;
 	static bool show_hitboxes = false;
-	static bool show_cheattable = false;
+	static bool show_saveload = false;
 	static bool show_help = false;
 
 	ImGui_ImplDX9_NewFrame();
@@ -179,6 +197,8 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 					ImGui::MenuItem("Player 2 Object Action Log", NULL, &show_p2_log, *lpGameState->arrCharacters != 0);
 					ImGui::EndMenu();
 				}
+
+				ImGui::MenuItem("Save/Load State", NULL, &show_saveload);
 				ImGui::EndMenu();
 			}
 
@@ -230,6 +250,9 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 		if (*lpGameState->bHitboxDisplayEnabled != 0) {
 			*lpGameState->bHitboxDisplayEnabled = 0;
 		}
+	}
+	if (show_saveload) {
+		DrawSaveLoadStateWindow(lpGameState, &show_saveload);
 	}
 
 	ImGui::EndFrame();
