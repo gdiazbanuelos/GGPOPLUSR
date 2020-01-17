@@ -9,8 +9,8 @@
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam); 
 
-void DrawGlobalStateWindow(GameState* lpGameState) {
-	ImGui::Begin("Global State", NULL, ImGuiWindowFlags_None);
+void DrawGlobalStateWindow(GameState* lpGameState, bool* pOpen) {
+	ImGui::Begin("Global State", pOpen, ImGuiWindowFlags_None);
 
 	ImGui::Columns(2, NULL, false);
 
@@ -33,10 +33,10 @@ void DrawGlobalStateWindow(GameState* lpGameState) {
 
 }
 
-void DrawObjectStateWindow(GameObjectData* lpGameObject) {
+void DrawObjectStateWindow(GameObjectData* lpGameObject, bool* pOpen) {
 	ImGui::Begin(
 		lpGameObject->playerIndex == 0 ? "Player 1 Object State" : "Player 2 Object State",
-		NULL,
+		pOpen,
 		ImGuiWindowFlags_None
 	);
 
@@ -69,7 +69,7 @@ void DrawObjectStateWindow(GameObjectData* lpGameObject) {
 	ImGui::End();
 }
 
-void DrawPlayerStateWindow(TCHAR* windowName, PlayerData* lpPlayerData) {
+void DrawPlayerStateWindow(TCHAR* windowName, PlayerData* lpPlayerData, bool* pOpen) {
 	// Current faint gets stored as a short and divided by 100 before compared
 	// to the character's maxFaint, which is stored as a single byte. Be careful
 	// with integer truncation- comparing currentFaint to maxFaint*100 is not the
@@ -79,7 +79,7 @@ void DrawPlayerStateWindow(TCHAR* windowName, PlayerData* lpPlayerData) {
 
 	ImGui::Begin(
 		windowName,
-		NULL,
+		pOpen,
 		ImGuiWindowFlags_None
 	);
 
@@ -108,7 +108,7 @@ void DrawPlayerStateWindow(TCHAR* windowName, PlayerData* lpPlayerData) {
 	ImGui::End();
 }
 
-void DrawActionLogWindow(GameObjectData* lpGameObject) {
+void DrawActionLogWindow(GameObjectData* lpGameObject, bool* pOpen) {
 	static int lastAction[2] = { 0, 0 };
 	static ExampleAppLog actionLogs[2];
 
@@ -118,8 +118,21 @@ void DrawActionLogWindow(GameObjectData* lpGameObject) {
 	}
 
 	actionLogs[lpGameObject->playerIndex].Draw(
-		lpGameObject->playerIndex == 0 ? "Player 1 Action Log" : "Player 2 Action Log"
+		lpGameObject->playerIndex == 0 ? "Player 1 Action Log" : "Player 2 Action Log", 
+		pOpen
 	);
+}
+
+void DrawHelpWindow(bool* pOpen) {
+	ImGui::Begin(
+		"ImGui Help", 
+		pOpen, 
+		ImGuiWindowFlags_None
+	);
+
+	ImGui::ShowUserGuide();
+
+	ImGui::End();
 }
 
 void InitializeOverlay(GameState* lpGameState) {
@@ -142,6 +155,7 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	static bool show_p2_log = false;
 	static bool show_hitboxes = false;
 	static bool show_cheattable = false;
+	static bool show_help = false;
 
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -173,29 +187,39 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 				NULL,
 				&show_hitboxes
 			);
+
+			ImGui::MenuItem(
+				show_help ? "Hide Help" : "Show Help",
+				NULL,
+				&show_help
+			);
+
 			ImGui::EndMainMenuBar();
 		}
 	}
 	if (show_global_state) {
-		DrawGlobalStateWindow(lpGameState);
+		DrawGlobalStateWindow(lpGameState, &show_global_state);
 	}
 	if (show_p1_state) {
-		DrawPlayerStateWindow("Player 1 State", &lpGameState->arrPlayerData[0]);
+		DrawPlayerStateWindow("Player 1 State", &lpGameState->arrPlayerData[0], &show_p1_state);
 	}
 	if (show_p1_object_state) {
-		DrawObjectStateWindow(&(*lpGameState->arrCharacters)[0]);
+		DrawObjectStateWindow(&(*lpGameState->arrCharacters)[0], &show_p1_object_state);
 	}
 	if (show_p1_log) {
-		DrawActionLogWindow(&(*lpGameState->arrCharacters)[0]);
+		DrawActionLogWindow(&(*lpGameState->arrCharacters)[0], &show_p1_log);
 	}
 	if (show_p2_state) {
-		DrawPlayerStateWindow("Player 2 State", &lpGameState->arrPlayerData[1]);
+		DrawPlayerStateWindow("Player 2 State", &lpGameState->arrPlayerData[1], &show_p2_state);
 	}
 	if (show_p2_object_state) {
-		DrawObjectStateWindow(&(*lpGameState->arrCharacters)[1]);
+		DrawObjectStateWindow(&(*lpGameState->arrCharacters)[1], &show_p2_object_state);
 	}
 	if (show_p2_log) {
-		DrawActionLogWindow(&(*lpGameState->arrCharacters)[1]);
+		DrawActionLogWindow(&(*lpGameState->arrCharacters)[1], &show_p2_log);
+	}
+	if (show_help) {
+		DrawHelpWindow(&show_help);
 	}
 	if (show_hitboxes) {
 		if (*lpGameState->bHitboxDisplayEnabled == 0) {
