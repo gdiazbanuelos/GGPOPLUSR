@@ -587,6 +587,10 @@ struct PlayerData {
     undefined field_0x141;
     undefined field_0x142;
     undefined field_0x143;
+    undefined field_0x144;
+    undefined field_0x145;
+    undefined field_0x146;
+    undefined field_0x147;
 };
 
 struct UNC_PlayerSubStructure {
