@@ -20,6 +20,10 @@ void SaveGameState(GameState* gameState, SavedGameState* dest) {
 	dest->nPlayfieldTopEdge = *gameState->nPlayfieldTopEdge;
 	CopyMemory(&dest->nCameraPlayerXPositionHistory, gameState->nCameraPlayerXPositionHistory, sizeof(int) * 2);
 	CopyMemory(&dest->nCameraPlayerXMovementMagnitudeHistory, gameState->nCameraPlayerXMovementMagnitudeHistory, sizeof(int) * 2);
+	CopyMemory(&dest->arrnP1InputRingBuffer, gameState->arrnP1InputRingBuffer, sizeof(WORD) * 32);
+	CopyMemory(&dest->arrnP2InputRingBuffer, gameState->arrnP2InputRingBuffer, sizeof(WORD) * 32);
+	dest->nP1InputRingBufferPosition = *gameState->nP1InputRingBufferPosition;
+	dest->nP2InputRingBufferPosition = *gameState->nP2InputRingBufferPosition;
 }
 
 void LoadGameState(GameState* gameState, SavedGameState* src) {
@@ -38,6 +42,10 @@ void LoadGameState(GameState* gameState, SavedGameState* src) {
 	*gameState->nPlayfieldTopEdge = src->nPlayfieldTopEdge;
 	CopyMemory(gameState->nCameraPlayerXPositionHistory, &src->nCameraPlayerXPositionHistory, sizeof(int) * 2);
 	CopyMemory(gameState->nCameraPlayerXMovementMagnitudeHistory, &src->nCameraPlayerXMovementMagnitudeHistory, sizeof(int) * 2);
+	CopyMemory(gameState->arrnP1InputRingBuffer, &src->arrnP1InputRingBuffer, sizeof(WORD) * 32);
+	CopyMemory(gameState->arrnP2InputRingBuffer, &src->arrnP2InputRingBuffer, sizeof(WORD) * 32);
+	*gameState->nP1InputRingBufferPosition = src->nP1InputRingBufferPosition;
+	*gameState->nP2InputRingBufferPosition = src->nP2InputRingBufferPosition;
 }
 
 HMODULE LocatePERoot() {
@@ -79,6 +87,10 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->nPlayfieldTopEdge = (int*)(peRootOffset + 0x51B0F8);
 	dest->nCameraPlayerXPositionHistory = (int*)(peRootOffset + 0x51B12C);
 	dest->nCameraPlayerXMovementMagnitudeHistory = (int*)(peRootOffset + 0x51B138);
+	dest->arrnP1InputRingBuffer = (WORD*)(peRootOffset + 0x516200);
+	dest->arrnP2InputRingBuffer = (WORD*)(peRootOffset + 0x516240);
+	dest->nP1InputRingBufferPosition = (int*)(peRootOffset + 0x516280);
+	dest->nP2InputRingBufferPosition = (int*)(peRootOffset + 0x516284);
 
 	return S_OK;
 }

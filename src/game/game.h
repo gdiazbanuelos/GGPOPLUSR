@@ -71,6 +71,10 @@ typedef struct GameState {
     int* nPlayfieldTopEdge;
     int* nCameraPlayerXPositionHistory;
     int* nCameraPlayerXMovementMagnitudeHistory;
+    WORD* arrnP1InputRingBuffer;
+    WORD* arrnP2InputRingBuffer;
+    int* nP1InputRingBufferPosition;
+    int* nP2InputRingBufferPosition;
 } GameState;
 
 void SaveGameState(GameState* gameState, SavedGameState* dest);
@@ -703,4 +707,9 @@ typedef struct SavedGameState {
 
     int nCameraPlayerXPositionHistory[2];
     int nCameraPlayerXMovementMagnitudeHistory[2];
+
+    WORD arrnP1InputRingBuffer[32];
+    WORD arrnP2InputRingBuffer[32];
+    int nP1InputRingBufferPosition;
+    int nP2InputRingBufferPosition;
 } SavedGameState;
