@@ -64,17 +64,26 @@ void FakeGenerateAndShadePrimitives() {
 }
 
 void FakeDrawUIPrimitivesAndEndScene() {
-	if (g_gameState.nFramesToSkipRender == 0) {
+	if (g_gameState.nFramesSkipped >= g_gameState.nFramesToSkipRender) {
 		g_gameMethods.DrawUIPrimitivesAndEndScene();
 	}
 	else {
-		g_gameState.nFramesToSkipRender--;
+		g_gameState.nFramesSkipped++;
 	}
 }
 
 void __cdecl FakeBeginSceneAndDrawGamePrimitives(int bShouldBeginScene) {
-	if (g_gameState.nFramesToSkipRender == 0) {
+	if (g_gameState.nFramesSkipped >= g_gameState.nFramesToSkipRender) {
 		g_gameMethods.BeginSceneAndDrawGamePrimitives(bShouldBeginScene);
+	}
+}
+
+void FakePollForInputs() {
+	g_gameMethods.PollForInputs();
+
+	if (g_gameState.nFramesSkipped < g_gameState.nFramesToSkipRender) {
+		*g_gameState.nP1CurrentFrameInputs = g_gameState.arrInputsDuringFrameSkip[g_gameState.nFramesSkipped][0];
+		*g_gameState.nP2CurrentFrameInputs = g_gameState.arrInputsDuringFrameSkip[g_gameState.nFramesSkipped][1];
 	}
 }
 
@@ -109,6 +118,7 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->WindowFunc, FakeWindowFunc);
 	DetourAttach(&(PVOID&)src->BeginSceneAndDrawGamePrimitives, FakeBeginSceneAndDrawGamePrimitives);
 	DetourAttach(&(PVOID&)src->DrawUIPrimitivesAndEndScene, FakeDrawUIPrimitivesAndEndScene);
+	DetourAttach(&(PVOID&)src->PollForInputs, FakePollForInputs);
 
 	return S_OK;
 }

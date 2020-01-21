@@ -21,6 +21,7 @@ enum gameinputs : unsigned short {
 	Right = 0x20,
 	Down = 0x40,
 	Left = 0x80,
+	Respect = 0x400,
 	Punch = 0x4000,
 	Kick = 0x2000,
 	Slash = 0x8000,
@@ -40,6 +41,19 @@ typedef struct GameObjectData GameObjectData;
 typedef struct PlayerData PlayerData;
 typedef struct SavedGameState SavedGameState;
 
+struct InputRewriteStruct {
+    bool left;
+    bool down;
+    bool up;
+    bool right;
+    bool p;
+    bool k;
+    bool s;
+    bool h;
+    bool d;
+    bool respect;
+};
+
 typedef struct GameMethods {
     void(WINAPI* GenerateAndShadePrimitives)();
     int(WINAPI* SetupD3D9)();
@@ -48,10 +62,13 @@ typedef struct GameMethods {
     BOOL(WINAPI* IsDebuggerPresent)();
     void(__cdecl* BeginSceneAndDrawGamePrimitives)(int bShouldBeginScene);
     void(WINAPI* DrawUIPrimitivesAndEndScene)();
+    void(WINAPI* PollForInputs)();
 } GameMethods;
 
 typedef struct GameState {
     int nFramesToSkipRender;
+    int nFramesSkipped;
+    unsigned int arrInputsDuringFrameSkip[60][2];
 
     LPDIRECT3DSURFACE9* gameRenderTarget;
     LPDIRECT3DSURFACE9* uiRenderTarget;
@@ -79,6 +96,8 @@ typedef struct GameState {
     WORD* arrnP2InputRingBuffer;
     int* nP1InputRingBufferPosition;
     int* nP2InputRingBufferPosition;
+    unsigned int* nP1CurrentFrameInputs;
+    unsigned int* nP2CurrentFrameInputs;
 } GameState;
 
 void SaveGameState(GameState* gameState, SavedGameState* dest);

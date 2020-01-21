@@ -128,9 +128,49 @@ void DrawSaveLoadStateWindow(GameState* lpGameState, bool* pOpen) {
 	static int nFramesToSkipRender = 0;
 	static int nMinSkip = 0;
 	static int nMaxSkip = 60;
+	static int nFrameStep = 1;
 
 	ImGui::Begin("Save/Load State", pOpen, ImGuiWindowFlags_None);
-	ImGui::SliderScalar("Num frames to skip", ImGuiDataType_S32, &nFramesToSkipRender, &nMinSkip, &nMaxSkip);
+	if (nFramesToSkipRender < 0) {
+		nFramesToSkipRender = 0;
+	}
+	else if (nFramesToSkipRender > 60) {
+		nFramesToSkipRender = 60;
+	}
+
+	ImGui::InputInt("Num frames to skip", &nFramesToSkipRender);
+	for (int p = 0; p < 2; p++) {
+		const char* headerLabel = p == 0 ? "P1 inputs during skip" : "P2 inputs during skip";
+		if (ImGui::CollapsingHeader(headerLabel)) {
+			// left
+			static int selected = 0;
+			ImGui::BeginChild("left pane", ImVec2(150, 0), true);
+			for (int i = 0; i < nFramesToSkipRender; i++)
+			{
+				char label[128];
+				sprintf(label, "Frame %d", i);
+				if (ImGui::Selectable(label, selected == i))
+					selected = i;
+			}
+			ImGui::EndChild();
+			ImGui::SameLine();
+
+			// right
+			ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
+			ImGui::CheckboxFlags("Left", &lpGameState->arrInputsDuringFrameSkip[selected][p], Left); ImGui::NextColumn();
+			ImGui::CheckboxFlags("Down", &lpGameState->arrInputsDuringFrameSkip[selected][p], Down); ImGui::NextColumn();
+			ImGui::CheckboxFlags("Up", &lpGameState->arrInputsDuringFrameSkip[selected][p], Up); ImGui::NextColumn();
+			ImGui::CheckboxFlags("Right", &lpGameState->arrInputsDuringFrameSkip[selected][p], Right); ImGui::NextColumn();
+			ImGui::CheckboxFlags("P", &lpGameState->arrInputsDuringFrameSkip[selected][p], Punch); ImGui::NextColumn();
+			ImGui::CheckboxFlags("K", &lpGameState->arrInputsDuringFrameSkip[selected][p], Kick); ImGui::NextColumn();
+			ImGui::CheckboxFlags("S", &lpGameState->arrInputsDuringFrameSkip[selected][p], Slash); ImGui::NextColumn();
+			ImGui::CheckboxFlags("H", &lpGameState->arrInputsDuringFrameSkip[selected][p], HSlash); ImGui::NextColumn();
+			ImGui::CheckboxFlags("D", &lpGameState->arrInputsDuringFrameSkip[selected][p], Dust); ImGui::NextColumn();
+			ImGui::CheckboxFlags("Respect", &lpGameState->arrInputsDuringFrameSkip[selected][p], Respect); ImGui::NextColumn();
+			ImGui::EndChild();
+		}
+	}
+
 	if (ImGui::Button("Save")) {
 		SaveGameState(lpGameState, &savedState);
 	}
@@ -138,6 +178,7 @@ void DrawSaveLoadStateWindow(GameState* lpGameState, bool* pOpen) {
 	if (ImGui::Button("Load")) {
 		// This should probably trigger a load on the _next_ frame, or we're
 		// likely to do something bad to graphics memory.
+		lpGameState->nFramesSkipped = 0;
 		lpGameState->nFramesToSkipRender = nFramesToSkipRender;
 		LoadGameState(lpGameState, &savedState);
 	}

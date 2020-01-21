@@ -62,6 +62,7 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->IsDebuggerPresent = IsDebuggerPresent;
 	dest->BeginSceneAndDrawGamePrimitives = (void(__cdecl*)(int))(peRootOffset + 0x436F0);
 	dest->DrawUIPrimitivesAndEndScene = (void(WINAPI*)())(peRootOffset + 0x14AD80);
+	dest->PollForInputs = (void(WINAPI*)())(peRootOffset + 0x52630);
 
 	return S_OK;
 }
@@ -69,6 +70,7 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 	dest->nFramesToSkipRender = 0;
+	dest->nFramesSkipped = 0;
 
 	dest->gameRenderTarget = (LPDIRECT3DSURFACE9*)(peRootOffset + 0x505AE0);
 	dest->uiRenderTarget = (LPDIRECT3DSURFACE9*)(peRootOffset + 0x555B98);
@@ -94,6 +96,8 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->arrnP2InputRingBuffer = (WORD*)(peRootOffset + 0x516240);
 	dest->nP1InputRingBufferPosition = (int*)(peRootOffset + 0x516280);
 	dest->nP2InputRingBufferPosition = (int*)(peRootOffset + 0x516284);
+	dest->nP1CurrentFrameInputs = (unsigned int*)(peRootOffset + 0x51EDC8);
+	dest->nP2CurrentFrameInputs = (unsigned int*)(peRootOffset + 0x51EE60);
 
 	return S_OK;
 }
