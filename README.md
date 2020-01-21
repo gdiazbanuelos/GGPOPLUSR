@@ -94,6 +94,7 @@ Authors
 * @Labreezy - founder
 * @WesselKuipers
 * @adanducci
+* @Ninetime
 
 See also the [list of contributors](https://github.com/adanducci/GGPOPLUSR/contributors)
 who participated in this project.
@@ -105,22 +106,22 @@ This project is licensed under the MIT License - see the LICENSE.md file for det
 ## External Licenses and Copyright Information
 
 Guilty Gear, Guilty Gear XX, and all related software
-Copyright © Arc System Works.
+Copyright Â© Arc System Works.
 
 Steam
-Copyright © Valve Corporation.
+Copyright Â© Valve Corporation.
 
 Detours
-Copyright © Microsoft Corporation.
+Copyright Â© Microsoft Corporation.
 
 GGPO (Good Game Peace Out)
-Copyright © GroundStorm Studios, LLC.
+Copyright Â© GroundStorm Studios, LLC.
 
 ValveFileVDF
-Copyright © Matthias Möller.
+Copyright Â© Matthias MÃ¶ller.
 
 CMake - Cross Platform Makefile Generator
-Copyright © Kitware, Inc. and Contributors.
+Copyright Â© Kitware, Inc. and Contributors.
 
 Dear Imgui
-Copyright © Omar Cornut
+Copyright Â© Omar Cornut
