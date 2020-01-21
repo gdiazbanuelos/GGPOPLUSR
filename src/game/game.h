@@ -46,9 +46,13 @@ typedef struct GameMethods {
     bool(__cdecl* SteamAPI_Init)();
     LRESULT(WINAPI* WindowFunc)(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
     BOOL(WINAPI* IsDebuggerPresent)();
+    void(__cdecl* BeginSceneAndDrawGamePrimitives)(int bShouldBeginScene);
+    void(WINAPI* DrawUIPrimitivesAndEndScene)();
 } GameMethods;
 
 typedef struct GameState {
+    int nFramesToSkipRender;
+
     LPDIRECT3DSURFACE9* gameRenderTarget;
     LPDIRECT3DSURFACE9* uiRenderTarget;
     LPDIRECT3DDEVICE9* d3dDevice;

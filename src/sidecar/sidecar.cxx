@@ -63,6 +63,21 @@ void FakeGenerateAndShadePrimitives() {
 	// Guilty will end the scene after this call finishes.
 }
 
+void FakeDrawUIPrimitivesAndEndScene() {
+	if (g_gameState.nFramesToSkipRender == 0) {
+		g_gameMethods.DrawUIPrimitivesAndEndScene();
+	}
+	else {
+		g_gameState.nFramesToSkipRender--;
+	}
+}
+
+void __cdecl FakeBeginSceneAndDrawGamePrimitives(int bShouldBeginScene) {
+	if (g_gameState.nFramesToSkipRender == 0) {
+		g_gameMethods.BeginSceneAndDrawGamePrimitives(bShouldBeginScene);
+	}
+}
+
 bool FakeSteamAPI_Init() {
 	DWORD error;
 
@@ -92,6 +107,8 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->GenerateAndShadePrimitives, FakeGenerateAndShadePrimitives);
 	DetourAttach(&(PVOID&)src->SetupD3D9, FakeSetupD3D9);
 	DetourAttach(&(PVOID&)src->WindowFunc, FakeWindowFunc);
+	DetourAttach(&(PVOID&)src->BeginSceneAndDrawGamePrimitives, FakeBeginSceneAndDrawGamePrimitives);
+	DetourAttach(&(PVOID&)src->DrawUIPrimitivesAndEndScene, FakeDrawUIPrimitivesAndEndScene);
 
 	return S_OK;
 }

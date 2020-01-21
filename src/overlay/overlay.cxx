@@ -125,9 +125,12 @@ void DrawActionLogWindow(GameObjectData* lpGameObject, bool* pOpen) {
 
 void DrawSaveLoadStateWindow(GameState* lpGameState, bool* pOpen) {
 	static SavedGameState savedState;
+	static int nFramesToSkipRender = 0;
+	static int nMinSkip = 0;
+	static int nMaxSkip = 60;
 
 	ImGui::Begin("Save/Load State", pOpen, ImGuiWindowFlags_None);
-
+	ImGui::SliderScalar("Num frames to skip", ImGuiDataType_S32, &nFramesToSkipRender, &nMinSkip, &nMaxSkip);
 	if (ImGui::Button("Save")) {
 		SaveGameState(lpGameState, &savedState);
 	}
@@ -135,6 +138,7 @@ void DrawSaveLoadStateWindow(GameState* lpGameState, bool* pOpen) {
 	if (ImGui::Button("Load")) {
 		// This should probably trigger a load on the _next_ frame, or we're
 		// likely to do something bad to graphics memory.
+		lpGameState->nFramesToSkipRender = nFramesToSkipRender;
 		LoadGameState(lpGameState, &savedState);
 	}
 

@@ -60,12 +60,15 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->WindowFunc = (LRESULT(WINAPI*)(HWND, UINT, WPARAM, LPARAM))(peRootOffset + 0x146A00);
 	dest->SteamAPI_Init = (bool(__cdecl*)())DetourFindFunction("steam_api", "SteamAPI_Init");
 	dest->IsDebuggerPresent = IsDebuggerPresent;
+	dest->BeginSceneAndDrawGamePrimitives = (void(__cdecl*)(int))(peRootOffset + 0x436F0);
+	dest->DrawUIPrimitivesAndEndScene = (void(WINAPI*)())(peRootOffset + 0x14AD80);
 
 	return S_OK;
 }
 
 HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
+	dest->nFramesToSkipRender = 0;
 
 	dest->gameRenderTarget = (LPDIRECT3DSURFACE9*)(peRootOffset + 0x505AE0);
 	dest->uiRenderTarget = (LPDIRECT3DSURFACE9*)(peRootOffset + 0x555B98);
