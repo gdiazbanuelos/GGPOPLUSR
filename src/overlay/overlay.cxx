@@ -141,6 +141,7 @@ void DrawSaveLoadStateWindow(GameState* lpGameState, bool* pOpen) {
 	ImGui::InputInt("Num frames to skip", &nFramesToSkipRender);
 	for (int p = 0; p < 2; p++) {
 		const char* headerLabel = p == 0 ? "P1 inputs during skip" : "P2 inputs during skip";
+		PlayerData* lpPlayerData = &lpGameState->arrPlayerData[p];
 		if (ImGui::CollapsingHeader(headerLabel)) {
 			// left
 			static int selected = 0;
@@ -161,12 +162,12 @@ void DrawSaveLoadStateWindow(GameState* lpGameState, bool* pOpen) {
 			ImGui::CheckboxFlags("Down", &lpGameState->arrInputsDuringFrameSkip[selected][p], Down); ImGui::NextColumn();
 			ImGui::CheckboxFlags("Up", &lpGameState->arrInputsDuringFrameSkip[selected][p], Up); ImGui::NextColumn();
 			ImGui::CheckboxFlags("Right", &lpGameState->arrInputsDuringFrameSkip[selected][p], Right); ImGui::NextColumn();
-			ImGui::CheckboxFlags("P", &lpGameState->arrInputsDuringFrameSkip[selected][p], Punch); ImGui::NextColumn();
-			ImGui::CheckboxFlags("K", &lpGameState->arrInputsDuringFrameSkip[selected][p], Kick); ImGui::NextColumn();
-			ImGui::CheckboxFlags("S", &lpGameState->arrInputsDuringFrameSkip[selected][p], Slash); ImGui::NextColumn();
-			ImGui::CheckboxFlags("H", &lpGameState->arrInputsDuringFrameSkip[selected][p], HSlash); ImGui::NextColumn();
-			ImGui::CheckboxFlags("D", &lpGameState->arrInputsDuringFrameSkip[selected][p], Dust); ImGui::NextColumn();
-			ImGui::CheckboxFlags("Respect", &lpGameState->arrInputsDuringFrameSkip[selected][p], Respect); ImGui::NextColumn();
+			ImGui::CheckboxFlags("P", &lpGameState->arrInputsDuringFrameSkip[selected][p], lpPlayerData->ctrlP); ImGui::NextColumn();
+			ImGui::CheckboxFlags("K", &lpGameState->arrInputsDuringFrameSkip[selected][p], lpPlayerData->ctrlK); ImGui::NextColumn();
+			ImGui::CheckboxFlags("S", &lpGameState->arrInputsDuringFrameSkip[selected][p], lpPlayerData->ctrlS); ImGui::NextColumn();
+			ImGui::CheckboxFlags("H", &lpGameState->arrInputsDuringFrameSkip[selected][p], lpPlayerData->ctrlH); ImGui::NextColumn();
+			ImGui::CheckboxFlags("D", &lpGameState->arrInputsDuringFrameSkip[selected][p], lpPlayerData->ctrlD); ImGui::NextColumn();
+			ImGui::CheckboxFlags("Respect", &lpGameState->arrInputsDuringFrameSkip[selected][p], lpPlayerData->ctrlRespect); ImGui::NextColumn();
 			ImGui::EndChild();
 		}
 	}
