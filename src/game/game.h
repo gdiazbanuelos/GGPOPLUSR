@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <d3d9.h>
 #include <dinput.h>
+#include <ggponet.h>
 
 const unsigned short MIN_TENSION = 0;
 const unsigned short MAX_TENSION = 10000;
@@ -63,12 +64,26 @@ typedef struct GameMethods {
     void(__cdecl* BeginSceneAndDrawGamePrimitives)(int bShouldBeginScene);
     void(WINAPI* DrawUIPrimitivesAndEndScene)();
     void(WINAPI* PollForInputs)();
+    void(WINAPI* SimulateCurrentState)();
 } GameMethods;
+
+typedef struct GGPOState {
+    GGPOSession* ggpo;
+    GGPOPlayer p1;
+    GGPOPlayer p2;
+    GGPOPlayer* localPlayer;
+    GGPOPlayer* remotePlayer;
+    GGPOPlayerHandle player_handles[2];
+    GGPOSessionCallbacks cb;
+    GGPOErrorCode lastResult;
+    int localPlayerIndex;
+} GGPOState;
 
 typedef struct GameState {
     int nFramesToSkipRender;
     int nFramesSkipped;
     unsigned int arrInputsDuringFrameSkip[60][2];
+    GGPOState ggpoState;
 
     LPDIRECT3DSURFACE9* gameRenderTarget;
     LPDIRECT3DSURFACE9* uiRenderTarget;
@@ -105,6 +120,7 @@ void LoadGameState(GameState* gameState, SavedGameState* src);
 HMODULE LocatePERoot();
 HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* methods);
 HRESULT LocateGameState(HMODULE peRoot, GameState* state);
+void PrepareGGPOSession(GameState* lpGameState, unsigned short nOurPort, char* szOpponentIP, unsigned short nOpponentPort, int nOpponentPlayerPosition);
 
 typedef unsigned short XInputButton;
 const XInputButton XINPUTBTN_A = 16384;

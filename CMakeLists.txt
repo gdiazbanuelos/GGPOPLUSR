@@ -12,10 +12,11 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(DearImgui 1 REQUIRED)
 find_package(Detours 4 REQUIRED)
+find_package(GGPO 1 REQUIRED)
 find_package(ValveFileVDF 1 REQUIRED)
 
 add_library(Game STATIC src/game/game.h src/game/game.cxx)
-target_link_libraries(Game PRIVATE Detours)
+target_link_libraries(Game PRIVATE Detours GGPO)
 
 add_executable(Launcher WIN32
     src/launcher/discovery.cxx
@@ -29,7 +30,7 @@ target_link_libraries(Launcher
 )
 
 add_library(Overlay STATIC src/overlay/overlay.cxx src/overlay/overlay.h)
-target_link_libraries(Overlay PRIVATE DearImgui DearImgui_Win32 DearImgui_DX9 Game)
+target_link_libraries(Overlay PRIVATE DearImgui DearImgui_Win32 DearImgui_DX9 Game GGPO)
 
 add_library(Sidecar SHARED src/sidecar/sidecar.cxx)
-target_link_libraries(Sidecar PRIVATE Detours Game Overlay)
+target_link_libraries(Sidecar PRIVATE Detours Game GGPO Overlay)

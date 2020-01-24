@@ -11,6 +11,7 @@
 #include <d3d9.h>
 #include <dinput.h>
 #include <tchar.h>
+#include <ggponet.h>
 
 #include "../game/game.h"
 #include "../overlay/overlay.h"
@@ -22,6 +23,7 @@ static LPCWSTR DETOUR_FAILED_MESSAGE = TEXT("Could not detour targets!");
 static HMODULE g_lpPEHeaderRoot;
 static GameMethods g_gameMethods;
 static GameState g_gameState;
+static GGPOErrorCode g_result;
 
 HRESULT AttachInitialFunctionDetours(GameMethods* src);
 HRESULT AttachInternalFunctionPointers(GameMethods* src);
@@ -31,6 +33,19 @@ LRESULT WINAPI FakeWindowFunc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		return true;
 	}
 	return g_gameMethods.WindowFunc(hWnd, msg, wParam, lParam);
+}
+
+void WINAPI FakeSimulateCurrentState() {
+	if (g_gameState.ggpoState.ggpo != NULL) {
+		if (GGPO_SUCCEEDED(g_gameState.ggpoState.lastResult)) {
+			g_gameMethods.SimulateCurrentState();
+			ggpo_advance_frame(g_gameState.ggpoState.ggpo);
+		}
+		ggpo_idle(g_gameState.ggpoState.ggpo, 2);
+	}
+	else {
+		g_gameMethods.SimulateCurrentState();
+	}
 }
 
 int FakeSetupD3D9() {
@@ -79,11 +94,38 @@ void __cdecl FakeBeginSceneAndDrawGamePrimitives(int bShouldBeginScene) {
 }
 
 void FakePollForInputs() {
+	unsigned int inputs[2];
 	g_gameMethods.PollForInputs();
 
+	// Non-GGPO rewriting
 	if (g_gameState.nFramesSkipped < g_gameState.nFramesToSkipRender) {
 		*g_gameState.nP1CurrentFrameInputs = g_gameState.arrInputsDuringFrameSkip[g_gameState.nFramesSkipped][0];
 		*g_gameState.nP2CurrentFrameInputs = g_gameState.arrInputsDuringFrameSkip[g_gameState.nFramesSkipped][1];
+	}
+
+	// GGPO Rewriting
+	if (g_gameState.ggpoState.ggpo != NULL) {
+		unsigned int* inputLocation = g_gameState.ggpoState.localPlayerIndex == 0 ?
+			g_gameState.nP1CurrentFrameInputs :
+			g_gameState.nP2CurrentFrameInputs;
+
+		/* notify ggpo of the local player's inputs */
+		g_gameState.ggpoState.lastResult = ggpo_add_local_input(
+			g_gameState.ggpoState.ggpo,
+			g_gameState.ggpoState.player_handles[g_gameState.ggpoState.localPlayerIndex],
+			inputLocation,
+			sizeof(int)
+		);
+		if (GGPO_SUCCEEDED(g_gameState.ggpoState.lastResult)) {
+			g_gameState.ggpoState.lastResult = ggpo_synchronize_input(
+				g_gameState.ggpoState.ggpo,
+				inputs,
+				sizeof(int) * 2,
+				NULL
+			);
+			*g_gameState.nP1CurrentFrameInputs = inputs[0];
+			*g_gameState.nP2CurrentFrameInputs = inputs[1];
+		}
 	}
 }
 
@@ -119,6 +161,7 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->BeginSceneAndDrawGamePrimitives, FakeBeginSceneAndDrawGamePrimitives);
 	DetourAttach(&(PVOID&)src->DrawUIPrimitivesAndEndScene, FakeDrawUIPrimitivesAndEndScene);
 	DetourAttach(&(PVOID&)src->PollForInputs, FakePollForInputs);
+	DetourAttach(&(PVOID&)src->SimulateCurrentState, FakeSimulateCurrentState);
 
 	return S_OK;
 }

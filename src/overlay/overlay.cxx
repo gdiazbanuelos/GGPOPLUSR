@@ -9,6 +9,51 @@
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam); 
 
+void DrawGGPOConectionWindow(GameState* lpGameState, bool pOpen) {
+	static char szOpponentIp[32];
+	static unsigned short nOpponentPort;
+	static unsigned short nOurPort;
+	static int nOpponentPlayerPosition = 0;
+	static GGPONetworkStats stats;
+	int remotePlayerIndex;
+	GGPOState* gs = &(lpGameState->ggpoState);
+
+	ImGui::Begin("GGPO Connection", &pOpen);
+	ImGui::InputScalar("Our port", ImGuiDataType_U16, &nOurPort);
+	ImGui::InputText("Opponent IP", szOpponentIp, 32);
+	ImGui::InputScalar("Opponent port", ImGuiDataType_U16, &nOpponentPort);
+	ImGui::InputInt("Opponent player position", &nOpponentPlayerPosition);
+	if (gs->ggpo == NULL) {
+		if (ImGui::Button("Prepare for connection")) {
+			PrepareGGPOSession(lpGameState, nOurPort, szOpponentIp, nOpponentPort, nOpponentPlayerPosition);
+		}
+	}
+	else {
+		remotePlayerIndex = gs->localPlayerIndex == 0 ? 1 : 0;
+		ggpo_get_network_stats(gs->ggpo, gs->player_handles[remotePlayerIndex], &stats);
+		ImGui::Text("Handles: %d, %d", gs->player_handles[0], gs->player_handles[1]);
+		ImGui::Text("Player IDs: %d, %d", gs->p1.player_num, gs->p2.player_num);
+		ImGui::Text("Player addresses: %p, %p", &(gs->p1), &(gs->p2));
+		ImGui::Text("Remote player address: %p", gs->remotePlayer);
+		ImGui::Text("Local player address: %p", gs->localPlayer);
+
+		ImGui::Text("Remote player values");
+		ImGui::Text("num: %d", gs->remotePlayer->player_num);
+		ImGui::Text("IP: %s", gs->remotePlayer->u.remote.ip_address);
+		ImGui::Text("port: %d", gs->remotePlayer->u.remote.port);
+		ImGui::Text("type: %d", gs->remotePlayer->type);
+
+		ImGui::Text("Stats");
+		ImGui::Text("send_queue_len %d", stats.network.send_queue_len);
+		ImGui::Text("recv_queue_len %d", stats.network.recv_queue_len);
+		ImGui::Text("ping %d", stats.network.ping);
+		ImGui::Text("kbps_sent %d", stats.network.kbps_sent);
+		ImGui::Text("local_frames_behind %d", stats.timesync.local_frames_behind);
+		ImGui::Text("remote_frames_behind %d", stats.timesync.remote_frames_behind);
+	}
+	ImGui::End();
+}
+
 void DrawGlobalStateWindow(GameState* lpGameState, bool* pOpen) {
 	ImGui::Begin("Global State", pOpen, ImGuiWindowFlags_None);
 
@@ -30,7 +75,6 @@ void DrawGlobalStateWindow(GameState* lpGameState, bool* pOpen) {
 	ImGui::Columns(1);
 
 	ImGui::End();
-
 }
 
 void DrawObjectStateWindow(GameObjectData* lpGameObject, bool* pOpen) {
@@ -220,6 +264,7 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	static bool show_hitboxes = false;
 	static bool show_saveload = false;
 	static bool show_help = false;
+	static bool show_ggpo = false;
 
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -245,6 +290,7 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 				}
 
 				ImGui::MenuItem("Save/Load State", NULL, &show_saveload);
+				ImGui::MenuItem("GGPO", NULL, &show_ggpo);
 				ImGui::EndMenu();
 			}
 
@@ -299,6 +345,9 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	}
 	if (show_saveload) {
 		DrawSaveLoadStateWindow(lpGameState, &show_saveload);
+	}
+	if (show_ggpo) {
+		DrawGGPOConectionWindow(lpGameState, &show_ggpo);
 	}
 
 	ImGui::EndFrame();

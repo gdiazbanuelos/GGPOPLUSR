@@ -1,8 +1,13 @@
+#include <cstdio>
 #include <windows.h>
 #include <detours.h>
 #include <d3d9.h>
+#include <ggponet.h>
 
 #include "./game.h"
+
+static GameMethods* g_lpGameMethods;
+static GameState* g_lpGameState;
 
 void SaveGameState(GameState* gameState, SavedGameState* dest) {
 	CopyMemory(dest->arrCharacters, *gameState->arrCharacters, sizeof(GameObjectData) * 2);
@@ -24,6 +29,19 @@ void SaveGameState(GameState* gameState, SavedGameState* dest) {
 	CopyMemory(&dest->arrnP2InputRingBuffer, gameState->arrnP2InputRingBuffer, sizeof(WORD) * 32);
 	dest->nP1InputRingBufferPosition = *gameState->nP1InputRingBufferPosition;
 	dest->nP2InputRingBufferPosition = *gameState->nP2InputRingBufferPosition;
+}
+
+bool __cdecl ggpo_save_game_state_callback(
+	unsigned char** buffer,
+	int* len,
+	int* checksum,
+	int frame
+) {
+	*len = sizeof(SavedGameState);
+	*buffer = (unsigned char*)malloc(*len);
+	SavedGameState* dest = *(SavedGameState**)buffer;
+	SaveGameState(g_lpGameState, dest);
+	return true;
 }
 
 void LoadGameState(GameState* gameState, SavedGameState* src) {
@@ -48,6 +66,67 @@ void LoadGameState(GameState* gameState, SavedGameState* src) {
 	*gameState->nP2InputRingBufferPosition = src->nP2InputRingBufferPosition;
 }
 
+bool __cdecl ggpo_load_game_state_callback(unsigned char* buffer, int len) {
+	SavedGameState* src = (SavedGameState*)buffer;
+	LoadGameState(g_lpGameState, src);
+	return true;
+}
+
+void __cdecl ggpo_free_buffer(void* buffer) {
+	free(buffer);
+}
+
+bool __cdecl ggpo_advance_frame(int flags) {
+	unsigned int inputs[2];
+	int disconnect_flags;
+	// Make sure we fetch new inputs from GGPO and use those to update
+	// the game state instead of reading from the keyboard.
+	ggpo_synchronize_input(g_lpGameState->ggpoState.ggpo, (void*)inputs, sizeof(int) * 2, &disconnect_flags);
+	*g_lpGameState->nP1CurrentFrameInputs = inputs[0];
+	*g_lpGameState->nP2CurrentFrameInputs = inputs[1];
+	g_lpGameMethods->SimulateCurrentState();
+	return true;
+}
+
+bool __cdecl ggpo_log_game_state(char* filename, unsigned char* buffer, int len) {
+	return true;
+}
+
+bool __cdecl ggpo_begin_game(const char* game) {
+	return true;
+}
+
+bool __cdecl ggpo_on_event(GGPOEvent* info) {
+	int progress;
+	switch (info->code) {
+	case GGPO_EVENTCODE_CONNECTED_TO_PEER:
+		// MessageBoxA(NULL, "connected to peer", NULL, MB_OK);
+		break;
+	case GGPO_EVENTCODE_SYNCHRONIZING_WITH_PEER:
+		// MessageBoxA(NULL, "synchronizing to peer", NULL, MB_OK);
+		break;
+	case GGPO_EVENTCODE_SYNCHRONIZED_WITH_PEER:
+		// MessageBoxA(NULL, "sync complete to peer", NULL, MB_OK);
+		break;
+	case GGPO_EVENTCODE_RUNNING:
+		// MessageBoxA(NULL, "running", NULL, MB_OK);
+		break;
+	case GGPO_EVENTCODE_CONNECTION_INTERRUPTED:
+		// MessageBoxA(NULL, "interrupted", NULL, MB_OK);
+		break;
+	case GGPO_EVENTCODE_CONNECTION_RESUMED:
+		// MessageBoxA(NULL, "resumed", NULL, MB_OK);
+		break;
+	case GGPO_EVENTCODE_DISCONNECTED_FROM_PEER:
+		// MessageBoxA(NULL, "disconnected", NULL, MB_OK);
+		break;
+	case GGPO_EVENTCODE_TIMESYNC:
+		// MessageBoxA(NULL, "timesync", NULL, MB_OK);
+		break;
+	}
+	return true;
+}
+
 HMODULE LocatePERoot() {
 	return DetourGetContainingModule(DetourGetEntryPoint(NULL));
 }
@@ -63,6 +142,9 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->BeginSceneAndDrawGamePrimitives = (void(__cdecl*)(int))(peRootOffset + 0x436F0);
 	dest->DrawUIPrimitivesAndEndScene = (void(WINAPI*)())(peRootOffset + 0x14AD80);
 	dest->PollForInputs = (void(WINAPI*)())(peRootOffset + 0x52630);
+	dest->SimulateCurrentState = (void(WINAPI*)())(peRootOffset + 0xE7AE0);
+
+	g_lpGameMethods = dest;
 
 	return S_OK;
 }
@@ -100,4 +182,65 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->nP2CurrentFrameInputs = (unsigned int*)(peRootOffset + 0x51EE60);
 
 	return S_OK;
+}
+\
+void PrepareGGPOSession(GameState* lpGameState, unsigned short nOurPort, char* szOpponentIP, unsigned short nOpponentPort, int nOpponentPlayerPosition) {
+	char msgBuffer[16];
+	GGPOErrorCode result;
+	GGPOSessionCallbacks* cb = &lpGameState->ggpoState.cb;
+	lpGameState->ggpoState.localPlayerIndex = nOpponentPlayerPosition == 0 ? 1 : 0;
+	cb->load_game_state = ggpo_load_game_state_callback;
+	cb->save_game_state = ggpo_save_game_state_callback;
+	cb->free_buffer = ggpo_free_buffer;
+	cb->advance_frame = ggpo_advance_frame;
+	cb->log_game_state = ggpo_log_game_state;
+	cb->begin_game = ggpo_begin_game;
+	cb->on_event = ggpo_on_event;
+
+	g_lpGameState = lpGameState;
+	lpGameState->ggpoState.ggpo = NULL;
+	result = ggpo_start_session(
+		&lpGameState->ggpoState.ggpo,
+		cb,
+		"GGPOPLUSR",
+		2,
+		sizeof(int), // inputsize,
+		nOurPort
+	);
+	ggpo_set_disconnect_timeout(lpGameState->ggpoState.ggpo, 3000);
+	ggpo_set_disconnect_notify_start(lpGameState->ggpoState.ggpo, 3000);
+	if (!GGPO_SUCCEEDED(result)) {
+		MessageBoxA(NULL, "nope", NULL, MB_OK);
+	}
+
+	if (nOpponentPlayerPosition == 0) {
+		lpGameState->ggpoState.remotePlayer = &(lpGameState->ggpoState.p1);
+		lpGameState->ggpoState.localPlayer = &(lpGameState->ggpoState.p2);
+	}
+	else {
+		lpGameState->ggpoState.remotePlayer = &(lpGameState->ggpoState.p2);
+		lpGameState->ggpoState.localPlayer = &(lpGameState->ggpoState.p1);
+	}
+	lpGameState->ggpoState.p1.size = lpGameState->ggpoState.p2.size = sizeof(GGPOPlayer);
+	lpGameState->ggpoState.p1.player_num = 1;
+	lpGameState->ggpoState.p2.player_num = 2;
+	lpGameState->ggpoState.remotePlayer->type = GGPO_PLAYERTYPE_REMOTE;
+	lpGameState->ggpoState.localPlayer->type = GGPO_PLAYERTYPE_LOCAL;
+	strcpy(lpGameState->ggpoState.remotePlayer->u.remote.ip_address, szOpponentIP);
+	lpGameState->ggpoState.remotePlayer->u.remote.port = nOpponentPort;
+
+	result = ggpo_add_player(
+		lpGameState->ggpoState.ggpo, &lpGameState->ggpoState.p1,
+		&lpGameState->ggpoState.player_handles[0]);
+	if (!GGPO_SUCCEEDED(result)) {
+		sprintf(msgBuffer, "nope p1 %d", result);
+		MessageBoxA(NULL, msgBuffer, NULL, MB_OK);
+	}
+	result = ggpo_add_player(
+		lpGameState->ggpoState.ggpo, &lpGameState->ggpoState.p2,
+		&lpGameState->ggpoState.player_handles[1]);
+	if (!GGPO_SUCCEEDED(result)) {
+		sprintf(msgBuffer, "nope p2 %d", result);
+		MessageBoxA(NULL, msgBuffer, NULL, MB_OK);
+	}
 }
