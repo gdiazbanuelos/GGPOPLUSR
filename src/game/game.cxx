@@ -9,6 +9,7 @@
 static GameMethods* g_lpGameMethods;
 static GameState* g_lpGameState;
 
+
 void SaveGameState(GameState* gameState, SavedGameState* dest) {
 	CopyMemory(dest->arrCharacters, *gameState->arrCharacters, sizeof(GameObjectData) * 2);
 	CopyMemory(dest->arrNpcObjects, *gameState->arrNpcObjects, sizeof(GameObjectData) * 60);
@@ -180,10 +181,35 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->nP2InputRingBufferPosition = (int*)(peRootOffset + 0x516284);
 	dest->nP1CurrentFrameInputs = (unsigned int*)(peRootOffset + 0x51EDC8);
 	dest->nP2CurrentFrameInputs = (unsigned int*)(peRootOffset + 0x51EE60);
+	dest->recTarget = (TrainingModeRec*)(peRootOffset + 0x4FDD28);
+	dest->recStatus = (int*)(peRootOffset + 0x4FDD24);
+	dest->recEnabled = (DWORD*)(peRootOffset + 0x4FDD2C);
 
 	return S_OK;
 }
-\
+
+void SaveRecording(char* cLogpath, GameState* gameState) {
+	FILE* pFile;
+	pFile = fopen(cLogpath, "wb");
+
+	fwrite(&gameState->recTarget->nPlayer, sizeof(byte), 1, pFile);
+	fwrite(gameState->recTarget->nUnknown, sizeof(byte) * 3, 1, pFile);
+	fwrite(&gameState->recTarget->RecInputs, sizeof(Inputs) * 3599, 1, pFile);
+	fclose(pFile);
+
+}
+
+void LoadRecording(char* cLogpath, GameState* gameState) {
+	FILE* pFile;
+	pFile = fopen(cLogpath, "rb");
+
+	fread(&gameState->recTarget->nPlayer, sizeof(byte), 1, pFile);
+	fread(gameState->recTarget->nUnknown, sizeof(byte) * 3, 1, pFile);
+	fread(&gameState->recTarget->RecInputs, sizeof(Inputs) * 3599, 1, pFile);
+	fclose(pFile);
+
+}
+
 void PrepareGGPOSession(GameState* lpGameState, unsigned short nOurPort, char* szOpponentIP, unsigned short nOpponentPort, int nOpponentPlayerPosition) {
 	char msgBuffer[16];
 	GGPOErrorCode result;

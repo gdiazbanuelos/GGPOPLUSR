@@ -54,7 +54,7 @@ class Recording(c.Structure):
 
 class Config(c.Structure):
     _fields_ = [
-        ("buttons", c.c_ushort * 5),
+        ("buttons", c.c_ushort * 18),
     ]
 
 class MemoryReader:

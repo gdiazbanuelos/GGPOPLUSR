@@ -217,6 +217,7 @@ void DrawSaveLoadStateWindow(GameState* lpGameState, bool* pOpen) {
 	}
 
 	if (ImGui::Button("Save")) {
+
 		SaveGameState(lpGameState, &savedState);
 	}
 
@@ -243,6 +244,145 @@ void DrawHelpWindow(bool* pOpen) {
 	ImGui::End();
 }
 
+void DrawSaveLoadReplayWindow(GameState* lpGameState, bool* pOpen) {
+	static ExampleAppLog saveloadreplay;
+	static char* cLogpath = "./rec.txt";
+	static int prevRecStatus = 0;
+	static int prevRecPlayer = 0;
+
+
+	ImGui::Begin(
+		"+R Recording Manager", 
+		pOpen, 
+		ImGuiWindowFlags_None
+	);
+
+	if (ImGui::Button("Read Config")) {
+		saveloadreplay.Clear();
+		saveloadreplay.AutoScroll = false;
+		for (int p = 0; p < 2; p++) {
+			saveloadreplay.AddLog("---P%X Button Config ---\n", p + 1);
+			saveloadreplay.AddLog("P%i Punch = 0x%X\n", p+1,lpGameState->arrPlayerData[p].ctrlP);
+			saveloadreplay.AddLog("P%i Kick = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlK);
+			saveloadreplay.AddLog("P%i Slash = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlS);
+			saveloadreplay.AddLog("P%i H-Slash = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlH);
+			saveloadreplay.AddLog("P%i Dust = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlD);
+			saveloadreplay.AddLog("P%i Respect = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlRespect);
+			saveloadreplay.AddLog("P%i Reset = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlReset);
+			saveloadreplay.AddLog("P%i Pause = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlPause);
+			saveloadreplay.AddLog("P%i Rec Player = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlRecPlayer);
+			saveloadreplay.AddLog("P%i Rec Enemy = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlRecEnemy);
+			saveloadreplay.AddLog("P%i Play Memory = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlPlayMemory);
+			saveloadreplay.AddLog("P%i Switch = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlSwitch);
+			saveloadreplay.AddLog("P%i Enemy Walk = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlEnemyWalk);
+			saveloadreplay.AddLog("P%i Enemy Jump = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlEnemyJump);
+			saveloadreplay.AddLog("P%i P K = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlPKMacro);
+			saveloadreplay.AddLog("P%i P D = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlPDMacro);
+			saveloadreplay.AddLog("P%i P K S = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlPKSMacro);
+			saveloadreplay.AddLog("P%i P K S H = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlPKSHMacro);
+			saveloadreplay.AddLog("\n");
+		}
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("Save")) {
+
+		SaveRecording(cLogpath, lpGameState);
+		saveloadreplay.AddLog("Save - Player %X recording saved to: %s\n", (lpGameState->recTarget->nPlayer + 1), cLogpath);
+
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("Load")) {
+
+		LoadRecording(cLogpath, lpGameState);
+		saveloadreplay.AddLog("Load - P%X recording loaded from: %s\n", (lpGameState->recTarget->nPlayer + 1), cLogpath);
+
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("Current Slot")) {
+	
+		saveloadreplay.AddLog("Slot - P%X recording currently loaded\n", (lpGameState->recTarget->nPlayer + 1));
+
+	}
+
+	//logs current Training Mode recording status
+	if (*lpGameState->recStatus != prevRecStatus) {
+		if (*lpGameState->recStatus == 0) {
+			if (prevRecStatus == 1) {
+
+				saveloadreplay.AddLog("State - Player Switch Cancelled \n");
+				prevRecStatus = *lpGameState->recStatus;
+			}
+			if (prevRecStatus == 2) {
+
+				saveloadreplay.AddLog("State - P%X Rec Standby Cancelled \n", (lpGameState->recTarget->nPlayer + 1));
+				prevRecStatus = *lpGameState->recStatus;
+
+			}
+			if (prevRecStatus == 3) {
+
+				saveloadreplay.AddLog("State - P%X Recording Stopped \n", (lpGameState->recTarget->nPlayer + 1));
+				prevRecStatus = *lpGameState->recStatus;
+
+			}
+			if (prevRecStatus == 4) {
+
+				saveloadreplay.AddLog("State - P%X Recording Playback Stopped \n", (lpGameState->recTarget->nPlayer + 1));
+				prevRecStatus = *lpGameState->recStatus;
+
+			}
+		}
+		if (*lpGameState->recStatus == 1) {
+
+			saveloadreplay.AddLog("State - Switched to other Character\n");
+			prevRecStatus = *lpGameState->recStatus;
+		}
+		if (*lpGameState->recStatus == 2) {
+
+
+				saveloadreplay.AddLog("State - P%X Rec Standby\n", (lpGameState->recTarget->nPlayer + 1));
+				prevRecStatus = *lpGameState->recStatus;
+				prevRecPlayer = (lpGameState->recTarget->nPlayer + 1);
+
+		}
+		if (*lpGameState->recStatus == 3) {
+
+				saveloadreplay.AddLog("State - P%X Rec Started\n", (lpGameState->recTarget->nPlayer + 1));
+				prevRecStatus = *lpGameState->recStatus;
+
+		}
+		if (*lpGameState->recStatus == 4) {
+
+				saveloadreplay.AddLog("State - P%X Rec Playback Started\n", (lpGameState->recTarget->nPlayer + 1));
+				prevRecStatus = *lpGameState->recStatus;
+
+		}
+	}
+	else {
+		if(*lpGameState->recStatus != 0){
+			if ((lpGameState->recTarget->nPlayer + 1) != prevRecPlayer) {
+
+				saveloadreplay.AddLog("State - P%X Rec Standby\n", (lpGameState->recTarget->nPlayer + 1));
+				prevRecStatus = *lpGameState->recStatus;
+				prevRecPlayer = (lpGameState->recTarget->nPlayer + 1);
+
+			}
+		}
+	}
+
+	ImGui::Separator();
+
+	saveloadreplay.Draw("+R Recording Manager", pOpen);
+
+	ImGui::End();
+
+}
+
 void InitializeOverlay(GameState* lpGameState) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -264,6 +404,7 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	static bool show_hitboxes = false;
 	static bool show_saveload = false;
 	static bool show_help = false;
+	static bool show_save_load_replay = false;
 	static bool show_ggpo = false;
 
 	ImGui_ImplDX9_NewFrame();
@@ -290,6 +431,7 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 				}
 
 				ImGui::MenuItem("Save/Load State", NULL, &show_saveload);
+				ImGui::MenuItem("Save/Load Replay", NULL, &show_save_load_replay, *lpGameState->arrCharacters != 0);
 				ImGui::MenuItem("GGPO", NULL, &show_ggpo);
 				ImGui::EndMenu();
 			}
@@ -332,6 +474,9 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	}
 	if (show_help) {
 		DrawHelpWindow(&show_help);
+	}
+	if (show_save_load_replay) {
+		DrawSaveLoadReplayWindow(lpGameState, &show_save_load_replay);
 	}
 	if (show_hitboxes) {
 		if (*lpGameState->bHitboxDisplayEnabled == 0) {

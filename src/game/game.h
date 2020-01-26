@@ -41,6 +41,8 @@ typedef unsigned int    undefined4;
 typedef struct GameObjectData GameObjectData;
 typedef struct PlayerData PlayerData;
 typedef struct SavedGameState SavedGameState;
+typedef struct TrainingModeRec TrainingModeRec;
+
 
 struct InputRewriteStruct {
     bool left;
@@ -113,10 +115,15 @@ typedef struct GameState {
     int* nP2InputRingBufferPosition;
     unsigned int* nP1CurrentFrameInputs;
     unsigned int* nP2CurrentFrameInputs;
+    TrainingModeRec* recTarget;
+    int* recStatus;
+    DWORD* recEnabled;
 } GameState;
 
 void SaveGameState(GameState* gameState, SavedGameState* dest);
 void LoadGameState(GameState* gameState, SavedGameState* src);
+void SaveRecording(char* cLogpath, GameState* gameState);
+void LoadRecording(char* cLogpath, GameState* gameState);
 HMODULE LocatePERoot();
 HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* methods);
 HRESULT LocateGameState(HMODULE peRoot, GameState* state);
@@ -752,3 +759,18 @@ typedef struct SavedGameState {
     int nP1InputRingBufferPosition;
     int nP2InputRingBufferPosition;
 } SavedGameState;
+
+struct Inputs {
+
+    byte nDirection;
+    byte nButton;
+    unsigned short sPad;
+
+};
+typedef struct TrainingModeRec {
+
+    byte nPlayer;
+    byte nUnknown[3];
+    struct Inputs RecInputs[3599];
+
+} TrainingModeRec;
