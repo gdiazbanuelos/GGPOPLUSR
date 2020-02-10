@@ -3,12 +3,58 @@
 #include <detours.h>
 #include <d3d9.h>
 #include <ggponet.h>
+#include<sstream>
+
+#include <vdf_parser.hpp>
 
 #include "./game.h"
 
 static GameMethods* g_lpGameMethods;
 static GameState* g_lpGameState;
 
+
+void EnableHitboxes(GameState* gameState) {
+	std::ofstream configFile(gameState->szConfigPath);
+	gameState->config.attribs["ShowHitboxes"] = "true";
+	*gameState->bHitboxDisplayEnabled = 1;
+	tyti::vdf::write(configFile, gameState->config);
+	configFile.close();
+
+}
+
+void DisableHitboxes(GameState* gameState) {
+	std::ofstream configFile(gameState->szConfigPath);
+	gameState->config.attribs["ShowHitboxes"] = "false";
+	*gameState->bHitboxDisplayEnabled = 0;
+	tyti::vdf::write(configFile, gameState->config);
+	configFile.close();
+}
+
+void LoadGGPOPorts(GameState* gameState, unsigned short &nOpponentPort, unsigned short &nOurPort) {
+	std::ifstream configFile(gameState->szConfigPath);
+	auto root = tyti::vdf::read(configFile);
+	nOurPort = std::stoi(root.attribs["GGPOLocalPort"]);
+	nOpponentPort = std::stoi(root.attribs["GGPORmtPort"]);
+	configFile.close();
+}
+
+void SaveGGPOPorts(GameState* gameState, unsigned short &nOpponentPort, unsigned short &nOurPort) {
+	std::ofstream configFile(gameState->szConfigPath);
+	gameState->config.attribs["GGPOLocalPort"] = std::to_string(nOurPort);
+	gameState->config.attribs["GGPORmtPort"] = std::to_string(nOpponentPort);
+	tyti::vdf::write(configFile, gameState->config);
+	configFile.close();
+}
+
+HRESULT ApplyConfiguration(GameState* lpState) {
+	std::unordered_map<std::string, std::string>::iterator it;
+	for (it = lpState->config.attribs.begin(); it != lpState->config.attribs.end(); ++it) {
+		if (it->first.compare("ShowHitboxes") == 0) {
+			*lpState->bHitboxDisplayEnabled = it->second.compare("true") == 0 ? 1 : 0;
+		}
+	}
+	return S_OK;
+}
 
 void SaveGameState(GameState* gameState, SavedGameState* dest) {
 	CopyMemory(dest->arrCharacters, *gameState->arrCharacters, sizeof(GameObjectData) * 2);

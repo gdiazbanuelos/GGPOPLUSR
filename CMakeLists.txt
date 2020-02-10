@@ -16,7 +16,7 @@ find_package(GGPO 1 REQUIRED)
 find_package(ValveFileVDF 1 REQUIRED)
 
 add_library(Game STATIC src/game/game.h src/game/game.cxx)
-target_link_libraries(Game PRIVATE Detours GGPO)
+target_link_libraries(Game PUBLIC Detours GGPO ValveFileVDF)
 
 add_executable(Launcher WIN32
     src/launcher/discovery.cxx
@@ -27,10 +27,13 @@ target_link_libraries(Launcher
 	PRIVATE Detours
 	PRIVATE ValveFileVDF
 	PRIVATE "shlwapi"
+	PUBLIC Sidecar
 )
 
 add_library(Overlay STATIC src/overlay/overlay.cxx src/overlay/overlay.h)
-target_link_libraries(Overlay PRIVATE DearImgui DearImgui_Win32 DearImgui_DX9 Game GGPO)
+target_link_libraries(Overlay PUBLIC DearImgui DearImgui_Win32 DearImgui_DX9 Game GGPO)
 
 add_library(Sidecar SHARED src/sidecar/sidecar.cxx)
-target_link_libraries(Sidecar PRIVATE Detours Game GGPO Overlay)
+target_link_libraries(Sidecar PRIVATE Detours Game GGPO Overlay ValveFileVDF)
+
+configure_file("default_config.vdf" "config.vdf" COPYONLY)

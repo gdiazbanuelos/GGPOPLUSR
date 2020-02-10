@@ -13,6 +13,13 @@
 #include <detours.h>
 
 #include "discovery.hxx"
+#include "../sidecar/sidecar.h"
+
+void FindConfigFile(LPSTR szConfigPathA) {
+	char szCwdBuffer[1024] = { 0 };
+	GetCurrentDirectoryA(1024, szCwdBuffer);
+	PathCombineA(szConfigPathA, szCwdBuffer, "config.vdf");
+}
 
 void FindSidecar(LPSTR szDllPathA) {
 	char szCwdBuffer[1024] = { 0 };
@@ -50,7 +57,8 @@ void CreateAppIDFile(LPWSTR szGuiltyDirectory) {
 void CreateGuiltyGearProcess(
 	LPWSTR szGuiltyDirectory,
 	LPWSTR szGuiltyExePath,
-	LPSTR szSidecarDllPathA
+	LPSTR szSidecarDllPathA,
+	LPSTR szSidecarConfigPathA
 ) {
 	wchar_t szErrorString[1024] = { 0 };
 	DWORD dwError;
@@ -91,6 +99,13 @@ void CreateGuiltyGearProcess(
 		ExitProcess(9009);
 	}
 
+	if (!DetourCopyPayloadToProcess(pi.hProcess, s_guidSidecarPayload,
+		szSidecarConfigPathA, sizeof(char) * strlen(szSidecarConfigPathA))) {
+		StringCchPrintf(szErrorString, 1024, L"DetourCopyPayloadToProcess failed: %d", GetLastError());
+		MessageBox(NULL, szErrorString, NULL, MB_OK);
+		ExitProcess(9008);
+	}
+
 	ResumeThread(pi.hThread);
 }
 
@@ -98,11 +113,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
 {
 	wchar_t szGuiltyDirectory[1024] = { 0 };
 	wchar_t szGuiltyExePath[1024] = { 0 };
+	char szSidecarConfigPathA[1024] = { 0 };
 	char szSidecarDllPathA[1024] = { 0 };
 
 	FindGuilty(szGuiltyDirectory, szGuiltyExePath);
 	FindSidecar(szSidecarDllPathA);
+	FindConfigFile(szSidecarConfigPathA);
 	CreateAppIDFile(szGuiltyDirectory);
-	CreateGuiltyGearProcess(szGuiltyDirectory, szGuiltyExePath, szSidecarDllPathA);
+	CreateGuiltyGearProcess(szGuiltyDirectory, szGuiltyExePath, szSidecarDllPathA, szSidecarConfigPathA);
 	return 0;
 }

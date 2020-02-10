@@ -12,9 +12,11 @@
 #include <dinput.h>
 #include <tchar.h>
 #include <ggponet.h>
+#include <vdf_parser.hpp>
 
 #include "../game/game.h"
 #include "../overlay/overlay.h"
+#include "sidecar.h"
 
 #define DEFAULT_ALPHA 0.87f
 
@@ -24,6 +26,7 @@ static HMODULE g_lpPEHeaderRoot;
 static GameMethods g_gameMethods;
 static GameState g_gameState;
 static GGPOErrorCode g_result;
+static char* szConfigFilePath;
 
 HRESULT AttachInitialFunctionDetours(GameMethods* src);
 HRESULT AttachInternalFunctionPointers(GameMethods* src);
@@ -50,6 +53,7 @@ void WINAPI FakeSimulateCurrentState() {
 
 int FakeSetupD3D9() {
 	int out = g_gameMethods.SetupD3D9();
+	ApplyConfiguration(&g_gameState);
 	InitializeOverlay(&g_gameState);
 	return out;
 }
@@ -135,6 +139,8 @@ bool FakeSteamAPI_Init() {
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
 	AttachInternalFunctionPointers(&g_gameMethods);
+
+
 	error = DetourTransactionCommit();
 	if (error != NO_ERROR) {
 		MessageBox(NULL, DETOUR_FAILED_MESSAGE, NULL, 0);
@@ -166,16 +172,36 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	return S_OK;
 }
 
+char* FindPayload() {
+	HMODULE hMod;
+	char* payload;
+	DWORD payloadLength;
+
+	for (hMod = DetourEnumerateModules(NULL); hMod != NULL; hMod = DetourEnumerateModules(hMod)) {
+		payload = (char*)DetourFindPayload(hMod, s_guidSidecarPayload, &payloadLength);
+		if (GetLastError() == 0 && payload != NULL) {
+			return payload;
+		}
+	}
+	MessageBoxA(NULL, "Could not find configuration file payload!", NULL, MB_OK);
+	return NULL;
+}
+
 __declspec(dllexport) BOOL WINAPI DllMain(
 	HINSTANCE hinstDLL,
 	DWORD dwReason,
 	LPVOID reserved
 ) {
 	LONG error;
+	std::ifstream configFile;
+
 	switch (dwReason)
 	{
 	case DLL_PROCESS_ATTACH:
 		DetourRestoreAfterWith();
+		g_gameState.szConfigPath = FindPayload();
+		configFile.open(g_gameState.szConfigPath);
+		g_gameState.config = tyti::vdf::read(configFile);
 
 		g_lpPEHeaderRoot = LocatePERoot();
 		if (LocateGameMethods(g_lpPEHeaderRoot, &g_gameMethods) != S_OK) {

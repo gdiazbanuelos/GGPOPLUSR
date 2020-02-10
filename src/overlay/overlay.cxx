@@ -9,23 +9,36 @@
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam); 
 
-void DrawGGPOConectionWindow(GameState* lpGameState, bool pOpen) {
+void DrawGGPOConectionWindow(GameState* lpGameState, bool* pOpen) {
 	static char szOpponentIp[32];
-	static unsigned short nOpponentPort;
-	static unsigned short nOurPort;
 	static int nOpponentPlayerPosition = 0;
 	static GGPONetworkStats stats;
+	static unsigned short nOpponentPort;
+	static unsigned short nOurPort;
 	int remotePlayerIndex;
 	GGPOState* gs = &(lpGameState->ggpoState);
+	static bool load_vdf = false;
 
-	ImGui::Begin("GGPO Connection", &pOpen);
+	if (!load_vdf) {
+		LoadGGPOPorts(lpGameState, nOpponentPort, nOurPort);
+		load_vdf = true;
+	}
+
+
+	ImGui::Begin("GGPO Connection", pOpen);
 	ImGui::InputScalar("Our port", ImGuiDataType_U16, &nOurPort);
 	ImGui::InputText("Opponent IP", szOpponentIp, 32);
 	ImGui::InputScalar("Opponent port", ImGuiDataType_U16, &nOpponentPort);
 	ImGui::InputInt("Opponent player position", &nOpponentPlayerPosition);
 	if (gs->ggpo == NULL) {
 		if (ImGui::Button("Prepare for connection")) {
+			SaveGGPOPorts(lpGameState, nOpponentPort, nOurPort);
 			PrepareGGPOSession(lpGameState, nOurPort, szOpponentIp, nOpponentPort, nOpponentPlayerPosition);
+
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Save Settings")) {
+			SaveGGPOPorts(lpGameState, nOpponentPort, nOurPort);
 		}
 	}
 	else {
@@ -401,11 +414,12 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	static bool show_p2_object_state = false;
 	static bool show_p2_state = false;
 	static bool show_p2_log = false;
-	static bool show_hitboxes = false;
 	static bool show_saveload = false;
 	static bool show_help = false;
 	static bool show_save_load_replay = false;
 	static bool show_ggpo = false;
+
+	bool show_hitboxes = *lpGameState->bHitboxDisplayEnabled != 0;
 
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -480,12 +494,12 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	}
 	if (show_hitboxes) {
 		if (*lpGameState->bHitboxDisplayEnabled == 0) {
-			*lpGameState->bHitboxDisplayEnabled = 1;
+			EnableHitboxes(lpGameState);
 		}
 	}
 	else {
 		if (*lpGameState->bHitboxDisplayEnabled != 0) {
-			*lpGameState->bHitboxDisplayEnabled = 0;
+			DisableHitboxes(lpGameState);
 		}
 	}
 	if (show_saveload) {

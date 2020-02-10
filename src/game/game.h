@@ -4,6 +4,7 @@
 #include <d3d9.h>
 #include <dinput.h>
 #include <ggponet.h>
+#include <vdf_parser.hpp>
 
 const unsigned short MIN_TENSION = 0;
 const unsigned short MAX_TENSION = 10000;
@@ -86,6 +87,8 @@ typedef struct GameState {
     int nFramesSkipped;
     unsigned int arrInputsDuringFrameSkip[60][2];
     GGPOState ggpoState;
+	char* szConfigPath;
+	tyti::vdf::object config;
 
     LPDIRECT3DSURFACE9* gameRenderTarget;
     LPDIRECT3DSURFACE9* uiRenderTarget;
@@ -120,6 +123,10 @@ typedef struct GameState {
     DWORD* recEnabled;
 } GameState;
 
+void DisableHitboxes(GameState* gameState);
+void EnableHitboxes(GameState* gameState);
+void LoadGGPOPorts(GameState* gameState, unsigned short &nOpponentPort, unsigned short &nOurPort);
+void SaveGGPOPorts(GameState* gameState, unsigned short &nOpponentPort, unsigned short &nOurPort);
 void SaveGameState(GameState* gameState, SavedGameState* dest);
 void LoadGameState(GameState* gameState, SavedGameState* src);
 void SaveRecording(char* cLogpath, GameState* gameState);
@@ -127,6 +134,7 @@ void LoadRecording(char* cLogpath, GameState* gameState);
 HMODULE LocatePERoot();
 HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* methods);
 HRESULT LocateGameState(HMODULE peRoot, GameState* state);
+HRESULT ApplyConfiguration(GameState* lpState);
 void PrepareGGPOSession(GameState* lpGameState, unsigned short nOurPort, char* szOpponentIP, unsigned short nOpponentPort, int nOpponentPlayerPosition);
 
 typedef unsigned short XInputButton;
