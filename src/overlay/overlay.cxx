@@ -259,7 +259,7 @@ void DrawHelpWindow(bool* pOpen) {
 
 void DrawSaveLoadReplayWindow(GameState* lpGameState, bool* pOpen) {
 	static ExampleAppLog saveloadreplay;
-	static char* cLogpath = "./rec.txt";
+	static char* cLogpath = "./rec.acrec";
 	static int prevRecStatus = 0;
 	static int prevRecPlayer = 0;
 
@@ -418,6 +418,12 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	static bool show_help = false;
 	static bool show_save_load_replay = false;
 	static bool show_ggpo = false;
+	static bool load_config = false;
+
+	if (!load_config) {
+		ApplyConfiguration(lpGameState);
+		load_config = true;
+	}
 
 	bool show_hitboxes = *lpGameState->bHitboxDisplayEnabled != 0;
 
