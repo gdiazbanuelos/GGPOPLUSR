@@ -6,6 +6,7 @@ project (
     HOMEPAGE_URL "https://github.com/adanducci/GGPOPLUSR"
 )
 
+set(CPACK_BINARY_NSIS ON CACHE BOOL "CPACK_BINARY_NSIS")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
@@ -22,6 +23,7 @@ add_executable(Launcher WIN32
     src/launcher/discovery.cxx
     src/launcher/discovery.hxx
     src/launcher/launcher.cxx
+    ${PROJECT_SOURCE_DIR}/resources/graphics/Launcher.rc # This .rc binds the .ico to the executable
 )
 target_link_libraries(Launcher
 	PRIVATE Detours
@@ -37,3 +39,36 @@ add_library(Sidecar SHARED src/sidecar/sidecar.cxx)
 target_link_libraries(Sidecar PRIVATE Detours Game GGPO Overlay ValveFileVDF)
 
 configure_file("default_config.vdf" "config.vdf" COPYONLY)
+
+# Install targets for INSTALL project, CPack use this to know which files must be packaged
+install(
+  TARGETS Launcher Game Overlay Sidecar DearImgui DearImgui_Win32 DearImgui_DX9
+  CONFIGURATIONS Debug
+  RUNTIME DESTINATION "."
+)
+install(
+  TARGETS Launcher Game Overlay Sidecar DearImgui DearImgui_Win32 DearImgui_DX9
+  CONFIGURATIONS Release
+  DESTINATION "."
+)
+
+# At configure step CMake defaults OUTPUT_NAME to var-NOTFOUND, so we have to set it here
+set_target_properties(Launcher PROPERTIES OUTPUT_NAME Launcher)
+get_target_property(EXE_TARGET_NAME Launcher OUTPUT_NAME)
+
+set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
+set(CPACK_PACKAGE_VENDOR "${PROJECT_NAME} Dev Team")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_NAME} ${PROJECT_DESCRIPTION}")
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/README.md")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}")
+set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/resources/graphics/${EXE_TARGET_NAME}.ico")
+set(CPACK_NSIS_INSTALLED_ICON_NAME "${PROJECT_SOURCE_DIR}/resources/graphics/${EXE_TARGET_NAME}.ico")
+set(CPACK_NSIS_HELP_LINK "${CMAKE_PROJECT_HOMEPAGE_URL}")
+set(CPACK_NSIS_URL_INFO_ABOUT "${CMAKE_PROJECT_HOMEPAGE_URL}")
+set(CPACK_NSIS_EXECUTABLES_DIRECTORY ".")
+set(CPACK_NSIS_MODIFY_PATH OFF)
+set(CPACK_NSIS_MENU_LINKS "${EXE_TARGET_NAME}.exe" "Start ${PROJECT_NAME}")
+
+# Load packaging facilities, always after all set(CPACK*) options
+include(CPack)
+

@@ -1,4 +1,4 @@
-# GGAC+R GGPO-BASED CASTER
+﻿# GGAC+R GGPO-BASED CASTER
 
 A netplay implementation and quality-of-life tool bundle for the Steam release
 of _Guilty Gear XX Accent Core +R_.
@@ -22,6 +22,8 @@ While it's not strictly necessary, developers may find it useful to have
 Python installed and available from their system path, particularly for
 prototyping new tools.
 
+If you want to build the installer, you need to install [NSIS](https://nsis.sourceforge.io/) and add makensis.exe to your PATH user environment variable.
+
 To build and run GGPOPLUSR:
 1. Clone the following dependencies, which are built from source:
    * [GGPO](https://github.com/pond3r/ggpo)
@@ -31,7 +33,7 @@ To build and run GGPOPLUSR:
      is used to parse Steam's configuration files, to automatically detect
      your installation of Guilty Gear.
    * [Dear Imgui](https://github.com/ocornut/imgui). Dear Imgui is used to
-     provide custom overlays for new features and debugging.
+     provide custom overlays for new features and debugging. 
 2. Build GGPO and Detours using x86-compatible build tools.
    * GGXXAC+R is natively compiled for 32-bit x86, and using an entire 32-bit
      toolchain prevents us from needing to handle cross compilation.
@@ -47,6 +49,7 @@ To build and run GGPOPLUSR:
 5. Confirm that `Launcher.exe` and `Sidecar.dll` are in the build output.
 6. Run `Launcher.exe`.
    * You may need to copy the `ggpo.dll` in `GGPO_DIR\build\bin\x86\Debug` to the Guilty Gear install folder to launch the program.
+7. (Optional) Build the PACKAGE project in Visual Studio to generate the installer.
 
 ## Why GGPO? Why +R? Why now?
 While lockstep netcode was considered industry standard for many years
