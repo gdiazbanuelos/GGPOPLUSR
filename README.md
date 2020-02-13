@@ -49,7 +49,12 @@ To build and run GGPOPLUSR:
 5. Confirm that `Launcher.exe` and `Sidecar.dll` are in the build output.
 6. Run `Launcher.exe`.
    * You may need to copy the `ggpo.dll` in `GGPO_DIR\build\bin\x86\Debug` to the Guilty Gear install folder to launch the program.
-7. (Optional) Build the PACKAGE project in Visual Studio to generate the installer.
+
+(Optional) To build the installer program:
+1. Install [NSIS](https://nsis.sourceforge.io/).
+2. Add makensis.exe to your PATH user environment variable.
+3. At CMake configure step, point the vcredist_86_exe variable to the Microsoft Visual C++ Redistributable for Visual Studio 2015, 2017 and 2019 installer program for x86 (vcredist.x86.exe). If you cannot locate it in your Visual Studio installation folder, you can [get it from Microsoft](https://support.microsoft.com/help/2977003/the-latest-supported-visual-c-downloads).
+4. Open the solution in Visual Studio and build the PACKAGE project to generate the installer.
 
 ## Why GGPO? Why +R? Why now?
 While lockstep netcode was considered industry standard for many years
