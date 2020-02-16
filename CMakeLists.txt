@@ -15,7 +15,7 @@ find_package(DearImgui 1 REQUIRED)
 find_package(Detours 4 REQUIRED)
 find_package(GGPO 1 REQUIRED)
 find_package(ValveFileVDF 1 REQUIRED)
-find_program(vc_redist_x86_exe 1 NAMES "VC_redist.x86.exe" PATHS "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Redist/MSVC/14.24.28127")
+find_program(VC_REDIST_X86_EXE 1 NAMES "VC_redist.x86.exe" PATHS "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Redist/MSVC/14.24.28127")
 
 add_library(Game STATIC src/game/game.h src/game/game.cxx)
 target_link_libraries(Game PUBLIC Detours GGPO ValveFileVDF)
@@ -60,10 +60,15 @@ install(
 )
 install(
   FILES "${GGPO_DIR}/build/bin/x86/Debug/GGPO.dll"
-  CONFIGURATIONS Debug Release
+  CONFIGURATIONS Debug
   RUNTIME DESTINATION "."
 )
-install(PROGRAMS ${vc_redist_x86_exe} DESTINATION redist)
+install(
+  FILES "${GGPO_DIR}/build/bin/x86/Release/GGPO.dll"
+  CONFIGURATIONS Release
+  RUNTIME DESTINATION "."
+)
+install(PROGRAMS ${VC_REDIST_X86_EXE} DESTINATION redist)
 
 # At configure step CMake defaults OUTPUT_NAME to var-NOTFOUND, so we have to set it here
 set_target_properties(Launcher PROPERTIES OUTPUT_NAME Launcher)
@@ -75,15 +80,34 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_NAME} ${PROJECT_DESCRIPTION}")
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/README.md")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}")
 set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/resources/graphics/${EXE_TARGET_NAME}.ico")
-set(CPACK_NSIS_INSTALLED_ICON_NAME "${PROJECT_SOURCE_DIR}/resources/graphics/${EXE_TARGET_NAME}.ico")
+set(CPACK_NSIS_INSTALLED_ICON_NAME "${EXE_TARGET_NAME}.exe") #This will make the icon appear in "control panel/programs"
 set(CPACK_NSIS_HELP_LINK "${CMAKE_PROJECT_HOMEPAGE_URL}")
 set(CPACK_NSIS_URL_INFO_ABOUT "${CMAKE_PROJECT_HOMEPAGE_URL}")
 set(CPACK_NSIS_EXECUTABLES_DIRECTORY ".")
 set(CPACK_NSIS_MODIFY_PATH OFF)
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 set(CPACK_NSIS_MENU_LINKS "${EXE_TARGET_NAME}.exe" "Start ${PROJECT_NAME}")
-set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "ExecWait '$INSTDIR\\\\redist\\\\vc_redist.x86.exe /install /passive /norestart'")
+
+set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
+  !include LogicLib.nsh
+  ExecWait '$INSTDIR\\\\redist\\\\vc_redist.x86.exe /install /passive /norestart'
+
+  Var /GLOBAL ggxxacprdir
+  ReadRegStr $ggxxacprdir HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\Steam App 348550\\\" \\\"InstallLocation\\\"
+
+  \\\${If} $ggxxacprdir == ''
+    SetRegView 64
+    ReadRegStr $ggxxacprdir HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall\\\\Steam App 348550\\\" \\\"InstallLocation\\\"
+    \\\${If} $ggxxacprdir == ''
+      MessageBox MB_OK 'Could not find GGXXACPR installation directory. Please make sure GGXXACPR is installed, and move $INSTDIR\\\\GGPO.dll to your GGXXACPR install folder.'
+    \\\${EndIf}
+  \\\${EndIf}
+
+  \\\${If} $ggxxacprdir != ''
+    CopyFiles $INSTDIR\\\\GGPO.dll $ggxxacprdir\\\\GGPO.dll
+    Delete $INSTDIR\\\\GGPO.dll
+  \\\${EndIf}
+")
 
 # Load packaging facilities, always after all set(CPACK*) options
 include(CPack)
-
