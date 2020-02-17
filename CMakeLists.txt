@@ -17,8 +17,8 @@ find_package(GGPO 1 REQUIRED)
 find_package(ValveFileVDF 1 REQUIRED)
 find_program(VC_REDIST_X86_EXE 1 NAMES "VC_redist.x86.exe" PATHS "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Redist/MSVC/14.24.28127")
 
-add_library(Game STATIC src/game/game.h src/game/game.cxx)
-target_link_libraries(Game PUBLIC Detours GGPO ValveFileVDF)
+add_library(Game STATIC src/game/game.h src/game/game.cxx src/game/syncthread.cxx)
+target_link_libraries(Game PUBLIC Detours GGPO ValveFileVDF "ws2_32" "Mswsock" "AdvApi32")
 
 add_executable(Launcher WIN32
     src/launcher/discovery.cxx

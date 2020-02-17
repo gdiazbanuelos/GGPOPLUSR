@@ -1,5 +1,14 @@
 #include <cstdio>
+#include <stdlib.h>
+#include <stdio.h>
+
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <windows.h>
+
+#include <shlwapi.h>
+#include <strsafe.h>
+
 #include <detours.h>
 #include <d3d9.h>
 #include <ggponet.h>
@@ -12,6 +21,39 @@
 static GameMethods* g_lpGameMethods;
 static GameState* g_lpGameState;
 
+int fletcher32_checksum(short* data, size_t len)
+{
+	int sum1 = 0xffff, sum2 = 0xffff;
+
+	while (len) {
+		size_t tlen = len > 360 ? 360 : len;
+		len -= tlen;
+		do {
+			sum1 += *data++;
+			sum2 += sum1;
+		} while (--tlen);
+		sum1 = (sum1 & 0xffff) + (sum1 >> 16);
+		sum2 = (sum2 & 0xffff) + (sum2 >> 16);
+	}
+
+	/* Second reduction step to reduce sums to 16 bits */
+	sum1 = (sum1 & 0xffff) + (sum1 >> 16);
+	sum2 = (sum2 & 0xffff) + (sum2 >> 16);
+	return sum2 << 16 | sum1;
+}
+
+void EnterVersus2P(GameState* gameState, int* arrCharacters, StageSelection* stage) {
+	g_lpGameMethods->CleanUpFibers();
+	gameState->arrnConfirmedCharacters[0] = arrCharacters[0];
+	gameState->arrnConfirmedCharacters[1] = arrCharacters[1];
+	*gameState->nConfirmedStageIndex = stage->value;
+	*gameState->nSystemState = 0x11;
+	*gameState->nGameMode = 0x803;
+	*gameState->nUnknownIsPlayerActive1 = 1;
+	*gameState->nUnknownIsPlayerActive2 = 1;
+	gameState->arrbPlayerCPUValues[0] = 0;
+	gameState->arrbPlayerCPUValues[1] = 0;
+}
 
 void EnableHitboxes(GameState* gameState) {
 	std::ofstream configFile(gameState->szConfigPath);
@@ -57,12 +99,21 @@ HRESULT ApplyConfiguration(GameState* lpState) {
 }
 
 void SaveGameState(GameState* gameState, SavedGameState* dest) {
-	CopyMemory(dest->arrCharacters, *gameState->arrCharacters, sizeof(GameObjectData) * 2);
-	CopyMemory(dest->arrNpcObjects, *gameState->arrNpcObjects, sizeof(GameObjectData) * 60);
+	char szMessageBuf[1024] = { 0 };
+	StringCchPrintfA(szMessageBuf, 1024, "save game state");
+	// MessageBoxA(NULL, szMessageBuf, NULL, MB_OK);
+
+	if (*gameState->arrCharacters != NULL) {
+		CopyMemory(dest->arrCharacters, *gameState->arrCharacters, sizeof(GameObjectData) * 2);
+	}
+	if (*gameState->arrNpcObjects != NULL) {
+		CopyMemory(dest->arrNpcObjects, *gameState->arrNpcObjects, sizeof(GameObjectData) * 60);
+	}
 	CopyMemory(dest->arrPlayerData, gameState->arrPlayerData, sizeof(PlayerData) * 2);
 	CopyMemory(&dest->projectileOwner, gameState->projectileOwner, sizeof(GameObjectData));
 	CopyMemory(&dest->effectOwner, gameState->effectOwner, sizeof(GameObjectData));
 	CopyMemory(&dest->unknownOwner, gameState->unknownOwner, sizeof(GameObjectData));
+
 	dest->fCameraXPos = *gameState->fCameraXPos;
 	dest->nCameraHoldTimer = *gameState->nCameraHoldTimer;
 	dest->nCameraZoom = *gameState->nCameraZoom;
@@ -84,10 +135,22 @@ bool __cdecl ggpo_save_game_state_callback(
 	int* checksum,
 	int frame
 ) {
+	// MessageBoxA(NULL, "ggpo_save_game_state_callback", NULL, MB_OK);
 	*len = sizeof(SavedGameState);
+	char szMessageBuf[1024] = { 0 };
+
+	StringCchPrintfA(szMessageBuf, 1024, "save size: %d", *len);
+	// MessageBoxA(NULL, szMessageBuf, NULL, MB_OK);
+
 	*buffer = (unsigned char*)malloc(*len);
+	StringCchPrintfA(szMessageBuf, 1024, "buffer address: %x", *buffer);
+	// MessageBoxA(NULL, szMessageBuf, NULL, MB_OK);
 	SavedGameState* dest = *(SavedGameState**)buffer;
+
 	SaveGameState(g_lpGameState, dest);
+	// MessageBoxA(NULL, "ggpo_save_game_state_callback end", NULL, MB_OK);
+
+	// *checksum = fletcher32_checksum((short*)*buffer, *len / 2);
 	return true;
 }
 
@@ -114,8 +177,10 @@ void LoadGameState(GameState* gameState, SavedGameState* src) {
 }
 
 bool __cdecl ggpo_load_game_state_callback(unsigned char* buffer, int len) {
+	// MessageBoxA(NULL, "ggpo_load_game_state_callback", NULL, MB_OK);
 	SavedGameState* src = (SavedGameState*)buffer;
 	LoadGameState(g_lpGameState, src);
+	// MessageBoxA(NULL, "ggpo_load_game_state_callback_end", NULL, MB_OK);
 	return true;
 }
 
@@ -123,7 +188,27 @@ void __cdecl ggpo_free_buffer(void* buffer) {
 	free(buffer);
 }
 
-bool __cdecl ggpo_advance_frame(int flags) {
+void WINAPI FakeSimulateCurrentState() {
+	if (g_lpGameState && g_lpGameState->ggpoState.ggpo != NULL) {
+		if (g_lpGameState->ggpoState.bIsSynchronized != 0) {
+			if (GGPO_SUCCEEDED(g_lpGameState->ggpoState.lastResult)) {
+				g_lpGameMethods->SimulateCurrentState();
+				ggpo_advance_frame(g_lpGameState->ggpoState.ggpo);
+			}
+			else {
+				// MessageBoxA(NULL, "sim-current-state: previous GGPO result failed!", NULL, MB_OK);
+			}
+		}
+		ggpo_idle(g_lpGameState->ggpoState.ggpo, 2);
+	}
+	else {
+		g_lpGameMethods->SimulateCurrentState();
+		// numSimulateCalls++;
+	}
+}
+
+bool __cdecl ggpo_advance_frame_callback(int flags) {
+	// MessageBoxA(NULL, "GGPO advance frame called", NULL, MB_OK);
 	unsigned int inputs[2];
 	int disconnect_flags;
 	// Make sure we fetch new inputs from GGPO and use those to update
@@ -131,7 +216,7 @@ bool __cdecl ggpo_advance_frame(int flags) {
 	ggpo_synchronize_input(g_lpGameState->ggpoState.ggpo, (void*)inputs, sizeof(int) * 2, &disconnect_flags);
 	*g_lpGameState->nP1CurrentFrameInputs = inputs[0];
 	*g_lpGameState->nP2CurrentFrameInputs = inputs[1];
-	g_lpGameMethods->SimulateCurrentState();
+	FakeSimulateCurrentState();
 	return true;
 }
 
@@ -153,10 +238,12 @@ bool __cdecl ggpo_on_event(GGPOEvent* info) {
 		// MessageBoxA(NULL, "synchronizing to peer", NULL, MB_OK);
 		break;
 	case GGPO_EVENTCODE_SYNCHRONIZED_WITH_PEER:
-		// MessageBoxA(NULL, "sync complete to peer", NULL, MB_OK);
+		// MessageBoxA(NULL, "synchronized to peer", NULL, MB_OK);
+		g_lpGameState->ggpoState.bIsSynchronized = 1;
 		break;
 	case GGPO_EVENTCODE_RUNNING:
 		// MessageBoxA(NULL, "running", NULL, MB_OK);
+		EnterVersus2P(g_lpGameState, g_lpGameState->ggpoState.characters, &STAGES[0]);
 		break;
 	case GGPO_EVENTCODE_CONNECTION_INTERRUPTED:
 		// MessageBoxA(NULL, "interrupted", NULL, MB_OK);
@@ -190,7 +277,8 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->DrawUIPrimitivesAndEndScene = (void(WINAPI*)())(peRootOffset + 0x14AD80);
 	dest->PollForInputs = (void(WINAPI*)())(peRootOffset + 0x52630);
 	dest->SimulateCurrentState = (void(WINAPI*)())(peRootOffset + 0xE7AE0);
-
+	dest->CleanUpFibers = (void(WINAPI*)())(peRootOffset + 0x3D720);
+	dest->HandlePossibleSteamInvites = (void(WINAPI*)())(peRootOffset + 0xAE440);
 	g_lpGameMethods = dest;
 
 	return S_OK;
@@ -200,6 +288,7 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 	dest->nFramesToSkipRender = 0;
 	dest->nFramesSkipped = 0;
+	dest->lastSecondNumFramesSimulated = 0;
 
 	dest->gameRenderTarget = (LPDIRECT3DSURFACE9*)(peRootOffset + 0x505AE0);
 	dest->uiRenderTarget = (LPDIRECT3DSURFACE9*)(peRootOffset + 0x555B98);
@@ -230,6 +319,18 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->recTarget = (TrainingModeRec*)(peRootOffset + 0x4FDD28);
 	dest->recStatus = (int*)(peRootOffset + 0x4FDD24);
 	dest->recEnabled = (DWORD*)(peRootOffset + 0x4FDD2C);
+	dest->nSystemState = (DWORD*)(peRootOffset + 0x555FF4);
+	dest->nGameMode = (DWORD*)(peRootOffset + 0x51B8CC);
+	dest->arrnConfirmedCharacters = (WORD*)(peRootOffset + 0x51B9E4);
+	dest->nCharacterSelectStageIndex = (WORD*)(peRootOffset + 0x516048);
+	dest->nConfirmedStageIndex = (DWORD*)(peRootOffset + 0x555FE4);
+	dest->nUnknownIsPlayerActive1 = (DWORD*)(peRootOffset + 0x50BF30);
+	dest->nUnknownIsPlayerActive2 = (DWORD*)(peRootOffset + 0x50BF68);
+	dest->arrbPlayerCPUValues = (WORD*)(peRootOffset + 0x51B81C);
+
+	dest->sessionInitState.bHasRequest = 0;
+	dest->sessionInitState.bHasResponse = 0;
+	InitializeCriticalSection(&dest->sessionInitState.criticalSection);
 
 	return S_OK;
 }
@@ -253,24 +354,37 @@ void LoadRecording(char* cLogpath, GameState* gameState) {
 	fread(gameState->recTarget->nUnknown, sizeof(byte) * 3, 1, pFile);
 	fread(&gameState->recTarget->RecInputs, sizeof(Inputs) * 3599, 1, pFile);
 	fclose(pFile);
-
 }
 
-void PrepareGGPOSession(GameState* lpGameState, unsigned short nOurPort, char* szOpponentIP, unsigned short nOpponentPort, int nOpponentPlayerPosition) {
+void PrepareGGPOSession(GameState* lpGameState) {
+	char szMessageBuf[1024] = { 0 };
+
+	ClientSynchronizationRequest* request = &lpGameState->sessionInitState.request;
+	ServerSynchronizationResponse* response = &lpGameState->sessionInitState.response;
+	bool bIsHost = lpGameState->sessionInitState.bIsHost;
+	unsigned short nOurPort = bIsHost ? response->nPort : request->nPort;
+	unsigned short nOpponentPort = bIsHost ? request->nPort : response->nPort;
+	CopyMemory(lpGameState->nRandomTable, response->randomTable, sizeof(DWORD) * 0x272);
+
 	char msgBuffer[16];
 	GGPOErrorCode result;
+
 	GGPOSessionCallbacks* cb = &lpGameState->ggpoState.cb;
-	lpGameState->ggpoState.localPlayerIndex = nOpponentPlayerPosition == 0 ? 1 : 0;
 	cb->load_game_state = ggpo_load_game_state_callback;
 	cb->save_game_state = ggpo_save_game_state_callback;
 	cb->free_buffer = ggpo_free_buffer;
-	cb->advance_frame = ggpo_advance_frame;
+	cb->advance_frame = ggpo_advance_frame_callback;
 	cb->log_game_state = ggpo_log_game_state;
 	cb->begin_game = ggpo_begin_game;
 	cb->on_event = ggpo_on_event;
 
 	g_lpGameState = lpGameState;
+	lpGameState->ggpoState.localPlayerIndex = bIsHost ? 0 : 1;
+	lpGameState->ggpoState.characters[0] = (int)response->nSelectedCharacter;
+	lpGameState->ggpoState.characters[1] = (int)request->nSelectedCharacter;
 	lpGameState->ggpoState.ggpo = NULL;
+	lpGameState->ggpoState.lastResult = GGPO_OK;
+	lpGameState->ggpoState.bIsSynchronized = 0;
 	result = ggpo_start_session(
 		&lpGameState->ggpoState.ggpo,
 		cb,
@@ -285,20 +399,20 @@ void PrepareGGPOSession(GameState* lpGameState, unsigned short nOurPort, char* s
 		MessageBoxA(NULL, "nope", NULL, MB_OK);
 	}
 
-	if (nOpponentPlayerPosition == 0) {
-		lpGameState->ggpoState.remotePlayer = &(lpGameState->ggpoState.p1);
-		lpGameState->ggpoState.localPlayer = &(lpGameState->ggpoState.p2);
+	if (bIsHost) {
+		lpGameState->ggpoState.localPlayer = &(lpGameState->ggpoState.p1);
+		lpGameState->ggpoState.remotePlayer = &(lpGameState->ggpoState.p2);
 	}
 	else {
-		lpGameState->ggpoState.remotePlayer = &(lpGameState->ggpoState.p2);
-		lpGameState->ggpoState.localPlayer = &(lpGameState->ggpoState.p1);
+		lpGameState->ggpoState.localPlayer = &(lpGameState->ggpoState.p2);
+		lpGameState->ggpoState.remotePlayer = &(lpGameState->ggpoState.p1);
 	}
 	lpGameState->ggpoState.p1.size = lpGameState->ggpoState.p2.size = sizeof(GGPOPlayer);
 	lpGameState->ggpoState.p1.player_num = 1;
 	lpGameState->ggpoState.p2.player_num = 2;
 	lpGameState->ggpoState.remotePlayer->type = GGPO_PLAYERTYPE_REMOTE;
 	lpGameState->ggpoState.localPlayer->type = GGPO_PLAYERTYPE_LOCAL;
-	strcpy(lpGameState->ggpoState.remotePlayer->u.remote.ip_address, szOpponentIP);
+	strcpy(lpGameState->ggpoState.remotePlayer->u.remote.ip_address, lpGameState->sessionInitState.szOpponentIP);
 	lpGameState->ggpoState.remotePlayer->u.remote.port = nOpponentPort;
 
 	result = ggpo_add_player(
@@ -309,10 +423,18 @@ void PrepareGGPOSession(GameState* lpGameState, unsigned short nOurPort, char* s
 		MessageBoxA(NULL, msgBuffer, NULL, MB_OK);
 	}
 	result = ggpo_add_player(
-		lpGameState->ggpoState.ggpo, &lpGameState->ggpoState.p2,
-		&lpGameState->ggpoState.player_handles[1]);
+		lpGameState->ggpoState.ggpo,
+		&lpGameState->ggpoState.p2,
+		&lpGameState->ggpoState.player_handles[1]
+	);
 	if (!GGPO_SUCCEEDED(result)) {
 		sprintf(msgBuffer, "nope p2 %d", result);
 		MessageBoxA(NULL, msgBuffer, NULL, MB_OK);
 	}
+
+	ggpo_set_frame_delay(
+		lpGameState->ggpoState.ggpo,
+		lpGameState->ggpoState.player_handles[lpGameState->ggpoState.localPlayerIndex],
+		2
+	);
 }

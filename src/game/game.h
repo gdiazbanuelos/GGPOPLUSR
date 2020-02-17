@@ -44,6 +44,106 @@ typedef struct PlayerData PlayerData;
 typedef struct SavedGameState SavedGameState;
 typedef struct TrainingModeRec TrainingModeRec;
 
+typedef struct ClientSynchronizationRequest {
+    unsigned short nPort;
+    int nSelectedCharacter;
+} ClientSynchronizationRequest;
+
+typedef struct ServerSynchronizationResponse {
+    unsigned short nPort;
+    int nSelectedCharacter;
+    DWORD randomTable[0x272];
+} ServerSynchronizationResponse;
+
+typedef struct CharacterSelection {
+    char* name;
+    int value;
+} CharacterSelection;
+
+static CharacterSelection CHARACTERS[] = {
+    {"Sol Badguy", 0x1},
+    {"Ky Kiske", 0x2},
+    {"May", 0x3},
+    {"Millia Rage", 0x4},
+    {"Axl Low", 0x5},
+    {"Potemkin", 0x6},
+    {"Chipp Zanuff", 0x7},
+    {"Eddie", 0x8},
+    {"Baiken", 0x9},
+    {"Faust", 0xa},
+    {"Testament", 0xb},
+    {"Jam Kuradoberi", 0xc},
+    {"Anji Mito", 0xd},
+    {"Johnny", 0xe},
+    {"Venom", 0xf},
+    {"Dizzy", 0x10},
+    {"Slayer", 0x11},
+    {"I-No", 0x12},
+    {"Zappa", 0x13},
+    {"Bridget", 0x14},
+    {"Robo-Ky", 0x15},
+    {"ABA", 0x16},
+    {"Order-Sol", 0x17},
+    {"Kliff Undersn", 0x18},
+    {"Justice", 0x19}
+};
+
+typedef struct StageSelection {
+    char* name;
+    int value;
+} StageSelection;
+
+static StageSelection STAGES[] = {
+    {"London", 0x1},
+    {"Colony", 0x2},
+    {"China", 0x4},
+    {"Mayship", 0x5},
+    {"Zepp", 0x6},
+    {"Paris", 0x8},
+    {"Hell", 0x9},
+    {"Grove", 0xa},
+    {"Verdant", 0xb},
+    {"Castle", 0xc},
+    {"Babylon", 0xd},
+    {"Phantomcity", 0xe},
+    {"Unknown [Boss I-No]", 0xf},
+    {"Frasco", 0x10},
+    {"AD2172", 0x11},
+    {"Grave", 0x12},
+    {"Heaven", 0x13},
+    {"London (Reload)", 0x15},
+    {"Colony (Reload)", 0x16},
+    {"Russia (Reload)", 0x17},
+    {"China (Reload)", 0x18},
+    {"Mayship (Reload)", 0x19},
+    {"Zepp (Reload)", 0x1a},
+    {"Nirvana (Reload)", 0x1b},
+    {"Paris (Reload)", 0x1c},
+    {"Hell (Reload)", 0x1d},
+    {"Grove (Reload)", 0x1e},
+    {"Verdant (Reload)", 0x1f},
+    {"Castle (Reload)", 0x20},
+    {"Babylon (Reload)", 0x21},
+    {"Phantomcity (Reload)", 0x22},
+    {"Unknown [Boss I-No] (Reload)", 0x23},
+    {"London (Slash)", 0x29},
+    {"Colony (Slash)", 0x2a},
+    {"Russia (Slash)", 0x2b},
+    {"China (Slash)", 0x2c},
+    {"Mayship (Slash)", 0x2d},
+    {"Zepp (Slash)", 0x2e},
+    {"Nirvana (Slash)", 0x2f},
+    {"Paris (Slash)", 0x30},
+    {"Hell (Slash)", 0x31},
+    {"Grove (Slash)", 0x32},
+    {"Verdant (Slash)", 0x33},
+    {"Castle (Slash)", 0x34},
+    {"Babylon (Slash)", 0x35},
+    {"Phantomcity (Slash)", 0x36},
+    {"Unknown [Boss I-No] (Slash)", 0x37},
+    {"Frasco (Slash)", 0x38},
+    {"AD2172 (Slash)", 0x39},
+};
 
 struct InputRewriteStruct {
     bool left;
@@ -68,6 +168,8 @@ typedef struct GameMethods {
     void(WINAPI* DrawUIPrimitivesAndEndScene)();
     void(WINAPI* PollForInputs)();
     void(WINAPI* SimulateCurrentState)();
+    void(WINAPI* CleanUpFibers)();
+    void(WINAPI* HandlePossibleSteamInvites)();
 } GameMethods;
 
 typedef struct GGPOState {
@@ -80,13 +182,29 @@ typedef struct GGPOState {
     GGPOSessionCallbacks cb;
     GGPOErrorCode lastResult;
     int localPlayerIndex;
+    int characters[2];
+    char bIsSynchronized;
 } GGPOState;
+
+typedef struct SessionInitiationState {
+    ClientSynchronizationRequest request;
+    ServerSynchronizationResponse response;
+    bool bHasRequest;
+    bool bHasResponse;
+    bool bIsHost;
+    char szOpponentIP[32];
+    CRITICAL_SECTION criticalSection;
+} SessionInitializationState;
 
 typedef struct GameState {
     int nFramesToSkipRender;
     int nFramesSkipped;
+    int lastSecondNumFramesSimulated;
     unsigned int arrInputsDuringFrameSkip[60][2];
+
     GGPOState ggpoState;
+    SessionInitiationState sessionInitState;
+
 	char* szConfigPath;
 	tyti::vdf::object config;
 
@@ -121,12 +239,21 @@ typedef struct GameState {
     TrainingModeRec* recTarget;
     int* recStatus;
     DWORD* recEnabled;
+    DWORD* nSystemState;
+    DWORD* nGameMode;
+    WORD* arrnConfirmedCharacters;
+    WORD* nCharacterSelectStageIndex;
+    DWORD* nConfirmedStageIndex;
+    DWORD* nUnknownIsPlayerActive1;
+    DWORD* nUnknownIsPlayerActive2;
+    WORD* arrbPlayerCPUValues;
 } GameState;
 
 void DisableHitboxes(GameState* gameState);
 void EnableHitboxes(GameState* gameState);
 void LoadGGPOPorts(GameState* gameState, unsigned short &nOpponentPort, unsigned short &nOurPort);
 void SaveGGPOPorts(GameState* gameState, unsigned short &nOpponentPort, unsigned short &nOurPort);
+void EnterVersus2P(GameState* gameState, int* arrCharacters, StageSelection* stage);
 void SaveGameState(GameState* gameState, SavedGameState* dest);
 void LoadGameState(GameState* gameState, SavedGameState* src);
 void SaveRecording(char* cLogpath, GameState* gameState);
@@ -135,7 +262,15 @@ HMODULE LocatePERoot();
 HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* methods);
 HRESULT LocateGameState(HMODULE peRoot, GameState* state);
 HRESULT ApplyConfiguration(GameState* lpState);
-void PrepareGGPOSession(GameState* lpGameState, unsigned short nOurPort, char* szOpponentIP, unsigned short nOpponentPort, int nOpponentPlayerPosition);
+void WINAPI FakeSimulateCurrentState();
+
+HANDLE CreateSynchronizeClientThread(GameState* lpGameState,
+    char* szHostIP,
+    unsigned short nSyncPort,
+    unsigned short nGGPOPort,
+    int nOurCharacter);
+HANDLE CreateSynchronizeServerThread(GameState* lpGameState, unsigned short nSyncPort, unsigned short nGGPOPort, int nOurCharacter);
+void PrepareGGPOSession(GameState* lpGameState);
 
 typedef unsigned short XInputButton;
 const XInputButton XINPUTBTN_A = 16384;

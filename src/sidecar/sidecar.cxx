@@ -38,19 +38,6 @@ LRESULT WINAPI FakeWindowFunc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return g_gameMethods.WindowFunc(hWnd, msg, wParam, lParam);
 }
 
-void WINAPI FakeSimulateCurrentState() {
-	if (g_gameState.ggpoState.ggpo != NULL) {
-		if (GGPO_SUCCEEDED(g_gameState.ggpoState.lastResult)) {
-			g_gameMethods.SimulateCurrentState();
-			ggpo_advance_frame(g_gameState.ggpoState.ggpo);
-		}
-		ggpo_idle(g_gameState.ggpoState.ggpo, 2);
-	}
-	else {
-		g_gameMethods.SimulateCurrentState();
-	}
-}
-
 int FakeSetupD3D9() {
 	int out = g_gameMethods.SetupD3D9();
 	ApplyConfiguration(&g_gameState);
@@ -99,6 +86,8 @@ void __cdecl FakeBeginSceneAndDrawGamePrimitives(int bShouldBeginScene) {
 
 void FakePollForInputs() {
 	unsigned int inputs[2];
+	char szMessageBuf[1024] = { 0 };
+
 	g_gameMethods.PollForInputs();
 
 	// Non-GGPO rewriting
@@ -108,7 +97,7 @@ void FakePollForInputs() {
 	}
 
 	// GGPO Rewriting
-	if (g_gameState.ggpoState.ggpo != NULL) {
+	if (g_gameState.ggpoState.ggpo != NULL && g_gameState.ggpoState.bIsSynchronized != 0) {
 		unsigned int* inputLocation = g_gameState.ggpoState.localPlayerIndex == 0 ?
 			g_gameState.nP1CurrentFrameInputs :
 			g_gameState.nP2CurrentFrameInputs;
@@ -129,6 +118,14 @@ void FakePollForInputs() {
 			);
 			*g_gameState.nP1CurrentFrameInputs = inputs[0];
 			*g_gameState.nP2CurrentFrameInputs = inputs[1];
+			if (!GGPO_SUCCEEDED(g_gameState.ggpoState.lastResult)) {
+				StringCchPrintfA(szMessageBuf, 1024, "FakePollForInputs: synchronize input failed with %d", g_gameState.ggpoState.lastResult);
+				// MessageBoxA(NULL, szMessageBuf, NULL, MB_OK);
+			}
+		}
+		else {
+			StringCchPrintfA(szMessageBuf, 1024, "FakePollForInputs: add local input failed with %d", g_gameState.ggpoState.lastResult);
+			// MessageBoxA(NULL, szMessageBuf, NULL, MB_OK);
 		}
 	}
 }
@@ -139,8 +136,6 @@ bool FakeSteamAPI_Init() {
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
 	AttachInternalFunctionPointers(&g_gameMethods);
-
-
 	error = DetourTransactionCommit();
 	if (error != NO_ERROR) {
 		MessageBox(NULL, DETOUR_FAILED_MESSAGE, NULL, 0);
@@ -151,6 +146,21 @@ bool FakeSteamAPI_Init() {
 
 BOOL FakeIsDebuggerPresent() {
 	return FALSE;
+}
+
+void FakeHandlePossibleSteamInvites() {
+	g_gameMethods.HandlePossibleSteamInvites();
+
+	if (TryEnterCriticalSection(&g_gameState.sessionInitState.criticalSection)) {
+		if (
+			g_gameState.ggpoState.ggpo == NULL &&
+			g_gameState.sessionInitState.bHasRequest &&
+			g_gameState.sessionInitState.bHasResponse
+		) {
+			PrepareGGPOSession(&g_gameState);
+		}
+		LeaveCriticalSection(&g_gameState.sessionInitState.criticalSection);
+	}
 }
 
 HRESULT AttachInitialFunctionDetours(GameMethods* src) {
@@ -168,6 +178,7 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->DrawUIPrimitivesAndEndScene, FakeDrawUIPrimitivesAndEndScene);
 	DetourAttach(&(PVOID&)src->PollForInputs, FakePollForInputs);
 	DetourAttach(&(PVOID&)src->SimulateCurrentState, FakeSimulateCurrentState);
+	DetourAttach(&(PVOID&)src->HandlePossibleSteamInvites, FakeHandlePossibleSteamInvites);
 
 	return S_OK;
 }
@@ -194,6 +205,7 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 ) {
 	LONG error;
 	std::ifstream configFile;
+	DWORD nConfigFilePathLength;
 
 	switch (dwReason)
 	{
@@ -202,7 +214,6 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 		g_gameState.szConfigPath = FindPayload();
 		configFile.open(g_gameState.szConfigPath);
 		g_gameState.config = tyti::vdf::read(configFile);
-
 		g_lpPEHeaderRoot = LocatePERoot();
 		if (LocateGameMethods(g_lpPEHeaderRoot, &g_gameMethods) != S_OK) {
 			MessageBox(NULL, TEXT("Could not locate game methods!"), NULL, MB_OK);
