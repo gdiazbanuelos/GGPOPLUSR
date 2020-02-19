@@ -17,8 +17,12 @@
 #include "../game/game.h"
 #include "../overlay/overlay.h"
 #include "sidecar.h"
+#include "ID3D9Wrapper.h"
 
 #define DEFAULT_ALPHA 0.87f
+
+typedef IDirect3D9* (__stdcall* Direct3DCreate9_t)(UINT SDKVersion);
+Direct3DCreate9_t orig_Direct3DCreate9;
 
 static LPCWSTR DETOUR_FAILED_MESSAGE = TEXT("Could not detour targets!");
 
@@ -30,6 +34,20 @@ static char* szConfigFilePath;
 
 HRESULT AttachInitialFunctionDetours(GameMethods* src);
 HRESULT AttachInternalFunctionPointers(GameMethods* src);
+
+IDirect3D9* __stdcall FakeDirect3DCreate9(UINT sdkVers)
+{
+	IDirect3D9* pD3d9 = orig_Direct3DCreate9(sdkVers); // real one
+	Direct3D9Wrapper* ret = new Direct3D9Wrapper(&pD3d9);
+	return pD3d9;
+}
+
+void hookDirect3DCreate9()
+{
+	HMODULE hM = GetModuleHandleA("d3d9.dll");
+	orig_Direct3DCreate9 = (Direct3DCreate9_t)GetProcAddress(hM, "Direct3DCreate9");
+	DetourAttach(&(PVOID&)orig_Direct3DCreate9, FakeDirect3DCreate9);
+}
 
 LRESULT WINAPI FakeWindowFunc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	if (OverlayWindowFunc(hWnd, msg, wParam, lParam)) {
@@ -172,6 +190,7 @@ void FakeHandlePossibleSteamInvites() {
 HRESULT AttachInitialFunctionDetours(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->IsDebuggerPresent, FakeIsDebuggerPresent);
 	DetourAttach(&(PVOID&)src->SteamAPI_Init, FakeSteamAPI_Init);
+	hookDirect3DCreate9();
 
 	return S_OK;
 }

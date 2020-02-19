@@ -36,7 +36,7 @@ target_link_libraries(Launcher
 add_library(Overlay STATIC src/overlay/overlay.cxx src/overlay/overlay.h)
 target_link_libraries(Overlay PUBLIC DearImgui DearImgui_Win32 DearImgui_DX9 Game GGPO)
 
-add_library(Sidecar SHARED src/sidecar/sidecar.cxx)
+add_library(Sidecar SHARED src/sidecar/sidecar.cxx src/sidecar/ID3D9Wrapper.cxx src/sidecar/ID3D9Wrapper.h src/sidecar/ID3D9Wrapper_Device.cxx src/sidecar/ID3D9Wrapper_Device.h)
 target_link_libraries(Sidecar PRIVATE Detours Game GGPO Overlay ValveFileVDF)
 
 configure_file("default_config.vdf" "config.vdf" COPYONLY)

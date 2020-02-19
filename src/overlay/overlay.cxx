@@ -644,6 +644,14 @@ void FreeOverlay() {
 	ImGui::DestroyContext();
 }
 
+void InvalidateImGuiDeviceObjects() {
+	ImGui_ImplDX9_InvalidateDeviceObjects();
+}
+
+void CreateImGuiDeviceObjects() {
+	ImGui_ImplDX9_CreateDeviceObjects();
+}
+
 LRESULT WINAPI OverlayWindowFunc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 	return ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam);
 }
