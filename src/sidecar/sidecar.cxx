@@ -161,6 +161,12 @@ void FakeHandlePossibleSteamInvites() {
 		}
 		LeaveCriticalSection(&g_gameState.sessionInitState.criticalSection);
 	}
+
+	if (WaitForSingleObject(g_gameState.sessionInitState.hSyncThread, 0) != WAIT_TIMEOUT) {
+		// The thread is either signalled with an exit, or the wait failed.
+		// Either way, we can assume the thread is probably dead.
+		g_gameState.sessionInitState.hSyncThread = NULL;
+	}
 }
 
 HRESULT AttachInitialFunctionDetours(GameMethods* src) {

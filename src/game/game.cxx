@@ -330,6 +330,7 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 
 	dest->sessionInitState.bHasRequest = 0;
 	dest->sessionInitState.bHasResponse = 0;
+	dest->sessionInitState.hSyncThread = NULL;
 	InitializeCriticalSection(&dest->sessionInitState.criticalSection);
 
 	return S_OK;

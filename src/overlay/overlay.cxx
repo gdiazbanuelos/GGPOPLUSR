@@ -116,8 +116,10 @@ void DrawGGPOJoinWindow(GameState* lpGameState, bool* pOpen) {
 	}
 
 	if (lpGameState->ggpoState.ggpo == NULL) {
-		if (ImGui::Button("Prepare for connection")) {
-			CreateSynchronizeClientThread(lpGameState,
+		if (lpGameState->sessionInitState.hSyncThread != NULL) {
+			ImGui::Text("Synchronization thread started...");
+		} else if (ImGui::Button("Prepare for connection")) {
+			lpGameState->sessionInitState.hSyncThread = CreateSynchronizeClientThread(lpGameState,
 				szHostIp,
 				nSyncPort,
 				nOurGGPOPort,
@@ -154,8 +156,10 @@ void DrawGGPOHostWindow(GameState* lpGameState, bool* pOpen) {
 	}
 
 	if (lpGameState->ggpoState.ggpo == NULL) {
-		if (ImGui::Button("Prepare for connection")) {
-			CreateSynchronizeServerThread(lpGameState,
+		if (lpGameState->sessionInitState.hSyncThread != NULL) {
+			ImGui::Text("Synchronization thread started...");
+		} else if (ImGui::Button("Prepare for connection")) {
+			lpGameState->sessionInitState.hSyncThread = CreateSynchronizeServerThread(lpGameState,
 				nSyncPort,
 				nOurGGPOPort,
 				lpCharacter->value);

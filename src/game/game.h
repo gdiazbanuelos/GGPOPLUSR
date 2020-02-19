@@ -194,6 +194,7 @@ typedef struct SessionInitiationState {
     bool bIsHost;
     char szOpponentIP[32];
     CRITICAL_SECTION criticalSection;
+    HANDLE hSyncThread;
 } SessionInitializationState;
 
 typedef struct GameState {
