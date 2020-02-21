@@ -170,6 +170,7 @@ typedef struct GameMethods {
     void(WINAPI* SimulateCurrentState)();
     void(WINAPI* CleanUpFibers)();
     void(WINAPI* HandlePossibleSteamInvites)();
+    void(WINAPI* EnterBattleFiberEntry)();
 } GameMethods;
 
 typedef struct GGPOState {
@@ -186,7 +187,8 @@ typedef struct GGPOState {
     char bIsSynchronized;
 } GGPOState;
 
-typedef struct SessionInitiationState {
+enum SessionState {NoSession = 0, Loading = 1, Ready = 2};
+typedef struct SessionInitializationState {
     ClientSynchronizationRequest request;
     ServerSynchronizationResponse response;
     bool bHasRequest;
@@ -195,6 +197,7 @@ typedef struct SessionInitiationState {
     char szOpponentIP[32];
     CRITICAL_SECTION criticalSection;
     HANDLE hSyncThread;
+    SessionState nSessionState;
 } SessionInitializationState;
 
 typedef struct GameState {
@@ -204,7 +207,7 @@ typedef struct GameState {
     unsigned int arrInputsDuringFrameSkip[60][2];
 
     GGPOState ggpoState;
-    SessionInitiationState sessionInitState;
+    SessionInitializationState sessionInitState;
 
 	char* szConfigPath;
 	tyti::vdf::object config;
@@ -248,6 +251,7 @@ typedef struct GameState {
     DWORD* nUnknownIsPlayerActive1;
     DWORD* nUnknownIsPlayerActive2;
     WORD* arrbPlayerCPUValues;
+    LPVOID* lpMainFiber;
 } GameState;
 
 void DisableHitboxes(GameState* gameState);

@@ -167,24 +167,59 @@ BOOL FakeIsDebuggerPresent() {
 }
 
 void FakeHandlePossibleSteamInvites() {
+	HANDLE syncThread = g_gameState.sessionInitState.hSyncThread;
 	g_gameMethods.HandlePossibleSteamInvites();
 
-	if (TryEnterCriticalSection(&g_gameState.sessionInitState.criticalSection)) {
-		if (
-			g_gameState.ggpoState.ggpo == NULL &&
-			g_gameState.sessionInitState.bHasRequest &&
-			g_gameState.sessionInitState.bHasResponse
-		) {
-			PrepareGGPOSession(&g_gameState);
-		}
-		LeaveCriticalSection(&g_gameState.sessionInitState.criticalSection);
-	}
-
-	if (WaitForSingleObject(g_gameState.sessionInitState.hSyncThread, 0) != WAIT_TIMEOUT) {
+	if (syncThread != NULL && WaitForSingleObject(syncThread, 0) != WAIT_TIMEOUT) {
 		// The thread is either signalled with an exit, or the wait failed.
 		// Either way, we can assume the thread is probably dead.
 		g_gameState.sessionInitState.hSyncThread = NULL;
+
+		if (TryEnterCriticalSection(&g_gameState.sessionInitState.criticalSection)) {
+			if (
+				g_gameState.sessionInitState.bHasRequest &&
+				g_gameState.sessionInitState.bHasResponse
+			) {
+				g_gameState.sessionInitState.nSessionState = Loading;
+				EnterVersus2P(&g_gameState, g_gameState.ggpoState.characters, &STAGES[0]);
+			}
+			else {
+				MessageBoxA(NULL, "Sync thread completed, without getting a request and response- cannot continue!", NULL, MB_OK);
+			}
+			LeaveCriticalSection(&g_gameState.sessionInitState.criticalSection);
+		}
+		else {
+			MessageBoxA(NULL, "Main thread tried to get session critical session after sync thread completion, but couldn't!", NULL, MB_OK);
+		}
 	}
+}
+
+void WINAPI FakeEnterBattleFiberEntry() {
+	EnterCriticalSection(&g_gameState.sessionInitState.criticalSection);
+
+	if (g_gameState.sessionInitState.nSessionState == Loading) {
+		LeaveCriticalSection(&g_gameState.sessionInitState.criticalSection);
+
+		// We're starting a GGPO session- enter a wait by transferring control back
+		// to the main fiber. The main fiber will transfer control back to us, and
+		// we can check again.
+		PrepareGGPOSession(&g_gameState);
+		while (true) {
+			SwitchToFiber(*g_gameState.lpMainFiber);
+			if (TryEnterCriticalSection(&g_gameState.sessionInitState.criticalSection)) {
+				if (g_gameState.sessionInitState.nSessionState == Ready) {
+					LeaveCriticalSection(&g_gameState.sessionInitState.criticalSection);
+					break;
+				}
+				LeaveCriticalSection(&g_gameState.sessionInitState.criticalSection);
+			}
+		}
+	}
+	else {
+		LeaveCriticalSection(&g_gameState.sessionInitState.criticalSection);
+	}
+
+	return g_gameMethods.EnterBattleFiberEntry();
 }
 
 HRESULT AttachInitialFunctionDetours(GameMethods* src) {
@@ -204,6 +239,7 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->PollForInputs, FakePollForInputs);
 	DetourAttach(&(PVOID&)src->SimulateCurrentState, FakeSimulateCurrentState);
 	DetourAttach(&(PVOID&)src->HandlePossibleSteamInvites, FakeHandlePossibleSteamInvites);
+	DetourAttach(&(PVOID&)src->EnterBattleFiberEntry, FakeEnterBattleFiberEntry);
 
 	return S_OK;
 }

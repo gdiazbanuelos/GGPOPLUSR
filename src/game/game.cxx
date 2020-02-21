@@ -243,7 +243,7 @@ bool __cdecl ggpo_on_event(GGPOEvent* info) {
 		break;
 	case GGPO_EVENTCODE_RUNNING:
 		// MessageBoxA(NULL, "running", NULL, MB_OK);
-		EnterVersus2P(g_lpGameState, g_lpGameState->ggpoState.characters, &STAGES[0]);
+		g_lpGameState->sessionInitState.nSessionState = Ready;
 		break;
 	case GGPO_EVENTCODE_CONNECTION_INTERRUPTED:
 		// MessageBoxA(NULL, "interrupted", NULL, MB_OK);
@@ -279,6 +279,7 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->SimulateCurrentState = (void(WINAPI*)())(peRootOffset + 0xE7AE0);
 	dest->CleanUpFibers = (void(WINAPI*)())(peRootOffset + 0x3D720);
 	dest->HandlePossibleSteamInvites = (void(WINAPI*)())(peRootOffset + 0xAE440);
+	dest->EnterBattleFiberEntry = (void(WINAPI*)())(peRootOffset + 0xF93B0);
 	g_lpGameMethods = dest;
 
 	return S_OK;
@@ -327,6 +328,7 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->nUnknownIsPlayerActive1 = (DWORD*)(peRootOffset + 0x50BF30);
 	dest->nUnknownIsPlayerActive2 = (DWORD*)(peRootOffset + 0x50BF68);
 	dest->arrbPlayerCPUValues = (WORD*)(peRootOffset + 0x51B81C);
+	dest->lpMainFiber = (LPVOID*)(peRootOffset + 0x5561A0);
 
 	dest->sessionInitState.bHasRequest = 0;
 	dest->sessionInitState.bHasResponse = 0;

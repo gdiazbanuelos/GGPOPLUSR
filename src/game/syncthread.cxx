@@ -210,7 +210,6 @@ DWORD WINAPI SynchronizeClientThreadProc(LPVOID td) {
 
 	request.nPort = ctd->nGGPOPort;
 	request.nSelectedCharacter = ctd->nOurCharacter;
-
 	sprintf_s(szPort, sizeof(char) * 6, "%d", ctd->nSyncPort);
 
 	// Initialize Winsock
