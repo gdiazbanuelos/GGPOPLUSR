@@ -17,6 +17,7 @@ const short MIN_GUARD_BALANCE = -128;
 const int MIN_FAINT = 0;
 const short MIN_NEGATIVE_PENALTY = 0;
 const short MAX_NEGATIVE_PENALTY = 10000;
+const int IP_BUFFER_SIZE = 32;
 
 enum gameinputs : unsigned short {
 	Up = 0x10,
@@ -252,8 +253,10 @@ typedef struct GameState {
 
 void DisableHitboxes(GameState* gameState);
 void EnableHitboxes(GameState* gameState);
-void LoadGGPOPorts(GameState* gameState, unsigned short &nOpponentPort, unsigned short &nOurPort);
-void SaveGGPOPorts(GameState* gameState, unsigned short &nOpponentPort, unsigned short &nOurPort);
+void LoadGGPOInfo(GameState* gameState, unsigned short& nSyncPort, unsigned short& nOurGGPOPort);
+void LoadGGPOInfo(GameState* gameState, unsigned short& nSyncPort, unsigned short& nOurGGPOPort, char* szHostIp);
+void SaveGGPOInfo(GameState* gameState, unsigned short& nSyncPort, unsigned short& nOurGGPOPort);
+void SaveGGPOInfo(GameState* gameState, unsigned short& nSyncPort, unsigned short& nOurGGPOPort, char* szHostIp);
 void EnterVersus2P(GameState* gameState, int* arrCharacters, StageSelection* stage);
 void SaveGameState(GameState* gameState, SavedGameState* dest);
 void LoadGameState(GameState* gameState, SavedGameState* src);

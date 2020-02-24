@@ -7,6 +7,11 @@
 
 #define DEFAULT_ALPHA 0.87f
 
+static char szHostIp[IP_BUFFER_SIZE];
+static unsigned short nSyncPort;
+static unsigned short nOurGGPOPort;
+
+
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam); 
 
 void DrawEnterVersus2PWindow(GameState* lpGameState, bool* pOpen) {
@@ -86,19 +91,21 @@ void DrawGGPOStats(GameState* lpGameState) {
 
 void DrawGGPOJoinWindow(GameState* lpGameState, bool* pOpen) {
 	static GGPONetworkStats stats;
-
-	static char szHostIp[32] = "192.168.1.182";
-	static unsigned short nSyncPort = 44443;
-	static unsigned short nOurGGPOPort = 44445;
+	static bool load_vdf = false;
 
 	static CharacterSelection* lpCharacter = &CHARACTERS[0];
 
 	GGPOState* gs = &(lpGameState->ggpoState);
 
+	if (!load_vdf) {
+		LoadGGPOInfo(lpGameState, nSyncPort, nOurGGPOPort, szHostIp);
+		load_vdf = true;
+	}
+
 	ImGui::Begin("GGPO Join", pOpen);
 	ImGui::Text("Num frames simulated per second: %d", lpGameState->lastSecondNumFramesSimulated);
 	
-	ImGui::InputText("Host IP", szHostIp, 32);
+	ImGui::InputText("Host IP", szHostIp, IP_BUFFER_SIZE);
 	ImGui::InputScalar("Sync port", ImGuiDataType_U16, &nSyncPort);
 	ImGui::InputScalar("GGPO Our port", ImGuiDataType_U16, &nOurGGPOPort);
 
@@ -119,6 +126,7 @@ void DrawGGPOJoinWindow(GameState* lpGameState, bool* pOpen) {
 		if (lpGameState->sessionInitState.hSyncThread != NULL) {
 			ImGui::Text("Synchronization thread started...");
 		} else if (ImGui::Button("Prepare for connection")) {
+			SaveGGPOInfo(lpGameState, nSyncPort, nOurGGPOPort, szHostIp);
 			lpGameState->sessionInitState.hSyncThread = CreateSynchronizeClientThread(lpGameState,
 				szHostIp,
 				nSyncPort,
@@ -134,10 +142,14 @@ void DrawGGPOJoinWindow(GameState* lpGameState, bool* pOpen) {
 
 void DrawGGPOHostWindow(GameState* lpGameState, bool* pOpen) {
 	static GGPONetworkStats stats;
-	static unsigned short nSyncPort = 44443;
-	static unsigned short nOurGGPOPort = 44444;
+	static bool load_vdf = false;
 	char buf[2];
 	static CharacterSelection* lpCharacter = &CHARACTERS[0];
+
+	if (!load_vdf) {
+		LoadGGPOInfo(lpGameState, nSyncPort, nOurGGPOPort);
+		load_vdf = true;
+	}
 
 	ImGui::Begin("GGPO Host", pOpen);
 	ImGui::InputScalar("Sync port", ImGuiDataType_U16, &nSyncPort);
@@ -159,6 +171,7 @@ void DrawGGPOHostWindow(GameState* lpGameState, bool* pOpen) {
 		if (lpGameState->sessionInitState.hSyncThread != NULL) {
 			ImGui::Text("Synchronization thread started...");
 		} else if (ImGui::Button("Prepare for connection")) {
+			SaveGGPOInfo(lpGameState, nSyncPort, nOurGGPOPort);
 			lpGameState->sessionInitState.hSyncThread = CreateSynchronizeServerThread(lpGameState,
 				nSyncPort,
 				nOurGGPOPort,
@@ -543,8 +556,8 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 				ImGui::MenuItem("Global State", NULL, &show_global_state);
 
 				if (ImGui::BeginMenu("GGPO")) {
-					ImGui::MenuItem("Host...", NULL, &show_ggpo_host);
-					ImGui::MenuItem("Join...", NULL, &show_ggpo_join);
+					ImGui::MenuItem("Host...", NULL, &show_ggpo_host, (show_ggpo_join == false));
+					ImGui::MenuItem("Join...", NULL, &show_ggpo_join, (show_ggpo_host == false));
 					ImGui::EndMenu();
 				}
 

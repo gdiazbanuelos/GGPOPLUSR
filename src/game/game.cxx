@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string>
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -72,18 +73,32 @@ void DisableHitboxes(GameState* gameState) {
 	configFile.close();
 }
 
-void LoadGGPOPorts(GameState* gameState, unsigned short &nOpponentPort, unsigned short &nOurPort) {
-	std::ifstream configFile(gameState->szConfigPath);
-	auto root = tyti::vdf::read(configFile);
-	nOurPort = std::stoi(root.attribs["GGPOLocalPort"]);
-	nOpponentPort = std::stoi(root.attribs["GGPORmtPort"]);
+void LoadGGPOInfo(GameState* gameState, unsigned short& nSyncPort, unsigned short& nOurGGPOPort) {
+	auto root = gameState->config;
+	nOurGGPOPort = std::stoi(root.attribs["GGPOLocalPort"]);
+	nSyncPort = std::stoi(root.attribs["GGPORmtPort"]);
+}
+
+void LoadGGPOInfo(GameState* gameState, unsigned short& nSyncPort, unsigned short& nOurGGPOPort, char* szHostIp) {
+	auto root = gameState->config;
+	nOurGGPOPort = std::stoi(root.attribs["GGPOLocalPort"]);
+	nSyncPort = std::stoi(root.attribs["GGPORmtPort"]);
+	root.attribs["GGPOIPAddr"].copy(szHostIp, IP_BUFFER_SIZE);
+}
+
+void SaveGGPOInfo(GameState* gameState, unsigned short& nSyncPort, unsigned short& nOurGGPOPort) {
+	gameState->config.attribs["GGPOLocalPort"] = std::to_string(nOurGGPOPort);
+	gameState->config.attribs["GGPORmtPort"] = std::to_string(nSyncPort);
+	std::ofstream configFile(gameState->szConfigPath);
+	tyti::vdf::write(configFile, gameState->config);
 	configFile.close();
 }
 
-void SaveGGPOPorts(GameState* gameState, unsigned short &nOpponentPort, unsigned short &nOurPort) {
+void SaveGGPOInfo(GameState* gameState, unsigned short& nSyncPort, unsigned short& nOurGGPOPort, char* szHostIp) {
+	gameState->config.attribs["GGPOLocalPort"] = std::to_string(nOurGGPOPort);
+	gameState->config.attribs["GGPORmtPort"] = std::to_string(nSyncPort);
+	gameState->config.attribs["GGPOIPAddr"] = szHostIp;
 	std::ofstream configFile(gameState->szConfigPath);
-	gameState->config.attribs["GGPOLocalPort"] = std::to_string(nOurPort);
-	gameState->config.attribs["GGPORmtPort"] = std::to_string(nOpponentPort);
 	tyti::vdf::write(configFile, gameState->config);
 	configFile.close();
 }
