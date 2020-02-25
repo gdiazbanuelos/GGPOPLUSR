@@ -15,21 +15,33 @@ find_package(DearImgui 1 REQUIRED)
 find_package(Detours 4 REQUIRED)
 find_package(GGPO 1 REQUIRED)
 find_package(ValveFileVDF 1 REQUIRED)
+find_package(Json 1 REQUIRED)
 find_program(VC_REDIST_X86_EXE 1 NAMES "VC_redist.x86.exe" PATHS "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Redist/MSVC/14.24.28127")
 
+# build time in UTC ISO 8601. https://stackoverflow.com/a/31401540
+configure_file("${PROJECT_SOURCE_DIR}/cmake/build_datetime.cmake" ${CMAKE_BINARY_DIR}/build_datetime.cmake COPYONLY)
+ADD_CUSTOM_TARGET (
+    build_datetime
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/build_datetime.cmake
+    ADD_DEPENDENCIES ${CMAKE_BINARY_DIR}/build_datetime.cmake)
+    
 add_library(Game STATIC src/game/game.h src/game/game.cxx src/game/syncthread.cxx)
 target_link_libraries(Game PUBLIC Detours GGPO ValveFileVDF "ws2_32" "Mswsock" "AdvApi32")
 
 add_executable(Launcher WIN32
     src/launcher/discovery.cxx
     src/launcher/discovery.hxx
+    src/launcher/utils.cxx
+    src/launcher/utils.hxx
     src/launcher/launcher.cxx
     ${PROJECT_SOURCE_DIR}/resources/graphics/Launcher.rc # This .rc binds the .ico to the executable
 )
 target_link_libraries(Launcher
 	PRIVATE Detours
 	PRIVATE ValveFileVDF
+	PRIVATE Json
 	PRIVATE "shlwapi"
+	PRIVATE "winhttp"
 	PUBLIC Sidecar
 )
 
@@ -39,7 +51,13 @@ target_link_libraries(Overlay PUBLIC DearImgui DearImgui_Win32 DearImgui_DX9 Gam
 add_library(Sidecar SHARED src/sidecar/sidecar.cxx src/sidecar/ID3D9Wrapper.cxx src/sidecar/ID3D9Wrapper.h src/sidecar/ID3D9Wrapper_Device.cxx src/sidecar/ID3D9Wrapper_Device.h)
 target_link_libraries(Sidecar PRIVATE Detours Game GGPO Overlay ValveFileVDF)
 
+target_compile_definitions(Launcher PRIVATE -D_UNICODE -DUNICODE)
+
 configure_file("default_config.vdf" "config.vdf" COPYONLY)
+
+add_dependencies(Launcher build_datetime)
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 
 # Install targets for INSTALL project, CPack use this to know which files must be packaged
 install(

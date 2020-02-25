@@ -13,9 +13,9 @@
 #include <detours.h>
 #include <d3d9.h>
 #include <ggponet.h>
-#include<sstream>
+#include <sstream>
 
-#include <vdf_parser.hpp>
+#include "vdf_parser.hpp"
 
 #include "./game.h"
 
