@@ -45,8 +45,10 @@ IDirect3D9* __stdcall FakeDirect3DCreate9(UINT sdkVers)
 void hookDirect3DCreate9()
 {
 	HMODULE hM = GetModuleHandleA("d3d9.dll");
-	orig_Direct3DCreate9 = (Direct3DCreate9_t)GetProcAddress(hM, "Direct3DCreate9");
-	DetourAttach(&(PVOID&)orig_Direct3DCreate9, FakeDirect3DCreate9);
+	if (hM != 0) {
+		orig_Direct3DCreate9 = (Direct3DCreate9_t)GetProcAddress(hM, "Direct3DCreate9");
+		DetourAttach(&(PVOID&)orig_Direct3DCreate9, FakeDirect3DCreate9);
+	}
 }
 
 LRESULT WINAPI FakeWindowFunc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) {

@@ -1,11 +1,15 @@
+#include <d3d9.h>
 #include "ID3D9Wrapper_Device.h"
 #include "../overlay/overlay.h"
 
-Direct3DDevice9Wrapper::Direct3DDevice9Wrapper(IDirect3DDevice9 **ppReturnedDeviceInterface, D3DPRESENT_PARAMETERS *pPresentParam, IDirect3D9 *pIDirect3D9)
+IDirect3DDevice9* Direct3DDevice9Wrapper::m_Direct3DDevice9 = NULL;
+IDirect3D9* Direct3DDevice9Wrapper::m_Direct3D9 = NULL;
+
+Direct3DDevice9Wrapper::Direct3DDevice9Wrapper(IDirect3DDevice9* pDirect3DDevice9, IDirect3D9* pDirect3D9, D3DPRESENT_PARAMETERS* pPresentationParameters)
+	: m_Stride(0)
 {
-	m_Direct3DDevice9 = *ppReturnedDeviceInterface;
-	*ppReturnedDeviceInterface = this;
-	m_Direct3D9 = pIDirect3D9;
+	m_Direct3DDevice9 = pDirect3DDevice9;
+	m_Direct3D9 = pDirect3D9;
 }
 
 Direct3DDevice9Wrapper::~Direct3DDevice9Wrapper(){}

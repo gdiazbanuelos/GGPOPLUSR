@@ -7,12 +7,12 @@
 class Direct3DDevice9Wrapper : public IDirect3DDevice9
 {
 public:
-	Direct3DDevice9Wrapper(IDirect3DDevice9 **ppReturnedDeviceInterface, D3DPRESENT_PARAMETERS *pPresentParam, IDirect3D9 *pIDirect3D9);
+	Direct3DDevice9Wrapper(IDirect3DDevice9* pDirect3DDevice9, IDirect3D9* pDirect3D9, D3DPRESENT_PARAMETERS* pPresentationParameters);
 	virtual ~Direct3DDevice9Wrapper();
 
 	// callback interface
-	IDirect3DDevice9* m_Direct3DDevice9;
-	IDirect3D9* m_Direct3D9;
+	static IDirect3DDevice9* m_Direct3DDevice9;
+	static IDirect3D9* m_Direct3D9;
 
 	UINT m_Stride;
 
