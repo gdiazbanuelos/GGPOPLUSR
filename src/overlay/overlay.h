@@ -8,4 +8,19 @@ void FreeOverlay();
 void InvalidateImGuiDeviceObjects();
 void CreateImGuiDeviceObjects();
 
+static bool show_global_state = false;
+static bool show_p1_object_state = false;
+static bool show_p1_state = false;
+static bool show_p1_log = false;
+static bool show_p2_object_state = false;
+static bool show_p2_state = false;
+static bool show_p2_log = false;
+static bool show_saveload = false;
+static bool show_help = false;
+static bool show_save_load_replay = false;
+static bool load_config = false;
+static bool show_ggpo_host = false;
+static bool show_ggpo_join = false;
+static bool show_character_select = false;
+
 LRESULT WINAPI OverlayWindowFunc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

@@ -4,6 +4,7 @@
 #include <imgui_demo.cpp>
 
 #include "../game/game.h"
+#include "overlay.h"
 
 #define DEFAULT_ALPHA 0.87f
 
@@ -523,28 +524,50 @@ void InitializeOverlay(GameState* lpGameState) {
 	ImGui_ImplDX9_Init(*lpGameState->d3dDevice);
 }
 
-void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
-	static bool show_global_state = false;
-	static bool show_p1_object_state = false;
-	static bool show_p1_state = false;
-	static bool show_p1_log = false;
-	static bool show_p2_object_state = false;
-	static bool show_p2_state = false;
-	static bool show_p2_log = false;
-	static bool show_saveload = false;
-	static bool show_help = false;
-	static bool show_save_load_replay = false;
-	static bool load_config = false;
+void DrawGameMenu() {
+	if (ImGui::BeginMenu("Game")) {
+		if (ImGui::BeginMenu("Netplay")) {
+			ImGui::MenuItem("GGPO: Host...", NULL, &show_ggpo_host, (show_ggpo_join == false));
+			ImGui::MenuItem("GGPO: Join...", NULL, &show_ggpo_join, (show_ggpo_host == false));
+			ImGui::EndMenu();
+		}
+		ImGui::MenuItem("Character select", NULL, &show_character_select);
+		ImGui::EndMenu();
+	}
+};
+void DrawToolsMenu(bool* pHitbox) {
+	if (ImGui::BeginMenu("Tools")) {
+		ImGui::MenuItem(*pHitbox ? "Hide Hitboxes" : "Show Hitboxes", NULL, pHitbox);
+		if (ImGui::BeginMenu("Player State", (show_ggpo_join == show_ggpo_host))) {
+			ImGui::MenuItem("Player 1 State", NULL, &show_p1_state, (show_ggpo_join == show_ggpo_host));
+			ImGui::MenuItem("Player 2 State", NULL, &show_p2_state, (show_ggpo_join == show_ggpo_host));
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenu();
+	}
+};
+void DrawDebugMenu(GameState* lpGameState) {
+	if (ImGui::BeginMenu("Debug")) {
+		ImGui::MenuItem("Global State", NULL, &show_global_state);
+		if (ImGui::BeginMenu("Object State")) {
+			ImGui::MenuItem("Player 1 Object State", NULL, &show_p1_object_state, *lpGameState->arrCharacters != 0);
+			ImGui::MenuItem("Player 1 Object Action Log", NULL, &show_p1_log, *lpGameState->arrCharacters != 0);
+			ImGui::MenuItem("Player 2 Object State", NULL, &show_p2_object_state, *lpGameState->arrCharacters != 0);
+			ImGui::MenuItem("Player 2 Object Action Log", NULL, &show_p2_log, *lpGameState->arrCharacters != 0);
+			ImGui::EndMenu();
+		}
+		ImGui::MenuItem("Save/Load State", NULL, &show_saveload);
+		ImGui::EndMenu();
+	}
+};
 
+void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	if (!load_config) {
 		ApplyConfiguration(lpGameState);
 		load_config = true;
 	}
 
 	bool show_hitboxes = *lpGameState->bHitboxDisplayEnabled != 0;
-	static bool show_ggpo_host = false;
-	static bool show_ggpo_join = false;
-	static bool show_character_select = false;
 
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -552,46 +575,10 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 
 	if (ImGui::IsMousePosValid() && ImGui::GetIO().MousePos.y < 200) {
 		if (ImGui::BeginMainMenuBar()) {
-			if (ImGui::BeginMenu("Windows")) {
-				ImGui::MenuItem("Global State", NULL, &show_global_state);
-
-				if (ImGui::BeginMenu("GGPO")) {
-					ImGui::MenuItem("Host...", NULL, &show_ggpo_host, (show_ggpo_join == false));
-					ImGui::MenuItem("Join...", NULL, &show_ggpo_join, (show_ggpo_host == false));
-					ImGui::EndMenu();
-				}
-
-				if (ImGui::BeginMenu("Player State")) {
-					ImGui::MenuItem("Player 1 State", NULL, &show_p1_state);
-					ImGui::MenuItem("Player 2 State", NULL, &show_p2_state);
-					ImGui::EndMenu();
-				}
-
-				if (ImGui::BeginMenu("Object State")) {
-					ImGui::MenuItem("Player 1 Object State", NULL, &show_p1_object_state, *lpGameState->arrCharacters != 0);
-					ImGui::MenuItem("Player 1 Object Action Log", NULL, &show_p1_log, *lpGameState->arrCharacters != 0);
-					ImGui::MenuItem("Player 2 Object State", NULL, &show_p2_object_state, *lpGameState->arrCharacters != 0);
-					ImGui::MenuItem("Player 2 Object Action Log", NULL, &show_p2_log, *lpGameState->arrCharacters != 0);
-					ImGui::EndMenu();
-				}
-
-				ImGui::MenuItem("Save/Load State", NULL, &show_saveload);
-				ImGui::MenuItem("Save/Load Replay", NULL, &show_save_load_replay, *lpGameState->arrCharacters != 0);
-				ImGui::MenuItem("Character select", NULL, &show_character_select);
-				ImGui::EndMenu();
-			}
-
-			ImGui::MenuItem(
-				show_hitboxes ? "Hide Hitboxes" : "Show Hitboxes",
-				NULL,
-				&show_hitboxes
-			);
-
-			ImGui::MenuItem(
-				show_help ? "Hide Help" : "Show Help",
-				NULL,
-				&show_help
-			);
+			DrawGameMenu();
+			DrawToolsMenu(&show_hitboxes);
+			DrawDebugMenu(lpGameState);
+			ImGui::MenuItem(show_help ? "Hide Help" : "Show Help",NULL,&show_help);
 
 			ImGui::EndMainMenuBar();
 		}
