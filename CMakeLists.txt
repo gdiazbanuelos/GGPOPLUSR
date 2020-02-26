@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.10)
 project (
     GGPOPLUSR
-    VERSION 0.0.0
+    VERSION 0.0.0.0
     DESCRIPTION "A netplay implementation and quality-of-life tool bundle for the Steam release of Guilty Gear XX Accent Core +R."
     HOMEPAGE_URL "https://github.com/adanducci/GGPOPLUSR"
 )
@@ -34,7 +34,7 @@ add_executable(Launcher WIN32
     src/launcher/utils.cxx
     src/launcher/utils.hxx
     src/launcher/launcher.cxx
-    ${PROJECT_SOURCE_DIR}/resources/graphics/Launcher.rc # This .rc binds the .ico to the executable
+    ${CMAKE_BINARY_DIR}/resources/rc/Launcher.rc # This .rc binds the icon and the versioninfo to the executable
 )
 target_link_libraries(Launcher
 	PRIVATE Detours
@@ -48,7 +48,7 @@ target_link_libraries(Launcher
 add_library(Overlay STATIC src/overlay/overlay.cxx src/overlay/overlay.h)
 target_link_libraries(Overlay PUBLIC DearImgui DearImgui_Win32 DearImgui_DX9 Game GGPO)
 
-add_library(Sidecar SHARED src/sidecar/sidecar.cxx src/sidecar/ID3D9Wrapper.cxx src/sidecar/ID3D9Wrapper.h src/sidecar/ID3D9Wrapper_Device.cxx src/sidecar/ID3D9Wrapper_Device.h)
+add_library(Sidecar SHARED src/sidecar/sidecar.cxx src/sidecar/ID3D9Wrapper.cxx src/sidecar/ID3D9Wrapper.h src/sidecar/ID3D9Wrapper_Device.cxx src/sidecar/ID3D9Wrapper_Device.h ${CMAKE_BINARY_DIR}/resources/rc/Sidecar.rc)
 target_link_libraries(Sidecar PRIVATE Detours Game GGPO Overlay ValveFileVDF)
 
 target_compile_definitions(Launcher PRIVATE -D_UNICODE -DUNICODE)
@@ -93,11 +93,11 @@ set_target_properties(Launcher PROPERTIES OUTPUT_NAME Launcher)
 get_target_property(EXE_TARGET_NAME Launcher OUTPUT_NAME)
 
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
-set(CPACK_PACKAGE_VENDOR "${PROJECT_NAME} Dev Team")
+set(CPACK_PACKAGE_VENDOR "The ${PROJECT_NAME} Dev Team")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_NAME} ${PROJECT_DESCRIPTION}")
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/README.md")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}")
-set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/resources/graphics/${EXE_TARGET_NAME}.ico")
+set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/resources/rc/${EXE_TARGET_NAME}.ico")
 set(CPACK_NSIS_INSTALLED_ICON_NAME "${EXE_TARGET_NAME}.exe") #This will make the icon appear in "control panel/programs"
 set(CPACK_NSIS_HELP_LINK "${CMAKE_PROJECT_HOMEPAGE_URL}")
 set(CPACK_NSIS_URL_INFO_ABOUT "${CMAKE_PROJECT_HOMEPAGE_URL}")
@@ -126,6 +126,28 @@ set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
     Delete $INSTDIR\\\\GGPO.dll
   \\\${EndIf}
 ")
+
+configure_file(
+  ${PROJECT_SOURCE_DIR}/resources/rc/Launcher.rc.in
+  ${CMAKE_BINARY_DIR}/resources/rc/Launcher.rc
+  @ONLY)
+configure_file(
+  ${PROJECT_SOURCE_DIR}/resources/rc/Launcher_rc_resource.h
+  ${CMAKE_BINARY_DIR}/resources/rc/Launcher_rc_resource.h
+  COPYONLY)
+configure_file(
+  ${PROJECT_SOURCE_DIR}/resources/rc/Launcher.ico
+  ${CMAKE_BINARY_DIR}/resources/rc/Launcher.ico
+  COPYONLY)
+
+configure_file(
+  ${PROJECT_SOURCE_DIR}/resources/rc/Sidecar.rc.in
+  ${CMAKE_BINARY_DIR}/resources/rc/Sidecar.rc
+  @ONLY)
+configure_file(
+  ${PROJECT_SOURCE_DIR}/resources/rc/Sidecar_rc_resource.h
+  ${CMAKE_BINARY_DIR}/resources/rc/Sidecar_rc_resource.h
+  COPYONLY)
 
 # Load packaging facilities, always after all set(CPACK*) options
 include(CPack)
