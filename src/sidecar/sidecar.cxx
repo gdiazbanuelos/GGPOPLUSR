@@ -189,6 +189,12 @@ void FakeHandlePossibleSteamInvites() {
 	}
 }
 
+void FakeIncrementRNGCursorWhileOffline() {
+	if (!g_gameState.ggpoState.bIsSynchronized) {
+		g_gameMethods.IncrementRNGCursorWhileOffline();
+	}
+}
+
 HRESULT AttachInitialFunctionDetours(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->IsDebuggerPresent, FakeIsDebuggerPresent);
 	DetourAttach(&(PVOID&)src->SteamAPI_Init, FakeSteamAPI_Init);
@@ -206,6 +212,7 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->PollForInputs, FakePollForInputs);
 	DetourAttach(&(PVOID&)src->SimulateCurrentState, FakeSimulateCurrentState);
 	DetourAttach(&(PVOID&)src->HandlePossibleSteamInvites, FakeHandlePossibleSteamInvites);
+	DetourAttach(&(PVOID&)src->IncrementRNGCursorWhileOffline, FakeIncrementRNGCursorWhileOffline);
 
 	return S_OK;
 }

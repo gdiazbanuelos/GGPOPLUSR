@@ -133,7 +133,7 @@ void SaveGameState(GameState* gameState, SavedGameState* dest) {
 	dest->nCameraHoldTimer = *gameState->nCameraHoldTimer;
 	dest->nCameraZoom = *gameState->nCameraZoom;
 	dest->nRoundTimeRemaining = *gameState->nRoundTimeRemaining;
-	CopyMemory(dest->nRandomTable, gameState->nRandomTable, sizeof(DWORD) * 0x272);
+	CopyMemory(&dest->RNG, gameState->lpRNG, sizeof(RandomNumberGenerator));
 	dest->nPlayfieldLeftEdge = *gameState->nPlayfieldLeftEdge;
 	dest->nPlayfieldTopEdge = *gameState->nPlayfieldTopEdge;
 	CopyMemory(&dest->nCameraPlayerXPositionHistory, gameState->nCameraPlayerXPositionHistory, sizeof(int) * 2);
@@ -180,7 +180,7 @@ void LoadGameState(GameState* gameState, SavedGameState* src) {
 	*gameState->nCameraHoldTimer = src->nCameraHoldTimer;
 	*gameState->nCameraZoom = src->nCameraZoom;
 	*gameState->nRoundTimeRemaining = src->nRoundTimeRemaining;
-	CopyMemory(gameState->nRandomTable, src->nRandomTable, sizeof(DWORD) * 0x272);
+	CopyMemory(gameState->lpRNG, &src->RNG, sizeof(RandomNumberGenerator));
 	*gameState->nPlayfieldLeftEdge = src->nPlayfieldLeftEdge;
 	*gameState->nPlayfieldTopEdge = src->nPlayfieldTopEdge;
 	CopyMemory(gameState->nCameraPlayerXPositionHistory, &src->nCameraPlayerXPositionHistory, sizeof(int) * 2);
@@ -294,6 +294,7 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->SimulateCurrentState = (void(WINAPI*)())(peRootOffset + 0xE7AE0);
 	dest->CleanUpFibers = (void(WINAPI*)())(peRootOffset + 0x3D720);
 	dest->HandlePossibleSteamInvites = (void(WINAPI*)())(peRootOffset + 0xAE440);
+	dest->IncrementRNGCursorWhileOffline = (void(WINAPI*)())(peRootOffset + 0x43220);
 	g_lpGameMethods = dest;
 
 	return S_OK;
@@ -317,7 +318,7 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->nCameraZoom = (unsigned int*)(peRootOffset + 0x51B110);
 	dest->arrPlayerData = (PlayerData*)(peRootOffset + 0x51A038);
 	dest->nRoundTimeRemaining = (int*)(peRootOffset + 0x50F800);
-	dest->nRandomTable = (DWORD*)(peRootOffset + 0x565F20);
+	dest->lpRNG = (RandomNumberGenerator*)(peRootOffset + 0x565F20);
 	dest->projectileOwner = (GameObjectData*)(peRootOffset + 0x517A78);
 	dest->effectOwner = (GameObjectData*)(peRootOffset + 0x565F20);
 	dest->unknownOwner = (GameObjectData*)(peRootOffset + 0x517BA8);
@@ -380,7 +381,7 @@ void PrepareGGPOSession(GameState* lpGameState) {
 	bool bIsHost = lpGameState->sessionInitState.bIsHost;
 	unsigned short nOurPort = bIsHost ? response->nPort : request->nPort;
 	unsigned short nOpponentPort = bIsHost ? request->nPort : response->nPort;
-	CopyMemory(lpGameState->nRandomTable, response->randomTable, sizeof(DWORD) * 0x272);
+	CopyMemory(lpGameState->lpRNG, &response->RNG, sizeof(RandomNumberGenerator));
 
 	char msgBuffer[16];
 	GGPOErrorCode result;

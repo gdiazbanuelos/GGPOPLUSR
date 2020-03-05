@@ -45,6 +45,17 @@ typedef struct PlayerData PlayerData;
 typedef struct SavedGameState SavedGameState;
 typedef struct TrainingModeRec TrainingModeRec;
 
+typedef struct RandomNumberGenerator RandomNumberGenerator, * PRandomNumberGenerator;
+
+struct RandomNumberGenerator {
+    int cursor;
+    DWORD dwordarr_0x4_size0xe3[227];
+    DWORD dwordarr_0x390_size0x18d[397];
+    int unc_seedTracker;
+    DWORD dwordarr_9c8_size0x270[624];
+    int bIsInitialized;
+};
+
 typedef struct ClientSynchronizationRequest {
     unsigned short nPort;
     int nSelectedCharacter;
@@ -53,7 +64,7 @@ typedef struct ClientSynchronizationRequest {
 typedef struct ServerSynchronizationResponse {
     unsigned short nPort;
     int nSelectedCharacter;
-    DWORD randomTable[0x272];
+    RandomNumberGenerator RNG;
 } ServerSynchronizationResponse;
 
 typedef struct CharacterSelection {
@@ -171,6 +182,7 @@ typedef struct GameMethods {
     void(WINAPI* SimulateCurrentState)();
     void(WINAPI* CleanUpFibers)();
     void(WINAPI* HandlePossibleSteamInvites)();
+    void(WINAPI* IncrementRNGCursorWhileOffline)();
 } GameMethods;
 
 typedef struct GGPOState {
@@ -224,7 +236,7 @@ typedef struct GameState {
 
     PlayerData* arrPlayerData;
     int* nRoundTimeRemaining;
-    DWORD* nRandomTable;
+    RandomNumberGenerator* lpRNG;
     GameObjectData* projectileOwner;
     GameObjectData* effectOwner;
     GameObjectData* unknownOwner;
@@ -890,7 +902,7 @@ typedef struct SavedGameState {
 
     struct PlayerData arrPlayerData[2];
     int nRoundTimeRemaining;
-    DWORD nRandomTable[0x272];
+    RandomNumberGenerator RNG;
 
     struct GameObjectData projectileOwner;
     struct GameObjectData effectOwner;
