@@ -94,6 +94,8 @@ get_target_property(EXE_TARGET_NAME Launcher OUTPUT_NAME)
 
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VENDOR "The ${PROJECT_NAME} Dev Team")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_NAME} ${PROJECT_DESCRIPTION}")
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/README.md")
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}")
@@ -105,6 +107,7 @@ set(CPACK_NSIS_EXECUTABLES_DIRECTORY ".")
 set(CPACK_NSIS_MODIFY_PATH OFF)
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 set(CPACK_NSIS_MENU_LINKS "${EXE_TARGET_NAME}.exe" "Start ${PROJECT_NAME}")
+set(CPACK_EXE_TARGET_NAME "${EXE_TARGET_NAME}")
 
 set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
   !include LogicLib.nsh
@@ -125,6 +128,29 @@ set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
     CopyFiles $INSTDIR\\\\GGPO.dll $ggxxacprdir\\\\GGPO.dll
     Delete $INSTDIR\\\\GGPO.dll
   \\\${EndIf}
+
+  IfFileExists $INSTDIR\\\\config.vdf.bak exists notexists
+  exists:
+    DetailPrint \\\"A backup of the configuration file has been found and will be restored.\\\"
+    Delete $INSTDIR\\\\config.vdf
+    Rename $INSTDIR\\\\config.vdf.bak $INSTDIR\\\\config.vdf
+    Goto next
+  notexists:
+  next:
+")
+
+set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
+  MessageBox MB_YESNO \\\"Do you want to delete your ${PROJECT_NAME} configuration file?\\\" /SD IDNO IDYES del IDNO nodel
+  del:
+    DetailPrint \\\"The ${PROJECT_NAME} configuration file will be deleted.\\\"
+    Goto afterconfdelete
+  nodel:
+    DetailPrint \\\"The ${PROJECT_NAME} configuration file will be backed up.\\\"
+    Delete $INSTDIR\\\\config.vdf.bak
+    Rename $INSTDIR\\\\config.vdf $INSTDIR\\\\config.vdf.bak
+  afterconfdelete:
+
+  Delete \\\"$DESKTOP\\\\${PROJECT_NAME} ${EXE_TARGET_NAME}.lnk\\\"
 ")
 
 configure_file(
