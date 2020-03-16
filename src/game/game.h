@@ -216,6 +216,7 @@ typedef struct GameState {
     HWND* hWnd;
     GameObjectData** arrCharacters;
     GameObjectData** arrNpcObjects;
+    GameObjectData** arrEffectObjects;
     DWORD* bHitboxDisplayEnabled;
 
     unsigned int* nCameraHoldTimer;
@@ -228,6 +229,7 @@ typedef struct GameState {
     GameObjectData* projectileOwner;
     GameObjectData* effectOwner;
     GameObjectData* unknownOwner;
+    GameObjectData* unknownOwner2;
     int* nPlayfieldLeftEdge;
     int* nPlayfieldTopEdge;
     int* nCameraPlayerXPositionHistory;
@@ -881,7 +883,8 @@ struct UNC_PlayerSubStructure {
 
 typedef struct SavedGameState {
     struct GameObjectData arrCharacters[2];
-    struct GameObjectData arrNpcObjects[60];
+    struct GameObjectData arrNpcObjects[0x60];
+    struct GameObjectData arrEffectObjects[0x180];
     DWORD bHitboxDisplayEnabled;
 
     unsigned int nCameraHoldTimer;
@@ -895,6 +898,7 @@ typedef struct SavedGameState {
     struct GameObjectData projectileOwner;
     struct GameObjectData effectOwner;
     struct GameObjectData unknownOwner;
+    struct GameObjectData unknownOwner2;
     int nPlayfieldLeftEdge;
     int nPlayfieldTopEdge;
 

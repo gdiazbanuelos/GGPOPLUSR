@@ -122,12 +122,16 @@ void SaveGameState(GameState* gameState, SavedGameState* dest) {
 		CopyMemory(dest->arrCharacters, *gameState->arrCharacters, sizeof(GameObjectData) * 2);
 	}
 	if (*gameState->arrNpcObjects != NULL) {
-		CopyMemory(dest->arrNpcObjects, *gameState->arrNpcObjects, sizeof(GameObjectData) * 60);
+		CopyMemory(dest->arrNpcObjects, *gameState->arrNpcObjects, sizeof(GameObjectData) * 0x60);
+	}
+	if (*gameState->arrEffectObjects != NULL) {
+		CopyMemory(dest->arrEffectObjects, *gameState->arrEffectObjects, sizeof(GameObjectData) * 0x180);
 	}
 	CopyMemory(dest->arrPlayerData, gameState->arrPlayerData, sizeof(PlayerData) * 2);
 	CopyMemory(&dest->projectileOwner, gameState->projectileOwner, sizeof(GameObjectData));
 	CopyMemory(&dest->effectOwner, gameState->effectOwner, sizeof(GameObjectData));
 	CopyMemory(&dest->unknownOwner, gameState->unknownOwner, sizeof(GameObjectData));
+	CopyMemory(&dest->unknownOwner2, gameState->unknownOwner2, sizeof(GameObjectData));
 
 	dest->fCameraXPos = *gameState->fCameraXPos;
 	dest->nCameraHoldTimer = *gameState->nCameraHoldTimer;
@@ -171,11 +175,13 @@ bool __cdecl ggpo_save_game_state_callback(
 
 void LoadGameState(GameState* gameState, SavedGameState* src) {
 	CopyMemory(*gameState->arrCharacters, src->arrCharacters, sizeof(GameObjectData) * 2);
-	CopyMemory(*gameState->arrNpcObjects, src->arrNpcObjects, sizeof(GameObjectData) * 60);
+	CopyMemory(*gameState->arrNpcObjects, src->arrNpcObjects, sizeof(GameObjectData) * 0x60);
+	CopyMemory(*gameState->arrEffectObjects, src->arrEffectObjects, sizeof(GameObjectData) * 0x180);
 	CopyMemory(gameState->arrPlayerData, src->arrPlayerData, sizeof(PlayerData) * 2);
 	CopyMemory(gameState->projectileOwner, &src->projectileOwner, sizeof(GameObjectData));
 	CopyMemory(gameState->effectOwner, &src->effectOwner, sizeof(GameObjectData));
 	CopyMemory(gameState->unknownOwner, &src->unknownOwner, sizeof(GameObjectData));
+	CopyMemory(gameState->unknownOwner2, &src->unknownOwner2, sizeof(GameObjectData));
 	*gameState->fCameraXPos = src->fCameraXPos;
 	*gameState->nCameraHoldTimer = src->nCameraHoldTimer;
 	*gameState->nCameraZoom = src->nCameraZoom;
@@ -312,6 +318,7 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->bHitboxDisplayEnabled = (DWORD*)(peRootOffset + 0x520B3C);
 	dest->arrCharacters = (GameObjectData**)(peRootOffset + 0x516778);
 	dest->arrNpcObjects = (GameObjectData**)(peRootOffset + 0x51677c);
+	dest->arrEffectObjects = (GameObjectData**)(peRootOffset + 0x519E50);
 	dest->nCameraHoldTimer = (unsigned int*)(peRootOffset + 0x51B114);
 	dest->fCameraXPos = (float*)(peRootOffset + 0x51B14C);
 	dest->nCameraZoom = (unsigned int*)(peRootOffset + 0x51B110);
@@ -319,8 +326,9 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->nRoundTimeRemaining = (int*)(peRootOffset + 0x50F800);
 	dest->nRandomTable = (DWORD*)(peRootOffset + 0x565F20);
 	dest->projectileOwner = (GameObjectData*)(peRootOffset + 0x517A78);
-	dest->effectOwner = (GameObjectData*)(peRootOffset + 0x565F20);
+	dest->effectOwner = (GameObjectData*)(peRootOffset + 0x519E58);
 	dest->unknownOwner = (GameObjectData*)(peRootOffset + 0x517BA8);
+	dest->unknownOwner2 = (GameObjectData*)(peRootOffset + 0x5163E0);
 	dest->nPlayfieldLeftEdge = (int*)(peRootOffset + 0x51B0F4);
 	dest->nPlayfieldTopEdge = (int*)(peRootOffset + 0x51B0F8);
 	dest->nCameraPlayerXPositionHistory = (int*)(peRootOffset + 0x51B12C);
