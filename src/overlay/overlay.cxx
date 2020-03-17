@@ -186,24 +186,105 @@ void DrawGGPOHostWindow(GameState* lpGameState, bool* pOpen) {
 }
 
 void DrawGlobalStateWindow(GameState* lpGameState, bool* pOpen) {
+	static CharacterSelection* selCharacter = &CHARACTERS[0];
+
+	CharacterConstants* cc = &lpGameState->characterConstants;
+	PlayData* pd = &lpGameState->playData;
 	ImGui::Begin("Global State", pOpen, ImGuiWindowFlags_None);
 
-	ImGui::Columns(2, NULL, false);
+	ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+	if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
+	{
+		if (ImGui::BeginTabItem("Global state"))
+		{
+			ImGui::Columns(2, NULL, false);
 
-	ImGui::Text("Hitbox display enabled:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->bHitboxDisplayEnabled); ImGui::NextColumn();
-	ImGui::Text("Camera x position:"); ImGui::NextColumn(); ImGui::Text("%f", *lpGameState->fCameraXPos); ImGui::NextColumn();
-	ImGui::Text("Camera hold timer:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nCameraHoldTimer); ImGui::NextColumn();
-	ImGui::Text("Camera zoom:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nCameraZoom); ImGui::NextColumn();
-	ImGui::Text("Playfield left edge:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nPlayfieldLeftEdge); ImGui::NextColumn();
-	ImGui::Text("Playfield top edge:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nPlayfieldTopEdge); ImGui::NextColumn();
-	ImGui::Text("Round time remaining:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nRoundTimeRemaining); ImGui::NextColumn();
-	ImGui::Text("RNG index:"); ImGui::NextColumn(); ImGui::Text("%d", lpGameState->nRandomTable[0]); ImGui::NextColumn();
-	ImGui::Text("Character root:"); ImGui::NextColumn(); ImGui::Text("%p", *lpGameState->arrCharacters); ImGui::NextColumn();
-	ImGui::Text("NPC root:"); ImGui::NextColumn(); ImGui::Text("%p", *lpGameState->arrNpcObjects); ImGui::NextColumn();
-	ImGui::Text("Player data root:"); ImGui::NextColumn(); ImGui::Text("%p", lpGameState->arrPlayerData); ImGui::NextColumn();
-	ImGui::Text("Window handle:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->hWnd); ImGui::NextColumn();
+			ImGui::Text("Hitbox display enabled:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->bHitboxDisplayEnabled); ImGui::NextColumn();
+			ImGui::Text("Camera x position:"); ImGui::NextColumn(); ImGui::Text("%f", *lpGameState->fCameraXPos); ImGui::NextColumn();
+			ImGui::Text("Camera hold timer:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nCameraHoldTimer); ImGui::NextColumn();
+			ImGui::Text("Camera zoom:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nCameraZoom); ImGui::NextColumn();
+			ImGui::Text("Playfield left edge:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nPlayfieldLeftEdge); ImGui::NextColumn();
+			ImGui::Text("Playfield top edge:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nPlayfieldTopEdge); ImGui::NextColumn();
+			ImGui::Text("Round time remaining:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nRoundTimeRemaining); ImGui::NextColumn();
+			ImGui::Text("RNG index:"); ImGui::NextColumn(); ImGui::Text("%d", lpGameState->nRandomTable[0]); ImGui::NextColumn();
+			ImGui::Text("Character root:"); ImGui::NextColumn(); ImGui::Text("%p", *lpGameState->arrCharacters); ImGui::NextColumn();
+			ImGui::Text("NPC root:"); ImGui::NextColumn(); ImGui::Text("%p", *lpGameState->arrNpcObjects); ImGui::NextColumn();
+			ImGui::Text("Player data root:"); ImGui::NextColumn(); ImGui::Text("%p", lpGameState->arrPlayerData); ImGui::NextColumn();
+			ImGui::Text("Window handle:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->hWnd); ImGui::NextColumn();
 
-	ImGui::Columns(1);
+			ImGui::Columns(1);
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("Character constants"))
+		{
+			ImGui::BeginChild("left pane", ImVec2(150, 0), true);
+			for (int i = 0; i < IM_ARRAYSIZE(CHARACTERS); i++) {
+				if (ImGui::Selectable(CHARACTERS[i].name, selCharacter->value == CHARACTERS[i].value)) {
+					selCharacter = &CHARACTERS[i];
+				}
+			}
+			ImGui::EndChild();
+			ImGui::SameLine();
+
+			// right
+			ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
+			ImGui::InputScalar("Standing pushbox width", ImGuiDataType_S16, &cc->arrnStandingPushboxWidth[selCharacter->value]);
+			ImGui::InputScalar("Vanilla standing pushbox height", ImGuiDataType_S16, &cc->arrnVanillaStandingPushboxHeight[selCharacter->value]);
+			ImGui::InputScalar("+R standing pushbox height", ImGuiDataType_S16, &cc->arrnPlusRStandingPushboxHeight[selCharacter->value]);
+			ImGui::InputScalar("Crouching pushbox width", ImGuiDataType_S16, &cc->arrnCrouchingPushboxWidth[selCharacter->value]);
+			ImGui::InputScalar("Crouching pushbox height", ImGuiDataType_S16, &cc->arrnCrouchingPushboxHeight[selCharacter->value]);
+			ImGui::InputScalar("Aerial pushbox width", ImGuiDataType_S16, &cc->arrnAerialPushboxWidth[selCharacter->value]);
+			ImGui::InputScalar("Aerial pushbox height", ImGuiDataType_S16, &cc->arrnAerialPushboxHeight[selCharacter->value]);
+			ImGui::InputScalar("Vanilla aerial pushbox Y offset", ImGuiDataType_S16, &cc->arrnVanillaAerialPushboxYOffset[selCharacter->value]);
+			ImGui::InputScalar("+R aerial pushbox Y offset", ImGuiDataType_S16, &cc->arrnPlusRAerialPushboxYOffset[selCharacter->value]);
+			ImGui::InputScalar("Close slash max distance", ImGuiDataType_S16, &cc->arrnCloseSlashMaxDistance[selCharacter->value]);
+			ImGui::InputScalar("Vanilla allowed normals", ImGuiDataType_U32, &cc->arrnVanillaAllowedNormals[selCharacter->value]);
+			ImGui::InputScalar("Vanilla EX allowed normals", ImGuiDataType_U32, &cc->arrnVanillaEXAllowedNormals[selCharacter->value]);
+			ImGui::InputScalar("+R allowed normals", ImGuiDataType_U32, &cc->arrnPlusRAllowedNormals[selCharacter->value]);
+			ImGui::InputScalar("+R EX allowed normals", ImGuiDataType_U32, &cc->arrnPlusREXAllowedNormals[selCharacter->value]);
+			ImGui::InputScalar("Vanilla standing throw distance", ImGuiDataType_S16, &cc->arrnVanillaStandingThrowDistance[selCharacter->value]);
+			ImGui::InputScalar("+R standing throw distance", ImGuiDataType_S16, &cc->arrnPlusRStandingThrowDistance[selCharacter->value]);
+			ImGui::InputScalar("Vanilla aerial throw distance", ImGuiDataType_S16, &cc->arrnVanillaAerialThrowDistance[selCharacter->value]);
+			ImGui::InputScalar("+R aerial throw distance", ImGuiDataType_S16, &cc->arrnPlusRAerialThrowDistance[selCharacter->value]);
+			ImGui::InputScalar("Max aerial throw height difference", ImGuiDataType_S16, &cc->arrnMaxAerialThrowVerticalDifference[selCharacter->value]);
+			ImGui::InputScalar("Min aerial throw height difference", ImGuiDataType_S16, &cc->arrnMinAerialThrowVerticalDifference[selCharacter->value]);
+			ImGui::EndChild();
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem("Play Data"))
+		{
+			if (ImGui::BeginTabBar("playdata tab bars", tab_bar_flags)) {
+				for (int i = 0; i < 2; i++) {
+					if (ImGui::BeginTabItem(i == 0 ? "Player 1" : "Player 2")) {
+						ImGui::InputScalar("Forward walk velocity", ImGuiDataType_S16, &pd->arrnFWalkVel[i]);
+						ImGui::InputScalar("Backward walk velocity", ImGuiDataType_S16, &pd->arrnBWalkVel[i]);
+						ImGui::InputScalar("Forward dash startup speed", ImGuiDataType_S16, &pd->arrnFDashStartupSpeed[i]);
+						ImGui::InputScalar("Backdash X velocity", ImGuiDataType_S16, &pd->arrnBDashXVel[i]);
+						ImGui::InputScalar("Backdash Y velocity", ImGuiDataType_S16, &pd->arrnBDashYVel[i]);
+						ImGui::InputScalar("Backdash gravity", ImGuiDataType_S16, &pd->arrnBDashGravity[i]);
+						ImGui::InputScalar("Forward jump minimum X velocity", ImGuiDataType_S16, &pd->arrnFJumpXVel[i]);
+						ImGui::InputScalar("Back jump minimum X velocity", ImGuiDataType_S16, &pd->arrnBJumpXVel[i]);
+						ImGui::InputScalar("Jump starting Y velocity", ImGuiDataType_S16, &pd->arrnJumpHeight[i]);
+						ImGui::InputScalar("Jump gravity", ImGuiDataType_S16, &pd->arrnGravity[i]);
+						ImGui::InputScalar("Forward superjump minimum X velocity", ImGuiDataType_S16, &pd->arrnFSuperJumpXVel[i]);
+						ImGui::InputScalar("Back superjump minimum X velocity", ImGuiDataType_S16, &pd->arrnBSuperJumpXVel[i]);
+						ImGui::InputScalar("Superjump starting Y velocity", ImGuiDataType_S16, &pd->arrnSuperJumpYVel[i]);
+						ImGui::InputScalar("Superjump gravity", ImGuiDataType_S16, &pd->arrnSuperJumpGravity[i]);
+						ImGui::InputScalar("Airdashes granted", ImGuiDataType_S16, &pd->arrnAirdashesGranted[i]);
+						ImGui::InputScalar("Airjumps granted", ImGuiDataType_S16, &pd->arrnAirJumpsGranted[i]);
+						ImGui::InputScalar("Forward walk tension value", ImGuiDataType_S16, &pd->arrnFWalkTension[i]);
+						ImGui::InputScalar("Forward jump tension value", ImGuiDataType_S16, &pd->arrnFJumpAscentTension[i]);
+						ImGui::InputScalar("Forward dash tension value", ImGuiDataType_S16, &pd->arrnFDashTension[i]);
+						ImGui::InputScalar("Forward airdash tension value", ImGuiDataType_S16, &pd->arrnFAirdashTension[i]);
+						ImGui::EndTabItem();
+					}
+				}
+				ImGui::EndTabBar();
+			}
+			ImGui::EndTabItem();
+		}
+		ImGui::EndTabBar();
+	}
 
 	ImGui::End();
 }
@@ -272,7 +353,7 @@ void DrawPlayerStateWindow(TCHAR* windowName, PlayerData* lpPlayerData, bool* pO
 	ImGui::Text("Airdashes remaining"); ImGui::NextColumn(); ImGui::Text("%d", lpPlayerData->nAirDashesRemaining); ImGui::NextColumn();
 	ImGui::Text("Airjumps remaining"); ImGui::NextColumn(); ImGui::Text("%d", lpPlayerData->nAirJumpsRemaining); ImGui::NextColumn();
 	ImGui::Text("Rakusyo bonus"); ImGui::NextColumn(); ImGui::Text("%d", lpPlayerData->receiveRakushoBonus); ImGui::NextColumn();
-	ImGui::Text("Instant kill mode"); ImGui::NextColumn(); ImGui::Text("%d", lpPlayerData->isInstantKillMode); ImGui::NextColumn();
+	ImGui::Text("Tension mode"); ImGui::NextColumn(); ImGui::Text("%d", lpPlayerData->tensionMode); ImGui::NextColumn();
 	ImGui::Text("Projectile thrown"); ImGui::NextColumn(); ImGui::Text("%d", lpPlayerData->IsProjectileThrown); ImGui::NextColumn();
 	ImGui::Text("Character meter 1"); ImGui::NextColumn(); ImGui::Text("%d", lpPlayerData->characterMeter1); ImGui::NextColumn();
 	ImGui::Text("Character meter 2"); ImGui::NextColumn(); ImGui::Text("%d", lpPlayerData->characterMeter2); ImGui::NextColumn();

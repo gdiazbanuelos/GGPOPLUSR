@@ -6,6 +6,8 @@
 #include <ggponet.h>
 #include <vdf_parser.hpp>
 
+#include "scripting.h"
+
 const unsigned short MIN_TENSION = 0;
 const unsigned short MAX_TENSION = 10000;
 const unsigned short MIN_BURST = 0;
@@ -31,6 +33,61 @@ enum gameinputs : unsigned short {
 	HSlash = 0x200,
 	Dust = 0x100
 };
+
+typedef enum TensionMode {
+    TENSION_ATTACK_IK = 1,
+    TENSION_NOMETER = 2,
+    TENSION_NORMAL = 0
+} TensionMode;
+
+typedef enum HitboxTypes {
+    HITBOXTYPEMASK_0 = 0,
+    HITBOXTYPEMASK_16 = 16,
+    HITBOXTYPEMASK_32 = 32,
+    HITBOXTYPEMASK_64 = 64,
+    HITBOXTYPEMASK_8 = 8,
+    HITBOXTYPEMASK_HURTBOX = 2,
+    HITBOXTYPEMASK_STRIKE = 1,
+    HITBOXTYPEMASK_UNIQUEPUSHBOX = 4,
+    _HITBOXTYPEMASK_PAD = 0xffffffff
+} HitboxTypes;
+
+typedef struct Hitbox {
+    short xOffset;
+    short yOffset;
+    unsigned short width;
+    unsigned short height;
+    enum HitboxTypes type;
+} Hitbox;
+
+typedef struct SpriteInfo {
+    short xOffset;
+    short yOffset;
+    unsigned int unknown;
+    unsigned int nSpriteIndex;
+} SpriteInfo;
+
+typedef enum PlayerDataAllowedNormals {
+    ALLNORMALS = 0xffffffff,
+
+    NORMAL_5P = 1,
+    NORMAL_6P = 2,
+    NORMAL_5K = 4,
+    NORMAL_fS = 8,
+    NORMAL_cS = 16,
+    NORMAL_5H = 32,
+    NORMAL_6H = 64,
+    NORMAL_2P = 256,
+    NORMAL_2K = 512,
+    NORMAL_2S = 1024,
+    NORMAL_2H = 2048,
+    NORMAL_JP = 4096,
+    NORMAL_JK = 8192,
+    NORMAL_JS = 16384,
+    NORMAL_JH = 32768,
+    NORMAL_6K = 131072,
+
+} PlayerDataAllowedNormals;
 
 typedef unsigned char   undefined;
 typedef unsigned char    byte;
@@ -198,6 +255,52 @@ typedef struct SessionInitiationState {
     HANDLE hSyncThread;
 } SessionInitializationState;
 
+typedef struct PlayData {
+    short* arrnFWalkVel;
+    short* arrnBWalkVel;
+    short* arrnFDashStartupSpeed;
+    short* arrnBDashXVel;
+    short* arrnBDashYVel;
+    short* arrnBDashGravity;
+    short* arrnFJumpXVel;
+    short* arrnBJumpXVel;
+    short* arrnJumpHeight;
+    short* arrnGravity;
+    short* arrnFSuperJumpXVel;
+    short* arrnBSuperJumpXVel;
+    short* arrnSuperJumpYVel;
+    short* arrnSuperJumpGravity;
+    short* arrnAirdashesGranted;
+    short* arrnAirJumpsGranted;
+    short* arrnFWalkTension;
+    short* arrnFJumpAscentTension;
+    short* arrnFDashTension;
+    short* arrnFAirdashTension;
+} PlayData;
+
+typedef struct CharacterConstants {
+    short* arrnStandingPushboxWidth;
+    short* arrnVanillaStandingPushboxHeight;
+    short* arrnPlusRStandingPushboxHeight;
+    short* arrnCrouchingPushboxWidth;
+    short* arrnCrouchingPushboxHeight;
+    short* arrnAerialPushboxWidth;
+    short* arrnAerialPushboxHeight;
+    short* arrnVanillaAerialPushboxYOffset;
+    short* arrnPlusRAerialPushboxYOffset;
+    short* arrnCloseSlashMaxDistance;
+    DWORD* arrnVanillaAllowedNormals;
+    DWORD* arrnVanillaEXAllowedNormals;
+    DWORD* arrnPlusRAllowedNormals;
+    DWORD* arrnPlusREXAllowedNormals;
+    short* arrnVanillaStandingThrowDistance;
+    short* arrnPlusRStandingThrowDistance;
+    short* arrnVanillaAerialThrowDistance;
+    short* arrnPlusRAerialThrowDistance;
+    short* arrnMinAerialThrowVerticalDifference;
+    short* arrnMaxAerialThrowVerticalDifference;
+} CharacterConstants;
+
 typedef struct GameState {
     int nFramesToSkipRender;
     int nFramesSkipped;
@@ -226,10 +329,10 @@ typedef struct GameState {
     PlayerData* arrPlayerData;
     int* nRoundTimeRemaining;
     DWORD* nRandomTable;
-    GameObjectData* projectileOwner;
-    GameObjectData* effectOwner;
-    GameObjectData* unknownOwner;
-    GameObjectData* unknownOwner2;
+    GameObjectData* inactiveNPCObjectPool_LinkedList;
+    GameObjectData* activeEffectObjectPool_LinkedList;
+    GameObjectData* activeNPCObjectPool_LinkedList;
+    GameObjectData* inactiveEffectObjectPool_LinkedList;
     int* nPlayfieldLeftEdge;
     int* nPlayfieldTopEdge;
     int* nCameraPlayerXPositionHistory;
@@ -251,6 +354,9 @@ typedef struct GameState {
     DWORD* nUnknownIsPlayerActive1;
     DWORD* nUnknownIsPlayerActive2;
     WORD* arrbPlayerCPUValues;
+
+    CharacterConstants characterConstants;
+    PlayData playData;
 } GameState;
 
 void DisableHitboxes(GameState* gameState);
@@ -279,96 +385,78 @@ HANDLE CreateSynchronizeServerThread(GameState* lpGameState, unsigned short nSyn
 void PrepareGGPOSession(GameState* lpGameState);
 
 typedef unsigned short XInputButton;
-const XInputButton XINPUTBTN_A = 16384;
-const XInputButton XINPUTBTN_B = 8192;
-const XInputButton XINPUTBTN_BACK = 1;
-const XInputButton XINPUTBTN_LB = 1024;
-const XInputButton XINPUTBTN_LS = 2;
-const XInputButton XINPUTBTN_LT = 256;
-const XInputButton XINPUTBTN_RB = 2048;
-const XInputButton XINPUTBTN_RS = 4;
-const XInputButton XINPUTBTN_RT = 512;
-const XInputButton XINPUTBTN_START = 8;
-const XInputButton XINPUTBTN_X = 32768;
-const XInputButton XINPUTBTN_Y = 4096;
+const XInputButton XINPUTBTN_BACK = 0x0001;
+const XInputButton XINPUTBTN_LS = 0x0002;
+const XInputButton XINPUTBTN_RS = 0x0004;
+const XInputButton XINPUTBTN_START = 0x0008;
+const XInputButton XINPUTBTN_DPAD_UP = 0x0010;
+const XInputButton XINPUTBTN_DPAD_RIGHT = 0x0020;
+const XInputButton XINPUTBTN_DPAD_DOWN = 0x0040;
+const XInputButton XINPUTBTN_DPAD_LEFT = 0x0080;
+const XInputButton XINPUTBTN_LT = 0x0100;
+const XInputButton XINPUTBTN_RT = 0x0200;
+const XInputButton XINPUTBTN_LB = 0x0400;
+const XInputButton XINPUTBTN_RB = 0x0800;
+const XInputButton XINPUTBTN_Y = 0x1000;
+const XInputButton XINPUTBTN_B = 0x2000;
+const XInputButton XINPUTBTN_A = 0x4000;
+const XInputButton XINPUTBTN_X = 0x8000;
 
-struct GameObjectSubStruct2 {
-    undefined field_0x0;
-    undefined field_0x1;
-    undefined field_0x2;
-    undefined field_0x3;
-    undefined field_0x4;
-    undefined field_0x5;
-    undefined field_0x6;
-    undefined field_0x7;
-    undefined field_0x8;
-    undefined field_0x9;
+
+struct GameObjectScriptingStruct {
+    short field_0x0;
+    short field_0x2;
+    short field_0x4;
+    short field_0x6;
+    short attackStunValue;
     undefined field_0xa;
     undefined field_0xb;
-    undefined field_0xc;
-    undefined field_0xd;
-    undefined field_0xe;
-    undefined field_0xf;
-    undefined field_0x10;
-    undefined field_0x11;
-    undefined field_0x12;
-    undefined field_0x13;
-    undefined field_0x14;
-    undefined field_0x15;
-    undefined field_0x16;
-    undefined field_0x17;
-    undefined field_0x18;
-    undefined field_0x19;
-    undefined field_0x1a;
-    undefined field_0x1b;
-    undefined field_0x1c;
-    undefined field_0x1d;
-    undefined field_0x1e;
-    undefined field_0x1f;
-    undefined field_0x20;
-    undefined field_0x21;
-    undefined field_0x22;
-    undefined field_0x23;
-    undefined field_0x24;
+    uint field_0xc;
+    short field_0x10;
+    short field_0x12;
+    byte sound2[2];
+    byte field_0x16[2];
+    byte sound[2];
+    byte field_0x1a[2];
+    byte field_0x1c;
+    byte field_0x1d;
+    byte field_0x1e;
+    byte unknRandomThresh;
+    short attackPushback;
+    short slipAmount;
+    byte field_0x24;
     undefined field_0x25;
     undefined field_0x26;
     undefined field_0x27;
-    void* field_0x28;
-    undefined field_0x2c;
-    undefined field_0x2d;
-    undefined field_0x2e;
-    undefined field_0x2f;
-    undefined field_0x30;
-    undefined field_0x31;
-    undefined field_0x32;
-    undefined field_0x33;
+    int (*scriptingCallback)(struct GameObjectData*, uint*);
+    short field_0x2c;
+    short field_0x2e;
+    short field_0x30;
+    short field_0x32;
     undefined field_0x34;
     undefined field_0x35;
     undefined field_0x36;
     undefined field_0x37;
-    undefined field_0x38;
-    undefined field_0x39;
-    undefined field_0x3a;
-    undefined field_0x3b;
-    undefined field_0x3c;
-    undefined field_0x3d;
-    undefined field_0x3e;
-    undefined field_0x3f;
-    undefined field_0x40;
-    undefined field_0x41;
-    undefined field_0x42;
-    undefined field_0x43;
-    undefined field_0x44;
+    short field_0x38;
+    short field_0x3a;
+    char field_0x3c;
+    char field_0x3d;
+    char field_0x3e;
+    char field_0x3f;
+    char field_0x40;
+    char field_0x41;
+    char field_0x42;
+    char field_0x43;
+    char field_0x44;
     undefined field_0x45;
     undefined field_0x46;
     undefined field_0x47;
-    undefined field_0x48;
-    undefined field_0x49;
+    short field_0x48;
     short field_0x4a;
     short field_0x4c;
     short field_0x4e;
     short field_0x50;
-    undefined field_0x52;
+    byte field_0x52;
     undefined field_0x53;
     undefined field_0x54;
     undefined field_0x55;
@@ -380,20 +468,192 @@ struct GameObjectSubStruct2 {
     undefined field_0x5b;
 };
 
+/**
+ * Since the representation of poses in character resources involves a variable
+ * length array right in the middle of it, we can't represent it as a struct.
+ * Instead, just treat it as an opaque pointer and add methods that _can_ pull
+ * structured data out of this opaque pointer.
+ */
+typedef void* LPPOSE;
+
+typedef enum GameObjectID {
+    GO_CHIPP = 7,
+    GO_MILLIA_TANDEMTOP_SECRETGARDEN = 33,
+    GO_SLAYER_UNK_5A = 90,
+    GO_ZAPPA_DOG = 96,
+    GO_FAUST_UNK_40 = 64,
+    GO_ZAPPA = 19,
+    GO_SLAYER_UNK_61 = 97,
+    GO_POT_UNK_3D = 61,
+    GO_FAUST_UNK_4A = 74,
+    GO_MILLIA = 4,
+    GO_ANJI = 13,
+    GO_DIZZY = 16,
+    GO_ROBOKY = 21,
+    GO_SLAYER = 17,
+    GO_KY = 2,
+    GO_INO_UNK_5F = 95,
+    GO_DIZZYICE_SCYTHE_SPIKE = 32,
+    GO_SOL = 1,
+    GO_ROBOKY_UNK_62 = 98,
+    GO_JOHNNY_BACCHUS = 63,
+    GO_ROBOKY_UNK_63 = 99,
+    GO_MAY_UNK_3E = 62,
+    GO_POTEMKIN = 6,
+    GO_JAM_UNK_2F = 47,
+    GO_ZAPPA_GHOSTS = 91,
+    GO_JAM_UNK_30 = 48,
+    GO_ORDERSOL = 23,
+    GO_FAUST = 10,
+    GO_KLIFF = 24,
+    GO_MAY_UNK_37 = 55,
+    GO_CHIPP_UNK_3C = 60,
+    GO_INO = 18,
+    GO_YAMADASAN = 70,
+    GO_ZAPPA_GHOSTITEMS = 89,
+    GO_FAUSTITEMS_2B = 43,
+    GO_BRIDGET_ROGER_YOYO = 92,
+    GO_EDDIE_DRILL = 65,
+    GO_CHIPP_UNK_45 = 69,
+    GO_BAIKEN = 9,
+    GO_SLAYER_UNK_58 = 88,
+    GO_ANJI_UNK_4C = 76,
+    GO_ANJI_UNK_4E = 78,
+    GO_MILLIA_HAIRPIN = 46,
+    GO_ABA_UNK_64 = 100,
+    GO_ABA_UNK_65 = 101,
+    GO_ABA_UNK_66 = 102,
+    GO_JUSTICE_UNK_6E = 110,
+    GO_LITTLE_EDDIE = 35,
+    GO_DIZZY_UNK_24 = 36,
+    GO_MILLIA_UNK_34 = 52,
+    GO_SOL_FLAMES_VV_GF = 44,
+    GO_JUSTICE_UNK_6F = 111,
+    GO_AXL_UNK_51 = 81,
+    GO_VENOM_UNK_31 = 49,
+    GO_ZAPPA_RAOU = 87,
+    GO_VENOM_UNK_32 = 50,
+    GO_AXL_UNK_4D = 77,
+    GO_KLIFF_UNK_6C = 108,
+    GO_VENOM_UNK_35 = 53,
+    GO_VENOM_UNK_36 = 54,
+    GO_JOHNNY_UNK_47 = 71,
+    GO_VENOM_UNK_38 = 56,
+    GO_POLYGONAL_HIT_EFFECT = 142,
+    GO_DIZZYFISH_ICESPEAR_BUBBLE_IMPRAY = 67,
+    GO_JAM = 12,
+    GO_AXL = 5,
+    GO_MAY_UNK_48 = 72,
+    GO_JAM_UNK_27 = 39,
+    GO_JAM_UNK_26 = 38,
+    GO_JOHNNY_UNK_55 = 85,
+    GO_ZAPPA_SWORD = 93,
+    GO_BAIKEN_UNK_3A = 58,
+    GO_JAM_UNK_25 = 37,
+    GO_JAM_UNK_2A = 42,
+    GO_KY_LIGHTNING_STUNEDGE_JD = 41,
+    GO_MAY_UNK_4B = 75,
+    GO_BAIKEN_UNK_39 = 57,
+    GO_HOS_UNK_68 = 104,
+    GO_HOS_UNK_67 = 103,
+    GO_EDDIE = 8,
+    GO_INO_UNK_56 = 86,
+    GO_MAY = 3,
+    GO_ABA = 22,
+    GO_TESTAMENT = 11,
+    GO_TESTAMENT_UNK_4F = 79,
+    GO_SOL_UNK_42 = 66,
+    GO_CHIPP_GAMMABLADE = 40,
+    GO_STAGEOBJECT_3 = 178,
+    GO_STAGEOBJECT_4 = 179,
+    GO_CHIPP_SHURIKEN = 59,
+    GO_STAGEOBJECT_1 = 176,
+    GO_STAGEOBJECT_2 = 177,
+    GO_STAGEOBJECT_5 = 180,
+    GO_TESTAMENT_UNK_54 = 84,
+    GO_VENOM_UNK_2D = 45,
+    GO_TESTAMENT_UNK_50 = 80,
+    GO_TESTAMENT_UNK_52 = 82,
+    GO_JOHNNY = 14,
+    GO_IRUKASAN = 68,
+    GO_BRIDGET = 20,
+    GO_VENOM_CUEBALLS = 34,
+    GO_POT_UNK_49 = 73,
+    GO_JUSTICE = 25,
+    GO_VENOM = 15,
+    GO_ANJI_UNK_53 = 83,
+    GO_BRIDGET_UNK_5E = 94,
+    GO_FORCEWORD = 0xffff
+} GameObjectID;
+
+typedef enum GameObjectStateFlags {
+    CSF_SLIP = 33554432,
+    CSF_REAP = 2147483648,
+    CSF_HITSTOP = 524288,
+    CSF_AERIAL = 16,
+    CSF_TRAPTOWORLD = 262144,
+    CSF_BLOCKSTUN = 512,
+    CSF_HITSTUN = 32,
+    CSF_CORNERED = 2048,
+    CSF_BURST_DISABLED = 16384,
+    CSF_SKIPOBJ = 1073741824,
+    CSF_REVERSAL = 32768,
+    CSF_TRAPTOPLAYFIELD = 16777216,
+    CSF_CROUCHING = 1024
+} GameObjectStateFlags;
+
+typedef enum GameObjectGraphicalEffectsFlags {
+    CE_COUNTERHIT = 16777216,
+    CE_FLAME = 4096,
+    CE_CHIPPINVIS = 65536,
+    CE_RESET_PALETTE_AFTER_EFFECT = 1024,
+    CE_FAUST_POISON_TESTAMENTOD = 1048576,
+    CE_RCFLASH = 512,
+    CE_SHADOWPALETTE = 262144,
+    CE_BAKU_P_ABAGOKU_JUSTICEOMEGA = 524288,
+    CE_EASYFRC_BLUEFLASH = 67108864,
+    CE_FIXEDVERTICALSCALE = 1,
+    CE_BAKU_K = 268435456,
+    CE_THUNDER = 8192,
+    CE_NOSHADOW = 131072,
+    CE_BAKU_S = 536870912,
+    CE_INVIS2 = 8,
+    CE_DRAGONINSTALL = 16384,
+    _CE_FORCE_DWORD = 0xffffffff
+} GameObjectGraphicalEffectsFlags;
+
+typedef enum GameObjectAttackInformationFlags {
+    AI_FLAGSOFF = 4294967295,
+    AI_FLAME = 262144,
+    AI_KNOCKDOWN = 16,
+    AI_DUSTHOMING = 512,
+    AI_UNKLAUNCH = 128,
+    AI_SMALLHITEFFECT = 1,
+    AI_SKIPEFFECTS = 64,
+    AI_THUNDER = 524288
+} GameObjectAttackInformationFlags;
+
+typedef struct GameObjectAttackInformation {
+    GameObjectAttackInformationFlags flags;
+    unsigned short unc_LS3BattackLevel;
+    byte damage;
+    byte unc_collisionMask;
+} GameObjectAttackInformation;
+
 struct GameObjectData {
-    WORD objectID;
+    GameObjectID objectID;
     char facing;
     char side;
-    struct GameObjectData* field_0x4;
-    struct GameObjectData* nextObject;
-    DWORD stateFlags;
-    int field_0x10;
+    struct GameObjectData* lpPrevObject;
+    struct GameObjectData* lpNextObject;
+    GameObjectStateFlags stateFlags;
+    int queuedAction;
     DWORD unc_upcomingAction;
     WORD actNo;
     WORD field_0x1a;
     short field_0x1c;
     short field_0x1e;
-    void* field_0x20;
+    struct GameObjectData* lpParent;
     undefined field_0x24;
     undefined field_0x25;
     undefined field_0x26;
@@ -408,20 +668,19 @@ struct GameObjectData {
     undefined field_0x3d;
     undefined field_0x3e;
     undefined field_0x3f;
-    unsigned short nHitboxIndex;
+    unsigned short nPoseIndex;
     undefined field_0x42;
     undefined field_0x43;
-    undefined field_0x44;
-    undefined field_0x45;
+    unsigned short nSpriteIndex;
     undefined field_0x46;
     undefined field_0x47;
-    void* arrHitboxStorage;
+    LPPOSE* arrlpPoses;
     short field_0x4c;
     undefined field_0x4e;
     undefined field_0x4f;
     short preservedAspectScalingFactor;
     short verticalScalingFactor;
-    void* hitboxPointer;
+    Hitbox* arrlpCurrentHitboxes;
     undefined field_0x58;
     undefined field_0x59;
     undefined field_0x5a;
@@ -442,10 +701,7 @@ struct GameObjectData {
     int unc_xPosMemory;
     int unc_yPosMemory;
     DWORD field_0x78;
-    undefined field_0x7c;
-    undefined field_0x7d;
-    byte field_0x7e;
-    undefined field_0x7f;
+    char attackerScriptVariables[4];
     undefined field_0x80;
     undefined field_0x81;
     undefined field_0x82;
@@ -453,13 +709,13 @@ struct GameObjectData {
     byte numHitboxes;
     undefined field_0x85;
     short field_0x86;
-    struct GameObjectSubStruct2* unk_SubStructure2;
-    struct UNC_PlayerSubStructure* unk_SubStructure;
+    struct GameObjectScriptingStruct* scriptingStruct;
+    struct GameObjectScriptingStruct* scriptingStruct2;
     undefined field_0x90;
     undefined field_0x91;
     undefined field_0x92;
     undefined field_0x93;
-    void (*UNC_Callback0x94)(struct GameObjectData*);
+    void (*resetPaletteCallback)(struct GameObjectData*);
     short d3dTextureIndex; /* Created by retype action */
     WORD field_0x9a;
     short textureMetadataOffsetStart;
@@ -471,7 +727,7 @@ struct GameObjectData {
     undefined field_0xa9;
     undefined field_0xaa;
     undefined field_0xab;
-    DWORD dwGraphicalEffects; /* 0x20000 means no shadow */
+    GameObjectGraphicalEffectsFlags dwGraphicalEffects;
     int xPos;
     int ypos;
     int xvel;
@@ -495,18 +751,16 @@ struct GameObjectData {
     undefined field_0xdc;
     undefined field_0xdd;
     short field_0xde;
-    DWORD** unk_DWORDARR;
-    DWORD field_0xe4;
-    DWORD field_0xe8;
-    DWORD* field_0xec;
-    WORD UNK_ANIM;
-    WORD field_0xf2;
-    unsigned short field_0xf4;
+    DWORD** scriptingData;
+    struct GameObjectAttackInformation attackInfo_228;
+    DWORD* scriptStart;
+    union ScriptInstructionUnion* instructionPointer;
+    enum GameObject0xf4_Flags flags_0xf4;
     undefined field_0xf6;
     undefined field_0xf7;
-    WORD UNK_AnimationID;
-    WORD UNC_AnimationClock;
-    undefined field_0xfc;
+    WORD nScriptID;
+    WORD nPoseFramesElapsed;
+    char nFramesToHoldPose;
     byte field_0xfd;
     undefined field_0xfe;
     undefined field_0xff;
@@ -597,15 +851,14 @@ struct PlayerData {
     undefined field_0x2d;
     undefined field_0x2e;
     undefined field_0x2f;
-    undefined field_0x30;
-    undefined field_0x31;
-    undefined field_0x32;
-    undefined field_0x33;
-    undefined field_0x34;
-    char receiveRakushoBonus;
+    short field_0x30;
+    char nFRCWindow;
+    char field_0x33;
+    char field_0x34;
+    bool receiveRakushoBonus; /* Created by retype action */
     undefined field_0x36;
     undefined field_0x37;
-    DWORD field_0x38;
+    enum PlayerDataAllowedNormals allowedNormals;
     undefined field_0x3c;
     undefined field_0x3d;
     undefined field_0x3e;
@@ -687,16 +940,16 @@ struct PlayerData {
     undefined field_0xb1;
     undefined field_0xb2;
     undefined field_0xb3;
-    void* unc_funcPtrs1;
-    void* unc_funcPtrs2;
+    void (*unc_hitCallback1)(struct GameObjectData*);
+    void (*unc_hitCallback2)(struct GameObjectData*);
     void* unc_funcPtrs3;
-    void* unc_funcPtrs4;
+    void (*landingCallback)(struct GameObjectData*);
     void* unc_funcPtrs5;
     void* unc_funcPtrs6;
     void* unc_funcPtrs7;
     void* unc_funcPtrs8;
     short* UNC_ThrowOffsetPointer; /* Created by retype action */
-    byte isInstantKillMode; /* Created by retype action */
+    enum TensionMode tensionMode;
     undefined1 IsProjectileThrown; /* Created by retype action */
     undefined field_0xda;
     undefined field_0xdb;
@@ -732,16 +985,15 @@ struct PlayerData {
     undefined field_0xfd;
     undefined field_0xfe;
     undefined field_0xff;
-    undefined field_0x100;
-    undefined field_0x101;
-    byte field_0x102;
-    byte field_0x103;
-    byte field_0x104;
-    byte field_0x105;
-    byte field_0x106;
-    byte field_0x107;
-    byte field_0x108;
-    byte field_0x109;
+    short field_0x100;
+    byte baikenBakuPEffectCounter;
+    byte baikenBakuKEffectCounter;
+    byte baikenBakuSEffectCounter;
+    byte bakuPDisableCounter;
+    byte bakuKDisableCounter;
+    byte bakuSDisableCounter;
+    byte baikenHDisableCounter;
+    byte baikenDDisableCounter;
     undefined field_0x10a;
     undefined field_0x10b;
     undefined field_0x10c;
@@ -791,94 +1043,9 @@ struct PlayerData {
     undefined field_0x141;
     undefined field_0x142;
     undefined field_0x143;
-    undefined field_0x144;
-    undefined field_0x145;
+    short recoveryFrame;
     undefined field_0x146;
     undefined field_0x147;
-};
-
-struct UNC_PlayerSubStructure {
-    undefined field_0x0;
-    undefined field_0x1;
-    undefined field_0x2;
-    undefined field_0x3;
-    undefined field_0x4;
-    undefined field_0x5;
-    undefined field_0x6;
-    undefined field_0x7;
-    undefined field_0x8;
-    undefined field_0x9;
-    undefined field_0xa;
-    undefined field_0xb;
-    undefined field_0xc;
-    undefined field_0xd;
-    undefined field_0xe;
-    undefined field_0xf;
-    undefined field_0x10;
-    undefined field_0x11;
-    undefined field_0x12;
-    undefined field_0x13;
-    undefined field_0x14;
-    undefined field_0x15;
-    undefined field_0x16;
-    undefined field_0x17;
-    undefined field_0x18;
-    undefined field_0x19;
-    undefined field_0x1a;
-    undefined field_0x1b;
-    undefined field_0x1c;
-    undefined field_0x1d;
-    undefined field_0x1e;
-    undefined field_0x1f;
-    undefined field_0x20;
-    undefined field_0x21;
-    undefined field_0x22;
-    undefined field_0x23;
-    undefined field_0x24;
-    undefined field_0x25;
-    undefined field_0x26;
-    undefined field_0x27;
-    void* unc_FunctionPointer;
-    undefined field_0x2c;
-    undefined field_0x2d;
-    undefined field_0x2e;
-    undefined field_0x2f;
-    undefined field_0x30;
-    undefined field_0x31;
-    undefined field_0x32;
-    undefined field_0x33;
-    undefined field_0x34;
-    undefined field_0x35;
-    undefined field_0x36;
-    undefined field_0x37;
-    undefined field_0x38;
-    undefined field_0x39;
-    undefined field_0x3a;
-    undefined field_0x3b;
-    undefined field_0x3c;
-    undefined field_0x3d;
-    undefined field_0x3e;
-    undefined field_0x3f;
-    undefined field_0x40;
-    undefined field_0x41;
-    undefined field_0x42;
-    undefined field_0x43;
-    undefined field_0x44;
-    undefined field_0x45;
-    undefined field_0x46;
-    undefined field_0x47;
-    undefined field_0x48;
-    undefined field_0x49;
-    undefined field_0x4a;
-    undefined field_0x4b;
-    undefined field_0x4c;
-    undefined field_0x4d;
-    undefined field_0x4e;
-    undefined field_0x4f;
-    undefined field_0x50;
-    undefined field_0x51;
-    undefined field_0x52;
-    undefined field_0x53;
 };
 
 typedef struct SavedGameState {
@@ -895,10 +1062,10 @@ typedef struct SavedGameState {
     int nRoundTimeRemaining;
     DWORD nRandomTable[0x272];
 
-    struct GameObjectData projectileOwner;
-    struct GameObjectData effectOwner;
-    struct GameObjectData unknownOwner;
-    struct GameObjectData unknownOwner2;
+    struct GameObjectData inactiveNPCObjectPool_LinkedList;
+    struct GameObjectData activeEffectObjectPool_LinkedList;
+    struct GameObjectData activeNPCObjectPool_LinkedList;
+    struct GameObjectData inactiveEffectObjectPool_LinkedList;
     int nPlayfieldLeftEdge;
     int nPlayfieldTopEdge;
 
@@ -912,16 +1079,13 @@ typedef struct SavedGameState {
 } SavedGameState;
 
 struct Inputs {
-
     byte nDirection;
     byte nButton;
     unsigned short sPad;
 
 };
 typedef struct TrainingModeRec {
-
     byte nPlayer;
     byte nUnknown[3];
     struct Inputs RecInputs[3599];
-
 } TrainingModeRec;

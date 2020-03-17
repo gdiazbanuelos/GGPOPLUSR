@@ -128,10 +128,10 @@ void SaveGameState(GameState* gameState, SavedGameState* dest) {
 		CopyMemory(dest->arrEffectObjects, *gameState->arrEffectObjects, sizeof(GameObjectData) * 0x180);
 	}
 	CopyMemory(dest->arrPlayerData, gameState->arrPlayerData, sizeof(PlayerData) * 2);
-	CopyMemory(&dest->projectileOwner, gameState->projectileOwner, sizeof(GameObjectData));
-	CopyMemory(&dest->effectOwner, gameState->effectOwner, sizeof(GameObjectData));
-	CopyMemory(&dest->unknownOwner, gameState->unknownOwner, sizeof(GameObjectData));
-	CopyMemory(&dest->unknownOwner2, gameState->unknownOwner2, sizeof(GameObjectData));
+	CopyMemory(&dest->inactiveNPCObjectPool_LinkedList, gameState->inactiveNPCObjectPool_LinkedList, sizeof(GameObjectData));
+	CopyMemory(&dest->activeEffectObjectPool_LinkedList, gameState->activeEffectObjectPool_LinkedList, sizeof(GameObjectData));
+	CopyMemory(&dest->activeNPCObjectPool_LinkedList, gameState->activeNPCObjectPool_LinkedList, sizeof(GameObjectData));
+	CopyMemory(&dest->inactiveEffectObjectPool_LinkedList, gameState->inactiveEffectObjectPool_LinkedList, sizeof(GameObjectData));
 
 	dest->fCameraXPos = *gameState->fCameraXPos;
 	dest->nCameraHoldTimer = *gameState->nCameraHoldTimer;
@@ -178,10 +178,10 @@ void LoadGameState(GameState* gameState, SavedGameState* src) {
 	CopyMemory(*gameState->arrNpcObjects, src->arrNpcObjects, sizeof(GameObjectData) * 0x60);
 	CopyMemory(*gameState->arrEffectObjects, src->arrEffectObjects, sizeof(GameObjectData) * 0x180);
 	CopyMemory(gameState->arrPlayerData, src->arrPlayerData, sizeof(PlayerData) * 2);
-	CopyMemory(gameState->projectileOwner, &src->projectileOwner, sizeof(GameObjectData));
-	CopyMemory(gameState->effectOwner, &src->effectOwner, sizeof(GameObjectData));
-	CopyMemory(gameState->unknownOwner, &src->unknownOwner, sizeof(GameObjectData));
-	CopyMemory(gameState->unknownOwner2, &src->unknownOwner2, sizeof(GameObjectData));
+	CopyMemory(gameState->inactiveNPCObjectPool_LinkedList, &src->inactiveNPCObjectPool_LinkedList, sizeof(GameObjectData));
+	CopyMemory(gameState->activeEffectObjectPool_LinkedList, &src->activeEffectObjectPool_LinkedList, sizeof(GameObjectData));
+	CopyMemory(gameState->activeNPCObjectPool_LinkedList, &src->activeNPCObjectPool_LinkedList, sizeof(GameObjectData));
+	CopyMemory(gameState->inactiveEffectObjectPool_LinkedList, &src->inactiveEffectObjectPool_LinkedList, sizeof(GameObjectData));
 	*gameState->fCameraXPos = src->fCameraXPos;
 	*gameState->nCameraHoldTimer = src->nCameraHoldTimer;
 	*gameState->nCameraZoom = src->nCameraZoom;
@@ -305,6 +305,56 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	return S_OK;
 }
 
+void LocatePlayData(HMODULE peRoot, PlayData* dest) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+
+	dest->arrnFWalkVel = (short*)(peRootOffset + 0x519FA0);
+	dest->arrnBWalkVel = (short*)(peRootOffset + 0x51A02C);
+	dest->arrnFDashStartupSpeed = (short*)(peRootOffset + 0x51A020);
+	dest->arrnBDashXVel = (short*)(peRootOffset + 0x519FF0);
+	dest->arrnBDashYVel = (short*)(peRootOffset + 0x519FA8);
+	dest->arrnBDashGravity = (short*)(peRootOffset + 0x519F88);
+	dest->arrnFJumpXVel = (short*)(peRootOffset + 0x519FF8);
+	dest->arrnBJumpXVel = (short*)(peRootOffset + 0x519FF4);
+	dest->arrnJumpHeight = (short*)(peRootOffset + 0x519FD8);
+	dest->arrnGravity = (short*)(peRootOffset + 0x519F9C);
+	dest->arrnFSuperJumpXVel = (short*)(peRootOffset + 0x51A008);
+	dest->arrnBSuperJumpXVel = (short*)(peRootOffset + 0x519F8C);
+	dest->arrnSuperJumpYVel = (short*)(peRootOffset + 0x519FEC);
+	dest->arrnSuperJumpGravity = (short*)(peRootOffset + 0x519FB4);
+	dest->arrnAirdashesGranted = (short*)(peRootOffset + 0x51A01C);
+	dest->arrnAirJumpsGranted = (short*)(peRootOffset + 0x519FE0);
+	dest->arrnFWalkTension = (short*)(peRootOffset + 0x519F90);
+	dest->arrnFJumpAscentTension = (short*)(peRootOffset + 0x519FAC);
+	dest->arrnFDashTension = (short*)(peRootOffset + 0x519F94);
+	dest->arrnFAirdashTension = (short*)(peRootOffset + 0x519FB0);
+}
+
+void LocateCharacterConstants(HMODULE peRoot, CharacterConstants* dest) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+
+	dest->arrnStandingPushboxWidth = (short*)(peRootOffset + 0x3D3534);
+	dest->arrnVanillaStandingPushboxHeight = (short*)(peRootOffset + 0x3D3754);
+	dest->arrnPlusRStandingPushboxHeight = (short*)(peRootOffset + 0x3D3E3C);
+	dest->arrnCrouchingPushboxWidth = (short*)(peRootOffset + 0x3D5124);
+	dest->arrnCrouchingPushboxHeight = (short*)(peRootOffset + 0x3D5B08);
+	dest->arrnAerialPushboxWidth = (short*)(peRootOffset + 0x3D5B3C);
+	dest->arrnAerialPushboxHeight = (short*)(peRootOffset + 0x3D5B70);
+	dest->arrnVanillaAerialPushboxYOffset = (short*)(peRootOffset + 0x3D5BA4);
+	dest->arrnPlusRAerialPushboxYOffset = (short*)(peRootOffset + 0x3D5BD8);
+	dest->arrnCloseSlashMaxDistance = (short*)(peRootOffset + 0x3D5C0C);
+	dest->arrnVanillaAllowedNormals = (DWORD*)(peRootOffset + 0x3D5C40);
+	dest->arrnVanillaEXAllowedNormals = (DWORD*)(peRootOffset + 0x3D5CE0);
+	dest->arrnPlusRAllowedNormals = (DWORD*)(peRootOffset + 0x3D5D50);
+	dest->arrnPlusREXAllowedNormals = (DWORD*)(peRootOffset + 0x3D5DC8);
+	dest->arrnVanillaStandingThrowDistance = (short*)(peRootOffset + 0x3D1FFC);
+	dest->arrnPlusRStandingThrowDistance = (short*)(peRootOffset + 0x3D2114);
+	dest->arrnVanillaAerialThrowDistance = (short*)(peRootOffset + 0x3D287C);
+	dest->arrnPlusRAerialThrowDistance = (short*)(peRootOffset + 0x3D2954);
+	dest->arrnMaxAerialThrowVerticalDifference = (short*)(peRootOffset + 0x3D2A2C);
+	dest->arrnMinAerialThrowVerticalDifference = (short*)(peRootOffset + 0x3D2FC4);
+}
+
 HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 	dest->nFramesToSkipRender = 0;
@@ -325,10 +375,10 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->arrPlayerData = (PlayerData*)(peRootOffset + 0x51A038);
 	dest->nRoundTimeRemaining = (int*)(peRootOffset + 0x50F800);
 	dest->nRandomTable = (DWORD*)(peRootOffset + 0x565F20);
-	dest->projectileOwner = (GameObjectData*)(peRootOffset + 0x517A78);
-	dest->effectOwner = (GameObjectData*)(peRootOffset + 0x519E58);
-	dest->unknownOwner = (GameObjectData*)(peRootOffset + 0x517BA8);
-	dest->unknownOwner2 = (GameObjectData*)(peRootOffset + 0x5163E0);
+	dest->inactiveNPCObjectPool_LinkedList = (GameObjectData*)(peRootOffset + 0x517A78);
+	dest->activeEffectObjectPool_LinkedList = (GameObjectData*)(peRootOffset + 0x519E58);
+	dest->activeNPCObjectPool_LinkedList = (GameObjectData*)(peRootOffset + 0x517BA8);
+	dest->inactiveEffectObjectPool_LinkedList = (GameObjectData*)(peRootOffset + 0x5163E0);
 	dest->nPlayfieldLeftEdge = (int*)(peRootOffset + 0x51B0F4);
 	dest->nPlayfieldTopEdge = (int*)(peRootOffset + 0x51B0F8);
 	dest->nCameraPlayerXPositionHistory = (int*)(peRootOffset + 0x51B12C);
@@ -350,6 +400,9 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->nUnknownIsPlayerActive1 = (DWORD*)(peRootOffset + 0x50BF30);
 	dest->nUnknownIsPlayerActive2 = (DWORD*)(peRootOffset + 0x50BF68);
 	dest->arrbPlayerCPUValues = (WORD*)(peRootOffset + 0x51B81C);
+
+	LocateCharacterConstants(peRoot, &dest->characterConstants);
+	LocatePlayData(peRoot, &dest->playData);
 
 	dest->sessionInitState.bHasRequest = 0;
 	dest->sessionInitState.bHasResponse = 0;

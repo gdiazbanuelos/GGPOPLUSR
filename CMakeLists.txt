@@ -25,7 +25,7 @@ ADD_CUSTOM_TARGET (
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/build_datetime.cmake
     ADD_DEPENDENCIES ${CMAKE_BINARY_DIR}/build_datetime.cmake)
     
-add_library(Game STATIC src/game/game.h src/game/game.cxx src/game/syncthread.cxx)
+add_library(Game STATIC src/game/game.h src/game/game.cxx src/game/scripting.h src/game/syncthread.cxx)
 target_link_libraries(Game PUBLIC Detours GGPO ValveFileVDF "ws2_32" "Mswsock" "AdvApi32")
 
 add_executable(Launcher WIN32
