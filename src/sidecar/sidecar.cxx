@@ -118,6 +118,10 @@ void FakePollForInputs() {
 
 	// GGPO Rewriting
 	if (g_gameState.ggpoState.ggpo != NULL && g_gameState.ggpoState.bIsSynchronized != 0) {
+		if (g_gameState.ggpoState.nFramesAhead > 0) {
+			return;
+		}
+
 		unsigned int* inputLocation = g_gameState.ggpoState.localPlayerIndex == 0 ?
 			g_gameState.nP1CurrentFrameInputs :
 			g_gameState.nP2CurrentFrameInputs;

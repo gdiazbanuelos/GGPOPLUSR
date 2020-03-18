@@ -214,21 +214,23 @@ void __cdecl ggpo_free_buffer(void* buffer) {
 }
 
 void WINAPI FakeSimulateCurrentState() {
-	if (g_lpGameState && g_lpGameState->ggpoState.ggpo != NULL) {
-		if (g_lpGameState->ggpoState.bIsSynchronized != 0) {
-			if (GGPO_SUCCEEDED(g_lpGameState->ggpoState.lastResult)) {
+	static GGPONetworkStats stats;
+	GGPOState& gs = g_lpGameState->ggpoState;
+
+	if (g_lpGameState && gs.ggpo != NULL) {
+		if (gs.bIsSynchronized != 0) {
+			if (gs.nFramesAhead > 0) {
+				gs.nFramesAhead--;
+			}
+			else if (GGPO_SUCCEEDED(gs.lastResult)) {
 				g_lpGameMethods->SimulateCurrentState();
 				ggpo_advance_frame(g_lpGameState->ggpoState.ggpo);
-			}
-			else {
-				// MessageBoxA(NULL, "sim-current-state: previous GGPO result failed!", NULL, MB_OK);
 			}
 		}
 		ggpo_idle(g_lpGameState->ggpoState.ggpo, 2);
 	}
 	else {
 		g_lpGameMethods->SimulateCurrentState();
-		// numSimulateCalls++;
 	}
 }
 
@@ -281,6 +283,7 @@ bool __cdecl ggpo_on_event(GGPOEvent* info) {
 		break;
 	case GGPO_EVENTCODE_TIMESYNC:
 		// MessageBoxA(NULL, "timesync", NULL, MB_OK);
+		g_lpGameState->ggpoState.nFramesAhead = info->u.timesync.frames_ahead;
 		break;
 	}
 	return true;

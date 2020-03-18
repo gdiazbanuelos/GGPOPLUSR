@@ -256,6 +256,7 @@ typedef struct GGPOState {
     int localPlayerIndex;
     int characters[2];
     char bIsSynchronized;
+    int nFramesAhead;
 } GGPOState;
 
 typedef struct SessionInitiationState {
