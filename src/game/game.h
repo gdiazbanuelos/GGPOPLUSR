@@ -641,7 +641,7 @@ typedef struct GameObjectAttackInformation {
 } GameObjectAttackInformation;
 
 struct GameObjectData {
-    GameObjectID objectID;
+    WORD objectID;
     char facing;
     char side;
     struct GameObjectData* lpPrevObject;
@@ -754,8 +754,8 @@ struct GameObjectData {
     DWORD** scriptingData;
     struct GameObjectAttackInformation attackInfo_228;
     DWORD* scriptStart;
-    union ScriptInstructionUnion* instructionPointer;
-    enum GameObject0xf4_Flags flags_0xf4;
+    DWORD* instructionPointer;
+    short flags_0xf4;
     undefined field_0xf6;
     undefined field_0xf7;
     WORD nScriptID;
@@ -949,7 +949,7 @@ struct PlayerData {
     void* unc_funcPtrs7;
     void* unc_funcPtrs8;
     short* UNC_ThrowOffsetPointer; /* Created by retype action */
-    enum TensionMode tensionMode;
+    byte tensionMode;
     undefined1 IsProjectileThrown; /* Created by retype action */
     undefined field_0xda;
     undefined field_0xdb;
