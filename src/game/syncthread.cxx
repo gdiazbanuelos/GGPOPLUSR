@@ -22,7 +22,9 @@ typedef struct SynchronizeServerThreadData {
 	unsigned short nSyncPort;
 	unsigned short nGGPOPort;
 	int nOurCharacter;
-	DWORD arrdwRandomTable[0x272];
+	RandomNumberGenerator RNG1;
+	RandomNumberGenerator RNG2;
+	RandomNumberGenerator RNG3;
 } SynchronizeServerThreadData;
 
 typedef struct SynchronizeClientThreadData {
@@ -53,7 +55,9 @@ HANDLE CreateSynchronizeServerThread(
 	std->nSyncPort = nSyncPort;
 	std->nGGPOPort = nGGPOPort;
 	std->nOurCharacter = nOurCharacter;
-	memcpy(std->arrdwRandomTable, std->lpGameState->nRandomTable, sizeof(DWORD) * 0x272);
+	memcpy(&std->RNG1, std->lpGameState->lpRNG1, sizeof(RandomNumberGenerator));
+	memcpy(&std->RNG2, std->lpGameState->lpRNG2, sizeof(RandomNumberGenerator));
+	memcpy(&std->RNG3, std->lpGameState->lpRNG3, sizeof(RandomNumberGenerator));
 
 	return CreateThread(
 		&sa,
@@ -87,7 +91,9 @@ DWORD WINAPI SynchronizeServerThreadProc(LPVOID td) {
 
 	response.nPort = std->nGGPOPort;
 	response.nSelectedCharacter = std->nOurCharacter;
-	memcpy(response.randomTable, std->arrdwRandomTable, sizeof(DWORD) * 0x272);
+	memcpy(&response.RNG1, &std->RNG1, sizeof(RandomNumberGenerator));
+	memcpy(&response.RNG2, &std->RNG2, sizeof(RandomNumberGenerator));
+	memcpy(&response.RNG3, &std->RNG3, sizeof(RandomNumberGenerator));
 
 	sprintf_s(szPort, sizeof(char) * 6, "%d", std->nSyncPort);
 	ZeroMemory(&hints, sizeof(hints));

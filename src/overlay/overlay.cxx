@@ -206,7 +206,9 @@ void DrawGlobalStateWindow(GameState* lpGameState, bool* pOpen) {
 			ImGui::Text("Playfield left edge:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nPlayfieldLeftEdge); ImGui::NextColumn();
 			ImGui::Text("Playfield top edge:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nPlayfieldTopEdge); ImGui::NextColumn();
 			ImGui::Text("Round time remaining:"); ImGui::NextColumn(); ImGui::Text("%d", *lpGameState->nRoundTimeRemaining); ImGui::NextColumn();
-			ImGui::Text("RNG index:"); ImGui::NextColumn(); ImGui::Text("%d", lpGameState->nRandomTable[0]); ImGui::NextColumn();
+			ImGui::Text("RNG1 index:"); ImGui::NextColumn(); ImGui::Text("%d", lpGameState->lpRNG1->cursor); ImGui::NextColumn();
+			ImGui::Text("RNG2 index:"); ImGui::NextColumn(); ImGui::Text("%d", lpGameState->lpRNG2->cursor); ImGui::NextColumn();
+			ImGui::Text("RNG3 index:"); ImGui::NextColumn(); ImGui::Text("%d", lpGameState->lpRNG3->cursor); ImGui::NextColumn();
 			ImGui::Text("Character root:"); ImGui::NextColumn(); ImGui::Text("%p", *lpGameState->arrCharacters); ImGui::NextColumn();
 			ImGui::Text("NPC root:"); ImGui::NextColumn(); ImGui::Text("%p", *lpGameState->arrNpcObjects); ImGui::NextColumn();
 			ImGui::Text("Player data root:"); ImGui::NextColumn(); ImGui::Text("%p", lpGameState->arrPlayerData); ImGui::NextColumn();
