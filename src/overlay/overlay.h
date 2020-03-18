@@ -22,5 +22,6 @@ static bool load_config = false;
 static bool show_ggpo_host = false;
 static bool show_ggpo_join = false;
 static bool show_character_select = false;
+static bool show_character_data = false;
 
 LRESULT WINAPI OverlayWindowFunc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

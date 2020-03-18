@@ -144,7 +144,7 @@ void DrawGGPOJoinWindow(GameState* lpGameState, bool* pOpen) {
 void DrawGGPOHostWindow(GameState* lpGameState, bool* pOpen) {
 	static GGPONetworkStats stats;
 	static bool load_vdf = false;
-	char buf[2];
+//	char buf[2];
 	static CharacterSelection* lpCharacter = &CHARACTERS[0];
 
 	if (!load_vdf) {
@@ -217,6 +217,23 @@ void DrawGlobalStateWindow(GameState* lpGameState, bool* pOpen) {
 			ImGui::Columns(1);
 			ImGui::EndTabItem();
 		}
+		ImGui::EndTabBar();
+	}
+
+	ImGui::End();
+}
+
+void DrawCharacterDataWindow(GameState* lpGameState, bool* pOpen) {
+	static CharacterSelection* selCharacter = &CHARACTERS[0];
+
+	CharacterConstants* cc = &lpGameState->characterConstants;
+	PlayData* pd = &lpGameState->playData;
+	ImGui::Begin("Character Data", pOpen, ImGuiWindowFlags_None);
+	
+
+	ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+	if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
+	{
 		if (ImGui::BeginTabItem("Character constants"))
 		{
 			ImGui::BeginChild("left pane", ImVec2(150, 0), true);
@@ -230,6 +247,7 @@ void DrawGlobalStateWindow(GameState* lpGameState, bool* pOpen) {
 
 			// right
 			ImGui::BeginChild("item view", ImVec2(0, -ImGui::GetFrameHeightWithSpacing())); // Leave room for 1 line below us
+			ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() * 0.33f);
 			ImGui::InputScalar("Standing pushbox width", ImGuiDataType_S16, &cc->arrnStandingPushboxWidth[selCharacter->value]);
 			ImGui::InputScalar("Vanilla standing pushbox height", ImGuiDataType_S16, &cc->arrnVanillaStandingPushboxHeight[selCharacter->value]);
 			ImGui::InputScalar("+R standing pushbox height", ImGuiDataType_S16, &cc->arrnPlusRStandingPushboxHeight[selCharacter->value]);
@@ -253,11 +271,12 @@ void DrawGlobalStateWindow(GameState* lpGameState, bool* pOpen) {
 			ImGui::EndChild();
 			ImGui::EndTabItem();
 		}
-		if (ImGui::BeginTabItem("Play Data"))
+		if (ImGui::BeginTabItem("Player Character Data"))
 		{
 			if (ImGui::BeginTabBar("playdata tab bars", tab_bar_flags)) {
 				for (int i = 0; i < 2; i++) {
 					if (ImGui::BeginTabItem(i == 0 ? "Player 1" : "Player 2")) {
+						ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() * 0.33f);
 						ImGui::InputScalar("Forward walk velocity", ImGuiDataType_S16, &pd->arrnFWalkVel[i]);
 						ImGui::InputScalar("Backward walk velocity", ImGuiDataType_S16, &pd->arrnBWalkVel[i]);
 						ImGui::InputScalar("Forward dash startup speed", ImGuiDataType_S16, &pd->arrnFDashStartupSpeed[i]);
@@ -476,7 +495,7 @@ void DrawSaveLoadReplayWindow(GameState* lpGameState, bool* pOpen) {
 		saveloadreplay.AutoScroll = false;
 		for (int p = 0; p < 2; p++) {
 			saveloadreplay.AddLog("---P%X Button Config ---\n", p + 1);
-			saveloadreplay.AddLog("P%i Punch = 0x%X\n", p+1,lpGameState->arrPlayerData[p].ctrlP);
+			saveloadreplay.AddLog("P%i Punch = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlP);
 			saveloadreplay.AddLog("P%i Kick = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlK);
 			saveloadreplay.AddLog("P%i Slash = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlS);
 			saveloadreplay.AddLog("P%i H-Slash = 0x%X\n", p+1, lpGameState->arrPlayerData[p].ctrlH);
@@ -621,11 +640,13 @@ void DrawGameMenu() {
 void DrawToolsMenu(bool* pHitbox) {
 	if (ImGui::BeginMenu("Tools")) {
 		ImGui::MenuItem(*pHitbox ? "Hide Hitboxes" : "Show Hitboxes", NULL, pHitbox);
+		ImGui::MenuItem("Character Data", NULL, &show_character_data);
 		if (ImGui::BeginMenu("Player State", (show_ggpo_join == show_ggpo_host))) {
 			ImGui::MenuItem("Player 1 State", NULL, &show_p1_state, (show_ggpo_join == show_ggpo_host));
 			ImGui::MenuItem("Player 2 State", NULL, &show_p2_state, (show_ggpo_join == show_ggpo_host));
 			ImGui::EndMenu();
 		}
+		ImGui::MenuItem("Save/Load Replay", NULL, &show_save_load_replay, pHitbox);
 		ImGui::EndMenu();
 	}
 };
@@ -695,6 +716,9 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	}
 	if (show_save_load_replay) {
 		DrawSaveLoadReplayWindow(lpGameState, &show_save_load_replay);
+	}
+	if (show_character_data) {
+		DrawCharacterDataWindow(lpGameState, &show_character_data);
 	}
 	if (show_hitboxes) {
 		if (*lpGameState->bHitboxDisplayEnabled == 0) {
