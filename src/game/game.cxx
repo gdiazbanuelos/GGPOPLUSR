@@ -176,6 +176,17 @@ bool __cdecl ggpo_save_game_state_callback(
 }
 
 void LoadGameState(GameState* gameState, SavedGameState* src) {
+	bool bP1ResetPaletteEffect = false;
+	bool bP2ResetPaletteEffect = false;
+
+	if (((*gameState->arrCharacters)[0].dwGraphicalEffects & CE_FLAME) || ((*gameState->arrCharacters)[0].dwGraphicalEffects & CE_THUNDER)) {
+		bP1ResetPaletteEffect = true;
+	}
+
+	if (((*gameState->arrCharacters)[1].dwGraphicalEffects & CE_FLAME) || ((*gameState->arrCharacters)[1].dwGraphicalEffects & CE_THUNDER)) {
+		bP2ResetPaletteEffect = true;
+	}
+
 	CopyMemory(*gameState->arrCharacters, src->arrCharacters, sizeof(GameObjectData) * 2);
 	CopyMemory(*gameState->arrNpcObjects, src->arrNpcObjects, sizeof(GameObjectData) * 0x60);
 	CopyMemory(*gameState->arrEffectObjects, src->arrEffectObjects, sizeof(GameObjectData) * 0x180);
@@ -199,6 +210,14 @@ void LoadGameState(GameState* gameState, SavedGameState* src) {
 	CopyMemory(gameState->arrnP2InputRingBuffer, &src->arrnP2InputRingBuffer, sizeof(WORD) * 32);
 	*gameState->nP1InputRingBufferPosition = src->nP1InputRingBufferPosition;
 	*gameState->nP2InputRingBufferPosition = src->nP2InputRingBufferPosition;
+
+	if (bP1ResetPaletteEffect) {
+		(*gameState->arrCharacters)[0].dwGraphicalEffects = (*gameState->arrCharacters)[0].dwGraphicalEffects | CE_RESET_PALETTE_EFFECT;
+	}
+
+	if (bP2ResetPaletteEffect) {
+		(*gameState->arrCharacters)[1].dwGraphicalEffects = (*gameState->arrCharacters)[1].dwGraphicalEffects | CE_RESET_PALETTE_EFFECT;
+	}
 }
 
 bool __cdecl ggpo_load_game_state_callback(unsigned char* buffer, int len) {

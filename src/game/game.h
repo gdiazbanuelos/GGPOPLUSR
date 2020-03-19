@@ -636,8 +636,10 @@ typedef enum GameObjectGraphicalEffectsFlags {
     CE_BAKU_S = 536870912,
     CE_INVIS2 = 8,
     CE_DRAGONINSTALL = 16384,
+    CE_RESET_PALETTE_EFFECT = 0x400,
     _CE_FORCE_DWORD = 0xffffffff
 } GameObjectGraphicalEffectsFlags;
+DEFINE_ENUM_FLAG_OPERATORS(GameObjectGraphicalEffectsFlags)
 
 typedef enum GameObjectAttackInformationFlags {
     AI_FLAGSOFF = 4294967295,
