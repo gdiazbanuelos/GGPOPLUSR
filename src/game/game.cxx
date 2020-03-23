@@ -327,6 +327,9 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->CleanUpFibers = (void(WINAPI*)())(peRootOffset + 0x3D720);
 	dest->HandlePossibleSteamInvites = (void(WINAPI*)())(peRootOffset + 0xAE440);
 	dest->IncrementRNGCursorWhileOffline = (void(WINAPI*)())(peRootOffset + 0x43220);
+	dest->DebugPauseMenu = (int(WINAPI*)())(peRootOffset + 0xE9BC0);
+	dest->PauseMenu_VersusMode = (int(WINAPI*)())(peRootOffset + 0xEB280);
+	dest->PauseMenu_ArcadeMode = (int(WINAPI*)())(peRootOffset + 0xEB820);
 	g_lpGameMethods = dest;
 
 	return S_OK;

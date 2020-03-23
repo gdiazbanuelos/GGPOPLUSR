@@ -199,8 +199,12 @@ void FakeIncrementRNGCursorWhileOffline() {
 	}
 }
 
+int FakePauseMenu_ArcadeMode() {
+	return g_gameMethods.DebugPauseMenu();
+}
+
 HRESULT AttachInitialFunctionDetours(GameMethods* src) {
-	DetourAttach(&(PVOID&)src->IsDebuggerPresent, FakeIsDebuggerPresent);
+	// DetourAttach(&(PVOID&)src->IsDebuggerPresent, FakeIsDebuggerPresent);
 	DetourAttach(&(PVOID&)src->SteamAPI_Init, FakeSteamAPI_Init);
 	hookDirect3DCreate9();
 
@@ -217,6 +221,7 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->SimulateCurrentState, FakeSimulateCurrentState);
 	DetourAttach(&(PVOID&)src->HandlePossibleSteamInvites, FakeHandlePossibleSteamInvites);
 	DetourAttach(&(PVOID&)src->IncrementRNGCursorWhileOffline, FakeIncrementRNGCursorWhileOffline);
+	DetourAttach(&(PVOID&)src->PauseMenu_ArcadeMode, FakePauseMenu_ArcadeMode);
 
 	return S_OK;
 }

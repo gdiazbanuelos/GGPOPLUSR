@@ -661,6 +661,7 @@ void DrawDebugMenu(GameState* lpGameState) {
 			ImGui::EndMenu();
 		}
 		ImGui::MenuItem("Save/Load State", NULL, &show_saveload);
+		ImGui::MenuItem("Debug pause menu", NULL, &show_debug_pause_menu);
 		ImGui::EndMenu();
 	}
 };
@@ -686,6 +687,9 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 
 			ImGui::EndMainMenuBar();
 		}
+	}
+	if (show_debug_pause_menu) {
+		lpGameMethods->DebugPauseMenu();
 	}
 	if (show_character_select) {
 		DrawEnterVersus2PWindow(lpGameState, &show_character_select);
