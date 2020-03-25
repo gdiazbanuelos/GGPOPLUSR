@@ -107,7 +107,6 @@ void __cdecl FakeBeginSceneAndDrawGamePrimitives(int bShouldBeginScene) {
 void FakePollForInputs() {
 	unsigned int inputs[2];
 	char szMessageBuf[1024] = { 0 };
-	GGPOState& gs = g_gameState.ggpoState;
 
 	g_gameMethods.PollForInputs();
 
@@ -118,39 +117,39 @@ void FakePollForInputs() {
 	}
 
 	// GGPO Rewriting
-	if (gs.ggpo != NULL && gs.bIsSynchronized != 0 && *g_gameState.nSystemState == 6) {
-		if (gs.nFramesAhead > 0) {
+	if (g_gameState.ggpoState.ggpo != NULL && g_gameState.ggpoState.bIsSynchronized != 0) {
+		if (g_gameState.ggpoState.nFramesAhead > 0) {
 			return;
 		}
 
-		unsigned int* inputLocation = gs.localPlayerIndex == 0 ?
+		unsigned int* inputLocation = g_gameState.ggpoState.localPlayerIndex == 0 ?
 			g_gameState.nP1CurrentFrameInputs :
 			g_gameState.nP2CurrentFrameInputs;
 
 		/* notify ggpo of the local player's inputs */
-		gs.lastResult = ggpo_add_local_input(
-			gs.ggpo,
-			gs.player_handles[gs.localPlayerIndex],
+		g_gameState.ggpoState.lastResult = ggpo_add_local_input(
+			g_gameState.ggpoState.ggpo,
+			g_gameState.ggpoState.player_handles[g_gameState.ggpoState.localPlayerIndex],
 			inputLocation,
 			sizeof(int)
 		);
-		if (GGPO_SUCCEEDED(gs.lastResult)) {
-			gs.lastResult = ggpo_synchronize_input(
-				gs.ggpo,
+		if (GGPO_SUCCEEDED(g_gameState.ggpoState.lastResult)) {
+			g_gameState.ggpoState.lastResult = ggpo_synchronize_input(
+				g_gameState.ggpoState.ggpo,
 				inputs,
 				sizeof(int) * 2,
 				NULL
 			);
 			*g_gameState.nP1CurrentFrameInputs = inputs[0];
 			*g_gameState.nP2CurrentFrameInputs = inputs[1];
-			if (!GGPO_SUCCEEDED(gs.lastResult)) {
-				StringCchPrintfA(szMessageBuf, 1024, "FakePollForInputs: synchronize input failed with %d", gs.lastResult);
+			if (!GGPO_SUCCEEDED(g_gameState.ggpoState.lastResult)) {
+				StringCchPrintfA(szMessageBuf, 1024, "FakePollForInputs: synchronize input failed with %d", g_gameState.ggpoState.lastResult);
 				// MessageBoxA(NULL, szMessageBuf, NULL, MB_OK);
 			}
 		}
-		else if (gs.lastResult != 4) {
-			StringCchPrintfA(szMessageBuf, 1024, "FakePollForInputs: add local input failed with %d", gs.lastResult);
-			MessageBoxA(NULL, szMessageBuf, NULL, MB_OK);
+		else {
+			StringCchPrintfA(szMessageBuf, 1024, "FakePollForInputs: add local input failed with %d", g_gameState.ggpoState.lastResult);
+			// MessageBoxA(NULL, szMessageBuf, NULL, MB_OK);
 		}
 	}
 }
@@ -174,8 +173,6 @@ BOOL FakeIsDebuggerPresent() {
 }
 
 void FakeHandlePossibleSteamInvites() {
-	GGPOState& gs = g_gameState.ggpoState;
-
 	g_gameMethods.HandlePossibleSteamInvites();
 
 	if (TryEnterCriticalSection(&g_gameState.sessionInitState.criticalSection)) {
@@ -193,13 +190,6 @@ void FakeHandlePossibleSteamInvites() {
 		// The thread is either signalled with an exit, or the wait failed.
 		// Either way, we can assume the thread is probably dead.
 		g_gameState.sessionInitState.hSyncThread = NULL;
-	}
-
-	if (gs.ggpo != NULL) {
-		gs.lastResult = ggpo_idle(gs.ggpo, 2);
-		if (!GGPO_SUCCEEDED(gs.lastResult)) {
-			MessageBoxA(NULL, "Idle failed!", NULL, MB_OK);
-		}
 	}
 }
 
@@ -224,7 +214,7 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->BeginSceneAndDrawGamePrimitives, FakeBeginSceneAndDrawGamePrimitives);
 	DetourAttach(&(PVOID&)src->DrawUIPrimitivesAndEndScene, FakeDrawUIPrimitivesAndEndScene);
 	DetourAttach(&(PVOID&)src->PollForInputs, FakePollForInputs);
-	DetourAttach(&(PVOID&)src->SimulateGame, FakeSimulateGame);
+	DetourAttach(&(PVOID&)src->SimulateCurrentState, FakeSimulateCurrentState);
 	DetourAttach(&(PVOID&)src->HandlePossibleSteamInvites, FakeHandlePossibleSteamInvites);
 	DetourAttach(&(PVOID&)src->IncrementRNGCursorWhileOffline, FakeIncrementRNGCursorWhileOffline);
 
