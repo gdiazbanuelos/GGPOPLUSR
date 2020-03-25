@@ -257,12 +257,21 @@ bool __cdecl ggpo_advance_frame_callback(int flags) {
 	// MessageBoxA(NULL, "GGPO advance frame called", NULL, MB_OK);
 	unsigned int inputs[2];
 	int disconnect_flags;
+	GGPOState& gs = g_lpGameState->ggpoState;
+
 	// Make sure we fetch new inputs from GGPO and use those to update
 	// the game state instead of reading from the keyboard.
-	ggpo_synchronize_input(g_lpGameState->ggpoState.ggpo, (void*)inputs, sizeof(int) * 2, &disconnect_flags);
-	*g_lpGameState->nP1CurrentFrameInputs = inputs[0];
-	*g_lpGameState->nP2CurrentFrameInputs = inputs[1];
-	FakeSimulateCurrentState();
+	gs.lastResult = ggpo_synchronize_input(
+		g_lpGameState->ggpoState.ggpo, (void*)inputs, sizeof(int) * 2, &disconnect_flags);
+	if (GGPO_SUCCEEDED(gs.lastResult)) {
+		*g_lpGameState->nP1CurrentFrameInputs = inputs[0];
+		*g_lpGameState->nP2CurrentFrameInputs = inputs[1];
+		g_lpGameMethods->SimulateCurrentState();
+		ggpo_advance_frame(g_lpGameState->ggpoState.ggpo);
+	}
+	else {
+		MessageBoxA(NULL, "advance-frame-callback: synchronize input failed!", NULL, MB_OK);
+	}
 	return true;
 }
 
