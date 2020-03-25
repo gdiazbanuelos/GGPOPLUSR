@@ -433,6 +433,7 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 
 	LocateCharacterConstants(peRoot, &dest->characterConstants);
 	LocatePlayData(peRoot, &dest->playData);
+	dest->unkNum12byteStructs = (DWORD*)(peRootOffset + 0x54B200);
 
 	dest->sessionInitState.bHasRequest = 0;
 	dest->sessionInitState.bHasResponse = 0;
