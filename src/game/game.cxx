@@ -232,24 +232,23 @@ void __cdecl ggpo_free_buffer(void* buffer) {
 	free(buffer);
 }
 
-void WINAPI FakeSimulateCurrentState() {
-	static GGPONetworkStats stats;
+void WINAPI FakeSimulateGame() {
 	GGPOState& gs = g_lpGameState->ggpoState;
 
-	if (g_lpGameState && gs.ggpo != NULL) {
-		if (gs.bIsSynchronized != 0) {
-			if (gs.nFramesAhead > 0) {
-				gs.nFramesAhead--;
-			}
-			else if (GGPO_SUCCEEDED(gs.lastResult)) {
-				g_lpGameMethods->SimulateCurrentState();
-				ggpo_advance_frame(g_lpGameState->ggpoState.ggpo);
+	if (g_lpGameState && gs.ggpo != NULL && gs.bIsSynchronized != 0) {
+		if (gs.nFramesAhead > 0) {
+			gs.nFramesAhead--;
+		}
+		else if (GGPO_SUCCEEDED(gs.lastResult)) {
+			g_lpGameMethods->SimulateGame();
+			gs.lastResult = ggpo_advance_frame(g_lpGameState->ggpoState.ggpo);
+			if (!GGPO_SUCCEEDED(gs.lastResult)) {
+				MessageBoxA(NULL, "Advance-frame notification failed!", NULL, MB_OK);
 			}
 		}
-		ggpo_idle(g_lpGameState->ggpoState.ggpo, 2);
 	}
 	else {
-		g_lpGameMethods->SimulateCurrentState();
+		g_lpGameMethods->SimulateGame();
 	}
 }
 
@@ -259,10 +258,16 @@ bool __cdecl ggpo_advance_frame_callback(int flags) {
 	int disconnect_flags;
 	// Make sure we fetch new inputs from GGPO and use those to update
 	// the game state instead of reading from the keyboard.
-	ggpo_synchronize_input(g_lpGameState->ggpoState.ggpo, (void*)inputs, sizeof(int) * 2, &disconnect_flags);
+	g_lpGameState->ggpoState.lastResult = ggpo_synchronize_input(
+		g_lpGameState->ggpoState.ggpo, (void*)inputs, sizeof(int) * 2, &disconnect_flags);
+	if (!GGPO_SUCCEEDED(g_lpGameState->ggpoState.lastResult)) {
+		MessageBoxA(NULL, "Failed to sync inputs during roll-forward!", NULL, MB_OK);
+	}
+	g_lpGameState->ggpoState.nFramesAhead = 0;
+	*g_lpGameState->unkNum12byteStructs = 0;
 	*g_lpGameState->nP1CurrentFrameInputs = inputs[0];
 	*g_lpGameState->nP2CurrentFrameInputs = inputs[1];
-	FakeSimulateCurrentState();
+	FakeSimulateGame();
 	return true;
 }
 
@@ -298,7 +303,7 @@ bool __cdecl ggpo_on_event(GGPOEvent* info) {
 		// MessageBoxA(NULL, "resumed", NULL, MB_OK);
 		break;
 	case GGPO_EVENTCODE_DISCONNECTED_FROM_PEER:
-		// MessageBoxA(NULL, "disconnected", NULL, MB_OK);
+		MessageBoxA(NULL, "disconnected", NULL, MB_OK);
 		break;
 	case GGPO_EVENTCODE_TIMESYNC:
 		// MessageBoxA(NULL, "timesync", NULL, MB_OK);
@@ -323,7 +328,7 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->BeginSceneAndDrawGamePrimitives = (void(__cdecl*)(int))(peRootOffset + 0x436F0);
 	dest->DrawUIPrimitivesAndEndScene = (void(WINAPI*)())(peRootOffset + 0x14AD80);
 	dest->PollForInputs = (void(WINAPI*)())(peRootOffset + 0x52630);
-	dest->SimulateCurrentState = (void(WINAPI*)())(peRootOffset + 0xE7AE0);
+	dest->SimulateGame = (void(WINAPI*)())(peRootOffset + 0xEC240);
 	dest->CleanUpFibers = (void(WINAPI*)())(peRootOffset + 0x3D720);
 	dest->HandlePossibleSteamInvites = (void(WINAPI*)())(peRootOffset + 0xAE440);
 	dest->IncrementRNGCursorWhileOffline = (void(WINAPI*)())(peRootOffset + 0x43220);
@@ -432,6 +437,7 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 
 	LocateCharacterConstants(peRoot, &dest->characterConstants);
 	LocatePlayData(peRoot, &dest->playData);
+	dest->unkNum12byteStructs = (DWORD*)(peRootOffset + 0x54B200);
 
 	dest->sessionInitState.bHasRequest = 0;
 	dest->sessionInitState.bHasResponse = 0;

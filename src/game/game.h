@@ -238,7 +238,7 @@ typedef struct GameMethods {
     void(__cdecl* BeginSceneAndDrawGamePrimitives)(int bShouldBeginScene);
     void(WINAPI* DrawUIPrimitivesAndEndScene)();
     void(WINAPI* PollForInputs)();
-    void(WINAPI* SimulateCurrentState)();
+    void(WINAPI* SimulateGame)();
     void(WINAPI* CleanUpFibers)();
     void(WINAPI* HandlePossibleSteamInvites)();
     void(WINAPI* IncrementRNGCursorWhileOffline)();
@@ -256,6 +256,7 @@ typedef struct GGPOState {
     int localPlayerIndex;
     int characters[2];
     char bIsSynchronized;
+    char bIsRollback;
     int nFramesAhead;
 } GGPOState;
 
@@ -374,6 +375,8 @@ typedef struct GameState {
 
     CharacterConstants characterConstants;
     PlayData playData;
+
+    DWORD* unkNum12byteStructs;
 } GameState;
 
 void DisableHitboxes(GameState* gameState);
@@ -391,7 +394,7 @@ HMODULE LocatePERoot();
 HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* methods);
 HRESULT LocateGameState(HMODULE peRoot, GameState* state);
 HRESULT ApplyConfiguration(GameState* lpState);
-void WINAPI FakeSimulateCurrentState();
+void WINAPI FakeSimulateGame();
 
 HANDLE CreateSynchronizeClientThread(GameState* lpGameState,
     char* szHostIP,
