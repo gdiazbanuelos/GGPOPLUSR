@@ -374,6 +374,8 @@ typedef struct GameState {
 
     CharacterConstants characterConstants;
     PlayData playData;
+
+    DWORD* unkNum12byteStructs;
 } GameState;
 
 void DisableHitboxes(GameState* gameState);

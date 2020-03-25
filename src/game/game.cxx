@@ -260,6 +260,7 @@ bool __cdecl ggpo_advance_frame_callback(int flags) {
 	// Make sure we fetch new inputs from GGPO and use those to update
 	// the game state instead of reading from the keyboard.
 	ggpo_synchronize_input(g_lpGameState->ggpoState.ggpo, (void*)inputs, sizeof(int) * 2, &disconnect_flags);
+	*g_lpGameState->unkNum12byteStructs = 0;
 	*g_lpGameState->nP1CurrentFrameInputs = inputs[0];
 	*g_lpGameState->nP2CurrentFrameInputs = inputs[1];
 	FakeSimulateCurrentState();
