@@ -104,6 +104,72 @@ void __cdecl FakeBeginSceneAndDrawGamePrimitives(int bShouldBeginScene) {
 	}
 }
 
+/* Parses input flags, which may be based on non-default button settings,
+and returns normalized input flags */
+unsigned int normalizeInput(unsigned int* input) {
+	int p = g_gameState.ggpoState.localPlayerIndex;
+	unsigned int normalizedInput = 0;
+
+	normalizedInput |= (*input & Up);
+	normalizedInput |= (*input & Down);
+	normalizedInput |= (*input & Left);
+	normalizedInput |= (*input & Right);
+
+	if (*input & g_gameState.arrPlayerData[p].ctrlP) {
+		normalizedInput |= Punch;
+	}
+	if (*input & g_gameState.arrPlayerData[p].ctrlK) {
+		normalizedInput |= Kick;
+	}
+	if (*input & g_gameState.arrPlayerData[p].ctrlS) {
+		normalizedInput |= Slash;
+	}
+	if (*input & g_gameState.arrPlayerData[p].ctrlH) {
+		normalizedInput |= HSlash;
+	}
+	if (*input & g_gameState.arrPlayerData[p].ctrlD) {
+		normalizedInput |= Dust;
+	}
+	if (*input & g_gameState.arrPlayerData[p].ctrlRespect) {
+		normalizedInput |= Respect;
+	}
+	if (*input & g_gameState.arrPlayerData[p].ctrlPKMacro) {
+		normalizedInput |= Punch;
+		normalizedInput |= Kick;
+	}
+	if (*input & g_gameState.arrPlayerData[p].ctrlPDMacro) {
+		normalizedInput |= Punch;
+		normalizedInput |= Dust;
+	}
+	if (*input & g_gameState.arrPlayerData[p].ctrlPKSMacro) {
+		normalizedInput |= Punch;
+		normalizedInput |= Kick;
+		normalizedInput |= Slash;
+	}
+	if (*input & g_gameState.arrPlayerData[p].ctrlPKSHMacro) {
+		normalizedInput |= Punch;
+		normalizedInput |= Kick;
+		normalizedInput |= Slash;
+		normalizedInput |= HSlash;
+	}
+
+	return normalizedInput;
+}
+
+/* Copies origin player's button settings to dest player's button settings*/
+void copyButtonSettings(int origin, int dest) {
+	g_gameState.arrPlayerData[dest].ctrlP = g_gameState.arrPlayerData[origin].ctrlP;
+	g_gameState.arrPlayerData[dest].ctrlK = g_gameState.arrPlayerData[origin].ctrlK;
+	g_gameState.arrPlayerData[dest].ctrlS = g_gameState.arrPlayerData[origin].ctrlS;
+	g_gameState.arrPlayerData[dest].ctrlH = g_gameState.arrPlayerData[origin].ctrlH;
+	g_gameState.arrPlayerData[dest].ctrlD = g_gameState.arrPlayerData[origin].ctrlD;
+	g_gameState.arrPlayerData[dest].ctrlRespect = g_gameState.arrPlayerData[origin].ctrlRespect;
+	g_gameState.arrPlayerData[dest].ctrlPDMacro = g_gameState.arrPlayerData[origin].ctrlPDMacro;
+	g_gameState.arrPlayerData[dest].ctrlPKMacro = g_gameState.arrPlayerData[origin].ctrlPKMacro;
+	g_gameState.arrPlayerData[dest].ctrlPKSMacro = g_gameState.arrPlayerData[origin].ctrlPKSMacro;
+	g_gameState.arrPlayerData[dest].ctrlPKSHMacro = g_gameState.arrPlayerData[origin].ctrlPKSHMacro;
+}
+
 void FakePollForInputs() {
 	unsigned int inputs[2];
 	char szMessageBuf[1024] = { 0 };
@@ -122,15 +188,24 @@ void FakePollForInputs() {
 			return;
 		}
 
-		unsigned int* inputLocation = g_gameState.ggpoState.localPlayerIndex == 0 ?
-			g_gameState.nP1CurrentFrameInputs :
-			g_gameState.nP2CurrentFrameInputs;
+		// Always use P1 controller
+		unsigned int* inputLocation = g_gameState.nP1CurrentFrameInputs;
+		
+		unsigned int normalizedInput = normalizeInput(inputLocation);
+
+		// Despite notifying inputs via P1 controller, the simulation is still ran using both controller settings buffers.
+		// Thus, ggpo player 2 will use P2 controller settings.
+		// The workaround here is to copy P1 controller settings to P2 controller settings.
+		// FIXME: Maybe we should do this call somewhere else (ggpo session start? match start?) and only once?
+		if (g_gameState.ggpoState.localPlayerIndex == 1) {
+			copyButtonSettings(0, 1);
+		}
 
 		/* notify ggpo of the local player's inputs */
 		g_gameState.ggpoState.lastResult = ggpo_add_local_input(
 			g_gameState.ggpoState.ggpo,
 			g_gameState.ggpoState.player_handles[g_gameState.ggpoState.localPlayerIndex],
-			inputLocation,
+			&normalizedInput,
 			sizeof(int)
 		);
 		if (GGPO_SUCCEEDED(g_gameState.ggpoState.lastResult)) {
@@ -140,8 +215,8 @@ void FakePollForInputs() {
 				sizeof(int) * 2,
 				NULL
 			);
-			*g_gameState.nP1CurrentFrameInputs = inputs[0];
-			*g_gameState.nP2CurrentFrameInputs = inputs[1];
+			*g_gameState.nP1CurrentFrameInputs = translateFromNormalizedInput(inputs[0], 0, &g_gameState);
+			*g_gameState.nP2CurrentFrameInputs = translateFromNormalizedInput(inputs[1], 1, &g_gameState);
 			if (!GGPO_SUCCEEDED(g_gameState.ggpoState.lastResult)) {
 				StringCchPrintfA(szMessageBuf, 1024, "FakePollForInputs: synchronize input failed with %d", g_gameState.ggpoState.lastResult);
 				// MessageBoxA(NULL, szMessageBuf, NULL, MB_OK);

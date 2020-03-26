@@ -22,6 +22,37 @@
 static GameMethods* g_lpGameMethods;
 static GameState* g_lpGameState;
 
+/* Parses normalized input flags and returns translated input flags which will be compliant with local button settings */
+unsigned int translateFromNormalizedInput(unsigned int normalizedInput, int p, GameState* g_lpGameState) {
+	unsigned int translatedInput = 0;
+
+	translatedInput |= (normalizedInput & Up);
+	translatedInput |= (normalizedInput & Down);
+	translatedInput |= (normalizedInput & Left);
+	translatedInput |= (normalizedInput & Right);
+
+	if (normalizedInput & Punch) {
+		translatedInput |= (g_lpGameState->arrPlayerData)[p].ctrlP;
+	}
+	if (normalizedInput & Kick) {
+		translatedInput |= (g_lpGameState->arrPlayerData)[p].ctrlK;
+	}
+	if (normalizedInput & Slash) {
+		translatedInput |= (g_lpGameState->arrPlayerData)[p].ctrlS;
+	}
+	if (normalizedInput & HSlash) {
+		translatedInput |= (g_lpGameState->arrPlayerData)[p].ctrlH;
+	}
+	if (normalizedInput & Dust) {
+		translatedInput |= (g_lpGameState->arrPlayerData)[p].ctrlD;
+	}
+	if (normalizedInput & Respect) {
+		translatedInput |= (g_lpGameState->arrPlayerData)[p].ctrlRespect;
+	}
+
+	return translatedInput;
+}
+
 int fletcher32_checksum(short* data, size_t len)
 {
 	int sum1 = 0xffff, sum2 = 0xffff;
@@ -264,8 +295,8 @@ bool __cdecl ggpo_advance_frame_callback(int flags) {
 	gs.lastResult = ggpo_synchronize_input(
 		g_lpGameState->ggpoState.ggpo, (void*)inputs, sizeof(int) * 2, &disconnect_flags);
 	if (GGPO_SUCCEEDED(gs.lastResult)) {
-		*g_lpGameState->nP1CurrentFrameInputs = inputs[0];
-		*g_lpGameState->nP2CurrentFrameInputs = inputs[1];
+		*g_lpGameState->nP1CurrentFrameInputs = translateFromNormalizedInput(inputs[0], 0, g_lpGameState);
+		*g_lpGameState->nP2CurrentFrameInputs = translateFromNormalizedInput(inputs[1], 1, g_lpGameState);
 		g_lpGameMethods->SimulateCurrentState();
 		ggpo_advance_frame(g_lpGameState->ggpoState.ggpo);
 	}
