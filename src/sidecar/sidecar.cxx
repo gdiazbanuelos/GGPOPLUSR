@@ -282,6 +282,23 @@ HRESULT AttachInitialFunctionDetours(GameMethods* src) {
 	return S_OK;
 }
 
+int FakeRand() {
+	int out = g_gameMethods.rand();
+	// XXX (adanducci): Here be undocumented dragons.
+	//
+	// Guilty uses the cstdlib's rand() and srand() functions for some of its
+	// PRNG, but rand() and srand() don't expose an interface to reset the PRNG
+	// back to a specific point in the PRNG pattern. If you happened to know the
+	// srand() value that would put you back at that place in the pattern, you
+	// could jump back to that place in the pattern by just calling srand().
+	//
+	// As an implementation detail of VS2010's rand() and srand() implementations,
+	// we know where the "hold-rand" variable is. This nasty chunk gets the
+	// "hold-rand" variable, then stashes it in `nextRNGSeed` for saving.
+	g_gameState.nextRNGSeed = *(unsigned long*)((char*)g_gameMethods.__getptd() + 0x14);
+	return out;
+}
+
 HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->GenerateAndShadePrimitives, FakeGenerateAndShadePrimitives);
 	DetourAttach(&(PVOID&)src->SetupD3D9, FakeSetupD3D9);
@@ -292,6 +309,7 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->SimulateCurrentState, FakeSimulateCurrentState);
 	DetourAttach(&(PVOID&)src->HandlePossibleSteamInvites, FakeHandlePossibleSteamInvites);
 	DetourAttach(&(PVOID&)src->IncrementRNGCursorWhileOffline, FakeIncrementRNGCursorWhileOffline);
+	DetourAttach(&(PVOID&)src->rand, FakeRand);
 
 	return S_OK;
 }

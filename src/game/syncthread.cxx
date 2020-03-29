@@ -25,6 +25,7 @@ typedef struct SynchronizeServerThreadData {
 	RandomNumberGenerator RNG1;
 	RandomNumberGenerator RNG2;
 	RandomNumberGenerator RNG3;
+	int nextRNGSeed;
 } SynchronizeServerThreadData;
 
 typedef struct SynchronizeClientThreadData {
@@ -58,6 +59,7 @@ HANDLE CreateSynchronizeServerThread(
 	memcpy(&std->RNG1, std->lpGameState->lpRNG1, sizeof(RandomNumberGenerator));
 	memcpy(&std->RNG2, std->lpGameState->lpRNG2, sizeof(RandomNumberGenerator));
 	memcpy(&std->RNG3, std->lpGameState->lpRNG3, sizeof(RandomNumberGenerator));
+	std->nextRNGSeed = lpGameState->nextRNGSeed;
 
 	return CreateThread(
 		&sa,
@@ -94,6 +96,7 @@ DWORD WINAPI SynchronizeServerThreadProc(LPVOID td) {
 	memcpy(&response.RNG1, &std->RNG1, sizeof(RandomNumberGenerator));
 	memcpy(&response.RNG2, &std->RNG2, sizeof(RandomNumberGenerator));
 	memcpy(&response.RNG3, &std->RNG3, sizeof(RandomNumberGenerator));
+	response.nextRNGSeed = std->nextRNGSeed;
 
 	sprintf_s(szPort, sizeof(char) * 6, "%d", std->nSyncPort);
 	ZeroMemory(&hints, sizeof(hints));

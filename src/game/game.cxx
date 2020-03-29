@@ -171,6 +171,7 @@ void SaveGameState(GameState* gameState, SavedGameState* dest) {
 	CopyMemory(&dest->RNG1, gameState->lpRNG1, sizeof(RandomNumberGenerator));
 	CopyMemory(&dest->RNG2, gameState->lpRNG2, sizeof(RandomNumberGenerator));
 	CopyMemory(&dest->RNG3, gameState->lpRNG3, sizeof(RandomNumberGenerator));
+	dest->nextRNGSeed = gameState->nextRNGSeed;
 	dest->nPlayfieldLeftEdge = *gameState->nPlayfieldLeftEdge;
 	dest->nPlayfieldTopEdge = *gameState->nPlayfieldTopEdge;
 	CopyMemory(&dest->nCameraPlayerXPositionHistory, gameState->nCameraPlayerXPositionHistory, sizeof(int) * 2);
@@ -233,6 +234,8 @@ void LoadGameState(GameState* gameState, SavedGameState* src) {
 	CopyMemory(gameState->lpRNG1, &src->RNG1, sizeof(RandomNumberGenerator));
 	CopyMemory(gameState->lpRNG2, &src->RNG2, sizeof(RandomNumberGenerator));
 	CopyMemory(gameState->lpRNG3, &src->RNG3, sizeof(RandomNumberGenerator));
+	g_lpGameMethods->srand(src->nextRNGSeed);
+	gameState->nextRNGSeed = src->nextRNGSeed;
 	*gameState->nPlayfieldLeftEdge = src->nPlayfieldLeftEdge;
 	*gameState->nPlayfieldTopEdge = src->nPlayfieldTopEdge;
 	CopyMemory(gameState->nCameraPlayerXPositionHistory, &src->nCameraPlayerXPositionHistory, sizeof(int) * 2);
@@ -367,6 +370,9 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->CleanUpFibers = (void(WINAPI*)())(peRootOffset + 0x3D720);
 	dest->HandlePossibleSteamInvites = (void(WINAPI*)())(peRootOffset + 0xAE440);
 	dest->IncrementRNGCursorWhileOffline = (void(WINAPI*)())(peRootOffset + 0x43220);
+	dest->rand = (int(WINAPI*)())(peRootOffset + 0x18A15);
+	dest->srand = (void(WINAPI*)(int))(peRootOffset + 0x18A03);
+	dest->__getptd = (void*(__cdecl*)())(peRootOffset + 0x1BF48);
 	g_lpGameMethods = dest;
 
 	return S_OK;
@@ -513,6 +519,7 @@ void PrepareGGPOSession(GameState* lpGameState) {
 	CopyMemory(lpGameState->lpRNG1, &response->RNG1, sizeof(RandomNumberGenerator));
 	CopyMemory(lpGameState->lpRNG2, &response->RNG2, sizeof(RandomNumberGenerator));
 	CopyMemory(lpGameState->lpRNG3, &response->RNG3, sizeof(RandomNumberGenerator));
+	g_lpGameMethods->srand(response->nextRNGSeed);
 
 	char msgBuffer[16];
 	GGPOErrorCode result;

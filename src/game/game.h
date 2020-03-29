@@ -124,6 +124,7 @@ typedef struct ServerSynchronizationResponse {
     RandomNumberGenerator RNG1;
     RandomNumberGenerator RNG2;
     RandomNumberGenerator RNG3;
+    int nextRNGSeed;
 } ServerSynchronizationResponse;
 
 typedef struct CharacterSelection {
@@ -242,6 +243,9 @@ typedef struct GameMethods {
     void(WINAPI* CleanUpFibers)();
     void(WINAPI* HandlePossibleSteamInvites)();
     void(WINAPI* IncrementRNGCursorWhileOffline)();
+    int(WINAPI* rand)();
+    void(WINAPI* srand)(int seed);
+    void*(__cdecl* __getptd)();
 } GameMethods;
 
 typedef struct GGPOState {
@@ -346,6 +350,7 @@ typedef struct GameState {
     RandomNumberGenerator* lpRNG1;
     RandomNumberGenerator* lpRNG2;
     RandomNumberGenerator* lpRNG3;
+    unsigned long nextRNGSeed;
     GameObjectData* inactiveNPCObjectPool_LinkedList;
     GameObjectData* activeEffectObjectPool_LinkedList;
     GameObjectData* activeNPCObjectPool_LinkedList;
@@ -1082,6 +1087,7 @@ typedef struct SavedGameState {
     RandomNumberGenerator RNG1;
     RandomNumberGenerator RNG2;
     RandomNumberGenerator RNG3;
+    unsigned long nextRNGSeed;
 
     struct GameObjectData inactiveNPCObjectPool_LinkedList;
     struct GameObjectData activeEffectObjectPool_LinkedList;
