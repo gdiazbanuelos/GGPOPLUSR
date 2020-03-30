@@ -375,6 +375,9 @@ typedef struct GameState {
     DWORD* nUnknownIsPlayerActive2;
     WORD* arrbPlayerCPUValues;
 
+    int* nPrimitivesDrawn;
+    int* nNextPrimitiveBufferOffset;
+
     CharacterConstants characterConstants;
     PlayData playData;
 } GameState;

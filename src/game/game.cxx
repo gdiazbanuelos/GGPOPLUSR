@@ -293,6 +293,8 @@ bool __cdecl ggpo_advance_frame_callback(int flags) {
 	if (GGPO_SUCCEEDED(ggpoErr)) {
 		*g_lpGameState->nP1CurrentFrameInputs = translateFromNormalizedInput(inputs[0], 0, g_lpGameState);
 		*g_lpGameState->nP2CurrentFrameInputs = translateFromNormalizedInput(inputs[1], 1, g_lpGameState);
+		*g_lpGameState->nPrimitivesDrawn = 0;
+		*g_lpGameState->nNextPrimitiveBufferOffset = 0;
 		g_lpGameMethods->SimulateCurrentState();
 		ggpo_advance_frame(g_lpGameState->ggpoState.ggpo);
 	}
@@ -473,6 +475,9 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 
 	LocateCharacterConstants(peRoot, &dest->characterConstants);
 	LocatePlayData(peRoot, &dest->playData);
+
+	dest->nPrimitivesDrawn = (int*)(peRootOffset + 0x54B200);
+	dest->nNextPrimitiveBufferOffset = (int*)(peRootOffset + 0x548104);
 
 	dest->sessionInitState.bHasRequest = 0;
 	dest->sessionInitState.bHasResponse = 0;
