@@ -90,16 +90,31 @@ void FakeGenerateAndShadePrimitives() {
 }
 
 void FakeDrawUIPrimitivesAndEndScene() {
-	if (g_gameState.nFramesSkipped >= g_gameState.nFramesToSkipRender) {
+	if (
+		g_gameState.nFramesSkipped >= g_gameState.nFramesToSkipRender &&
+		g_gameState.ggpoState.nFramesAhead <= 0 &&
+		GGPO_SUCCEEDED(g_gameState.ggpoState.lastResult)
+	) {
 		g_gameMethods.DrawUIPrimitivesAndEndScene();
+		return;
 	}
-	else {
+
+	if (g_gameState.nFramesSkipped < g_gameState.nFramesToSkipRender) {
 		g_gameState.nFramesSkipped++;
+	}
+
+	if (g_gameState.ggpoState.nFramesAhead > 0) {
+		g_gameMethods.WaitForNextFrame();
+		g_gameState.ggpoState.nFramesAhead--;
 	}
 }
 
 void __cdecl FakeBeginSceneAndDrawGamePrimitives(int bShouldBeginScene) {
-	if (g_gameState.nFramesSkipped >= g_gameState.nFramesToSkipRender) {
+	if (
+		g_gameState.nFramesSkipped >= g_gameState.nFramesToSkipRender &&
+		g_gameState.ggpoState.nFramesAhead <= 0 &&
+		GGPO_SUCCEEDED(g_gameState.ggpoState.lastResult)
+	) {
 		g_gameMethods.BeginSceneAndDrawGamePrimitives(bShouldBeginScene);
 	}
 }

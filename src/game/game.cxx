@@ -268,14 +268,9 @@ void WINAPI FakeSimulateCurrentState() {
 	GGPOState& gs = g_lpGameState->ggpoState;
 
 	if (g_lpGameState && gs.ggpo != NULL) {
-		if (gs.bIsSynchronized != 0) {
-			if (gs.nFramesAhead > 0) {
-				gs.nFramesAhead--;
-			}
-			else if (GGPO_SUCCEEDED(gs.lastResult)) {
-				g_lpGameMethods->SimulateCurrentState();
-				ggpo_advance_frame(g_lpGameState->ggpoState.ggpo);
-			}
+		if (gs.bIsSynchronized != 0 && gs.nFramesAhead <= 0 && GGPO_SUCCEEDED(gs.lastResult)) {
+			g_lpGameMethods->SimulateCurrentState();
+			ggpo_advance_frame(g_lpGameState->ggpoState.ggpo);
 		}
 		ggpo_idle(g_lpGameState->ggpoState.ggpo, 2);
 	}
@@ -289,12 +284,13 @@ bool __cdecl ggpo_advance_frame_callback(int flags) {
 	unsigned int inputs[2];
 	int disconnect_flags;
 	GGPOState& gs = g_lpGameState->ggpoState;
+	GGPOErrorCode ggpoErr = GGPO_OK;
 
 	// Make sure we fetch new inputs from GGPO and use those to update
 	// the game state instead of reading from the keyboard.
-	gs.lastResult = ggpo_synchronize_input(
+	ggpoErr = ggpo_synchronize_input(
 		g_lpGameState->ggpoState.ggpo, (void*)inputs, sizeof(int) * 2, &disconnect_flags);
-	if (GGPO_SUCCEEDED(gs.lastResult)) {
+	if (GGPO_SUCCEEDED(ggpoErr)) {
 		*g_lpGameState->nP1CurrentFrameInputs = translateFromNormalizedInput(inputs[0], 0, g_lpGameState);
 		*g_lpGameState->nP2CurrentFrameInputs = translateFromNormalizedInput(inputs[1], 1, g_lpGameState);
 		g_lpGameMethods->SimulateCurrentState();
@@ -367,6 +363,7 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->CleanUpFibers = (void(WINAPI*)())(peRootOffset + 0x3D720);
 	dest->HandlePossibleSteamInvites = (void(WINAPI*)())(peRootOffset + 0xAE440);
 	dest->IncrementRNGCursorWhileOffline = (void(WINAPI*)())(peRootOffset + 0x43220);
+	dest->WaitForNextFrame = (void(WINAPI*)())(peRootOffset + 0x1475E0);
 	g_lpGameMethods = dest;
 
 	return S_OK;
@@ -427,6 +424,8 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 	dest->nFramesToSkipRender = 0;
 	dest->nFramesSkipped = 0;
 	dest->lastSecondNumFramesSimulated = 0;
+	dest->ggpoState.nFramesAhead = 0;
+	dest->ggpoState.lastResult = GGPO_OK;
 
 	dest->gameRenderTarget = (LPDIRECT3DSURFACE9*)(peRootOffset + 0x505AE0);
 	dest->uiRenderTarget = (LPDIRECT3DSURFACE9*)(peRootOffset + 0x555B98);
