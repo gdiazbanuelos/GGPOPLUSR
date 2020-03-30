@@ -243,6 +243,8 @@ typedef struct GameMethods {
     void(WINAPI* HandlePossibleSteamInvites)();
     void(WINAPI* IncrementRNGCursorWhileOffline)();
     void(WINAPI* WaitForNextFrame)();
+    void(WINAPI* MarkAllUnlocksOn)();
+    void(WINAPI* MarkAllUnlocksOff)();
 } GameMethods;
 
 typedef struct GGPOState {

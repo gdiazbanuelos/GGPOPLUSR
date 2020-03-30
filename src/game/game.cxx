@@ -364,6 +364,8 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->HandlePossibleSteamInvites = (void(WINAPI*)())(peRootOffset + 0xAE440);
 	dest->IncrementRNGCursorWhileOffline = (void(WINAPI*)())(peRootOffset + 0x43220);
 	dest->WaitForNextFrame = (void(WINAPI*)())(peRootOffset + 0x1475E0);
+	dest->MarkAllUnlocksOn = (void(WINAPI*)())(peRootOffset + 0x72790);
+	dest->MarkAllUnlocksOff = (void(WINAPI*)())(peRootOffset + 0x72660);
 	g_lpGameMethods = dest;
 
 	return S_OK;

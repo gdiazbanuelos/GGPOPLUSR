@@ -477,6 +477,24 @@ void DrawHelpWindow(bool* pOpen) {
 	ImGui::End();
 }
 
+void DrawMarkUnlockWindow(GameMethods* lpGameMethods, bool* pOpen) {
+	ImGui::Begin(
+		"Mark Unlocks",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	if (ImGui::Button("Mark all unlocks on")) {
+		lpGameMethods->MarkAllUnlocksOn();
+	}
+
+	if (ImGui::Button("Mark all unlocks off")) {
+		lpGameMethods->MarkAllUnlocksOff();
+	}
+
+	ImGui::End();
+}
+
 void DrawSaveLoadReplayWindow(GameState* lpGameState, bool* pOpen) {
 	static ExampleAppLog saveloadreplay;
 	static char* cLogpath = "./rec.acrec";
@@ -646,7 +664,8 @@ void DrawToolsMenu(bool* pHitbox) {
 			ImGui::MenuItem("Player 2 State", NULL, &show_p2_state, (show_ggpo_join == show_ggpo_host));
 			ImGui::EndMenu();
 		}
-		ImGui::MenuItem("Save/Load Replay", NULL, &show_save_load_replay, pHitbox);
+		ImGui::MenuItem("Save/Load Replay", NULL, &show_save_load_replay);
+		ImGui::MenuItem("Mark unlocks on/off", NULL, &show_mark_unlocks);
 		ImGui::EndMenu();
 	}
 };
@@ -716,6 +735,9 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 	}
 	if (show_save_load_replay) {
 		DrawSaveLoadReplayWindow(lpGameState, &show_save_load_replay);
+	}
+	if (show_mark_unlocks) {
+		DrawMarkUnlockWindow(lpGameMethods, &show_mark_unlocks);
 	}
 	if (show_character_data) {
 		DrawCharacterDataWindow(lpGameState, &show_character_data);

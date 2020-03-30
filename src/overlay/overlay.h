@@ -18,6 +18,7 @@ static bool show_p2_log = false;
 static bool show_saveload = false;
 static bool show_help = false;
 static bool show_save_load_replay = false;
+static bool show_mark_unlocks = false;
 static bool load_config = false;
 static bool show_ggpo_host = false;
 static bool show_ggpo_join = false;
