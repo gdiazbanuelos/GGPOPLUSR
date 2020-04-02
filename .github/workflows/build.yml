@@ -40,7 +40,7 @@ jobs:
         mkdir build
         cd build
         Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vc_redist.x86.exe -OutFile vc_redist.x86.exe
-        cmake .. -A Win32 -DVC_REDIST_X86_EXE=./vc_redist.x86.exe
+        cmake .. -A Win32 -DVC_REDIST_X86_EXE="vc_redist.x86.exe"
     - name: Build GGPOPLUSR binaries
       run: |
         cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
