@@ -1,0 +1,86 @@
+name: build
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ilammy/msvc-dev-cmd@v1 #Enables nmake
+      with:
+        arch: x86 
+    - name: Clone GGPO
+      run: git clone https://github.com/pond3r/ggpo $Env:GITHUB_WORKSPACE\..\ggpo
+    - name: Clone Detours
+      run: git clone https://github.com/microsoft/Detours $Env:GITHUB_WORKSPACE\..\Detours
+    - name: Clone ValveFileVDF
+      run: git clone https://github.com/TinyTinni/ValveFileVDF $Env:GITHUB_WORKSPACE\..\ValveFileVDF
+    - name: Clone Dear Imgui
+      run: git clone https://github.com/ocornut/imgui $Env:GITHUB_WORKSPACE\..\imgui
+    - name: Clone Json for modern C++
+      run: git clone https://github.com/nlohmann/json $Env:GITHUB_WORKSPACE\..\json
+    - name: Configure GGPO
+      run: cd $Env:GITHUB_WORKSPACE\..\ggpo\build && cmake .. -A Win32
+    - name: Build GGPO
+      run: |
+        cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
+        .\MSBuild.exe $Env:GITHUB_WORKSPACE\..\ggpo\build\src\GGPO.vcxproj /property:Configuration=Debug
+        .\MSBuild.exe $Env:GITHUB_WORKSPACE\..\ggpo\build\src\GGPO.vcxproj /property:Configuration=Release
+    - name: Build Detours
+      run: |
+        cd $Env:GITHUB_WORKSPACE\..\Detours
+        nmake
+    - name: Configure GGPOPLUSR
+      run: | #Note that we download vc_redist.86.exe from Microsoft's download server during this step, and pass it to the CMake configuration
+        mkdir build
+        cd build
+        Invoke-WebRequest -Uri https://aka.ms/vs/16/release/vc_redist.x86.exe -OutFile vc_redist.x86.exe
+        cmake .. -A Win32 -DVC_REDIST_X86_EXE=./vc_redist.x86.exe
+    - name: Build GGPOPLUSR binaries
+      run: |
+        cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
+        .\MSBuild.exe $Env:GITHUB_WORKSPACE\build\Launcher.vcxproj /property:Configuration=Debug
+        .\MSBuild.exe $Env:GITHUB_WORKSPACE\build\Launcher.vcxproj /property:Configuration=Release
+    - name: Archive built GGPOPLUSR Debug binaries
+      uses: actions/upload-artifact@v1
+      with:
+        name: Debug-Binaries
+        path: build\Debug
+    - name: Archive built GGPOPLUSR Release binaries
+      uses: actions/upload-artifact@v1
+      with:
+        name: Release-Binaries
+        path: build\Release
+    - name: Build GGPOPLUSR Debug Installer
+      run: | #After building the Debug installer we prepend its name with 'Debug', and we keep it in an environment variable for the artifact step
+        cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
+        .\MSBuild.exe $Env:GITHUB_WORKSPACE\build\PACKAGE.vcxproj /property:Configuration=Debug
+        $fullname = (Get-ChildItem -Path $Env:GITHUB_WORKSPACE\build -Filter "GGPOPLUSR-*-win32.exe" | Select-Object -First 1).Fullname
+        $name = (Get-ChildItem -Path $Env:GITHUB_WORKSPACE\build -Filter "GGPOPLUSR-*-win32.exe" | Select-Object -First 1).name
+        $file = "Debug-$name"
+        Rename-Item -Path $fullname -NewName "$file"
+        echo "::set-env name=GGPOPLUSRInstallFile::$file"
+    - name: Archive built GGPOPLUSR Debug Installer
+      uses: actions/upload-artifact@master
+      with:
+        name: ${{env.GGPOPLUSRInstallFile}}
+        path: "./build/${{env.GGPOPLUSRInstallFile}}"
+    - name: Build GGPOPLUSR Release Installer
+      run: | #Same thing here, we prepend the Release installer's name with 'Release' and keep it for the artifact
+        cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
+        .\MSBuild.exe $Env:GITHUB_WORKSPACE\build\PACKAGE.vcxproj /property:Configuration=Release
+        $fullname = (Get-ChildItem -Path $Env:GITHUB_WORKSPACE\build -Filter "GGPOPLUSR-*-win32.exe" | Select-Object -First 1).Fullname
+        $name = (Get-ChildItem -Path $Env:GITHUB_WORKSPACE\build -Filter "GGPOPLUSR-*-win32.exe" | Select-Object -First 1).name
+        $file = "Release-$name"
+        Rename-Item -Path $fullname -NewName "$file"
+        echo "::set-env name=GGPOPLUSRInstallFile::$file"
+    - name: Archive built GGPOPLUSR Release Installer
+      uses: actions/upload-artifact@master
+      with:
+        name: ${{env.GGPOPLUSRInstallFile}}
+        path: "./build/${{env.GGPOPLUSRInstallFile}}"

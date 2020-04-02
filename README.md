@@ -1,5 +1,7 @@
 ﻿# GGAC+R GGPO-BASED CASTER
 
+![Build Status](https://github.com/adanducci/GGPOPLUSR/workflows/build/badge.svg)
+
 A netplay implementation and quality-of-life tool bundle for the Steam release
 of _Guilty Gear XX Accent Core +R_.
 
@@ -108,6 +110,7 @@ Authors
 * @WesselKuipers
 * @adanducci
 * @Ninetime
+* @FIXMESTEVE
 
 See also the [list of contributors](https://github.com/adanducci/GGPOPLUSR/contributors)
 who participated in this project.
