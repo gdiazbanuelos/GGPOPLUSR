@@ -289,6 +289,13 @@ void FakeIncrementRNGCursorWhileOffline() {
 	}
 }
 
+void __cdecl FakeThunkFiberEntryPoint(FiberData* lpFiberData) {
+	FiberStackData* stackData = &g_gameState.fiberStackData[g_gameState.nNextFiberStackData];
+	g_gameState.nNextFiberStackData = g_gameState.nNextFiberStackData % 32;
+	// GetCurrentThreadStackLimits(stackData->lowLimit, stackData->highLimit);
+	g_gameMethods.ThunkFiberEntryPoint(lpFiberData);
+}
+
 HRESULT AttachInitialFunctionDetours(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->IsDebuggerPresent, FakeIsDebuggerPresent);
 	DetourAttach(&(PVOID&)src->SteamAPI_Init, FakeSteamAPI_Init);
@@ -307,6 +314,7 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->SimulateCurrentState, FakeSimulateCurrentState);
 	DetourAttach(&(PVOID&)src->HandlePossibleSteamInvites, FakeHandlePossibleSteamInvites);
 	DetourAttach(&(PVOID&)src->IncrementRNGCursorWhileOffline, FakeIncrementRNGCursorWhileOffline);
+	DetourAttach(&(PVOID&)src->ThunkFiberEntryPoint, FakeThunkFiberEntryPoint);
 
 	return S_OK;
 }

@@ -368,6 +368,7 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->WaitForNextFrame = (void(WINAPI*)())(peRootOffset + 0x1475E0);
 	dest->MarkAllUnlocksOn = (void(WINAPI*)())(peRootOffset + 0x72790);
 	dest->MarkAllUnlocksOff = (void(WINAPI*)())(peRootOffset + 0x72660);
+	dest->ThunkFiberEntryPoint = (void(__cdecl*)(FiberData*))(peRootOffset + 0x3D890);
 	g_lpGameMethods = dest;
 
 	return S_OK;
@@ -475,6 +476,8 @@ HRESULT LocateGameState(HMODULE peRoot, GameState* dest) {
 
 	LocateCharacterConstants(peRoot, &dest->characterConstants);
 	LocatePlayData(peRoot, &dest->playData);
+	dest->fiberData = (FiberData*)(peRootOffset + 0x54F030);
+	dest->nNextFiberStackData = 0;
 
 	dest->nPrimitivesDrawn = (int*)(peRootOffset + 0x54B200);
 	dest->nNextPrimitiveBufferOffset = (int*)(peRootOffset + 0x548104);

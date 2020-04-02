@@ -15,6 +15,20 @@ static unsigned short nOurGGPOPort;
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam); 
 
+void DrawFiberWindow(GameState* lpGameState, bool* pOpen) {
+	ImGui::Begin("Fiber window", pOpen);
+	ImGui::Text("Curr fibers");
+	for (int i = 0; i < 32; i++) {
+		ImGui::Text("%s", lpGameState->fiberData[i].szFiberName);
+	}
+	ImGui::Text("Fiber stack data");
+	for (int i = 0; i < 32; i++) {
+		FiberStackData* stackData = &lpGameState->fiberStackData[i];
+		ImGui::Text("%s %x %x", stackData->fiberName, stackData->lowLimit, stackData->highLimit);
+	}
+	ImGui::End();
+}
+
 void DrawEnterVersus2PWindow(GameState* lpGameState, bool* pOpen) {
 	static CharacterSelection* characters[2] = { &CHARACTERS[0], &CHARACTERS[1] };
 	static int characterIDs[2] = { 1, 2 };
@@ -680,6 +694,7 @@ void DrawDebugMenu(GameState* lpGameState) {
 			ImGui::EndMenu();
 		}
 		ImGui::MenuItem("Save/Load State", NULL, &show_saveload);
+		ImGui::MenuItem("Fiber window", NULL, &show_fiber_data);
 		ImGui::EndMenu();
 	}
 };
@@ -705,6 +720,9 @@ void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
 
 			ImGui::EndMainMenuBar();
 		}
+	}
+	if (show_fiber_data) {
+		DrawFiberWindow(lpGameState, &show_fiber_data);
 	}
 	if (show_character_select) {
 		DrawEnterVersus2PWindow(lpGameState, &show_character_select);

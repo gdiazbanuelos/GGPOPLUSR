@@ -104,6 +104,25 @@ typedef struct TrainingModeRec TrainingModeRec;
 
 typedef struct RandomNumberGenerator RandomNumberGenerator, * PRandomNumberGenerator;
 
+typedef enum FiberLifecycleState {
+    FIBER_COMPLETE = 3,
+    FIBER_NULL = 0
+} FiberLifecycleState;
+
+typedef void* LPVOID;
+
+typedef struct FiberData {
+    enum FiberLifecycleState lifecycleState;
+    DWORD UNK_State;
+    DWORD dwStackSize;
+    DWORD field_0xc;
+    DWORD field_0x10;
+    DWORD field_0x14;
+    char szFiberName[24];
+    LPVOID lpFiberCallback;
+    LPVOID lpFiberAddress;
+} FiberData;
+
 struct RandomNumberGenerator {
     int cursor;
     DWORD dwordarr_0x4_size0xe3[227];
@@ -245,6 +264,7 @@ typedef struct GameMethods {
     void(WINAPI* WaitForNextFrame)();
     void(WINAPI* MarkAllUnlocksOn)();
     void(WINAPI* MarkAllUnlocksOff)();
+    void(__cdecl* ThunkFiberEntryPoint)(FiberData* lpFiberData);
 } GameMethods;
 
 typedef struct GGPOState {
@@ -319,6 +339,12 @@ typedef struct CharacterConstants {
     short* arrnMaxAerialThrowVerticalDifference;
 } CharacterConstants;
 
+typedef struct FiberStackData {
+    char fiberName[24];
+    PULONG lowLimit;
+    PULONG highLimit;
+} FiberStackData;
+
 typedef struct GameState {
     int nFramesToSkipRender;
     int nFramesSkipped;
@@ -380,6 +406,9 @@ typedef struct GameState {
 
     CharacterConstants characterConstants;
     PlayData playData;
+    FiberData* fiberData;
+    FiberStackData fiberStackData[32];
+    int nNextFiberStackData;
 } GameState;
 
 void DisableHitboxes(GameState* gameState);
