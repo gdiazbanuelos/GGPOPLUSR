@@ -350,6 +350,48 @@ HMODULE LocatePERoot() {
 	return DetourGetContainingModule(DetourGetEntryPoint(NULL));
 }
 
+HRESULT LocateFiberHandlers(HMODULE peRoot, FiberHandlers* dest) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+
+	dest->BFBT_BeforeBattle = (FiberHandler)(peRootOffset + 0xF79F0);
+	dest->HVORHL_HeavenOrHell = (FiberHandler)(peRootOffset + 0xF4B90);
+	dest->LETS_RoundStartLetsText = (FiberHandler)(peRootOffset + 0xF43D0);
+	dest->DUEL_RoundStartDuelText = (FiberHandler)(peRootOffset + 0xF46B0);
+	dest->FIGMK1_RoundStartMetalWidgets1 = (FiberHandler)(peRootOffset + 0xF1980);
+	dest->FIGMK2_RoundStartMetalWidgets2 = (FiberHandler)(peRootOffset + 0xF1710);
+	dest->FIBG_RoundStartBackground = (FiberHandler)(peRootOffset + 0xF14D0);
+	dest->AFBT_AfterBattle_Slash = (FiberHandler)(peRootOffset + 0xFB6C0);
+	dest->AFBT_AfterBattle_TimeOver = (FiberHandler)(peRootOffset + 0xFAED0);
+	dest->SLH_SlashText = (FiberHandler)(peRootOffset + 0xF31B0);
+	dest->WNDS_WinDisplay = (FiberHandler)(peRootOffset + 0xFA8B0);
+	dest->TOVR_TimeOverText = (FiberHandler)(peRootOffset + 0xF2B00);
+	dest->DWDS_DrawRoundDisplay = (FiberHandler)(peRootOffset + 0xFA600);
+	dest->DEST_Destroyed = (FiberHandler)(peRootOffset + 0xFB450);
+	dest->DTRY_DestroyedText = (FiberHandler)(peRootOffset + 0xF2ED0);
+	dest->DEMY_DestroyedMay = (FiberHandler)(peRootOffset + 0xFB250);
+	dest->MYDS_MayDestroyedText = (FiberHandler)(peRootOffset + 0xF1070);
+	dest->DEZP_DestroyedZappa = (FiberHandler)(peRootOffset + 0xFB060);
+	dest->ZPDS_ZappaDestroyedText = (FiberHandler)(peRootOffset + 0xF0CF0);
+	dest->FOUT_FadeOut = (FiberHandler)(peRootOffset + 0x4BEC0);
+	dest->FIN_FadeIn = (FiberHandler)(peRootOffset + 0x4BFF0);
+	dest->NXBT_NextBattle = (FiberHandler)(peRootOffset + 0xF7EF0);
+	dest->PRFT_Perfect = (FiberHandler)(peRootOffset + 0xF9FF0);
+	dest->PFCT_PerfectText = (FiberHandler)(peRootOffset + 0xF37B0);
+	dest->WKO_DoubleKOText = (FiberHandler)(peRootOffset + 0xF3530);
+	dest->DKDS_DoubleKODisplay = (FiberHandler)(peRootOffset + 0xF9E00);
+	dest->LSDS_LoseRoundDisplay = (FiberHandler)(peRootOffset + 0xFA1A0);
+	dest->WIN_WinText = (FiberHandler)(peRootOffset + 0xF3FC0);
+	dest->LOSE_LoseText = (FiberHandler)(peRootOffset + 0xF3CE0);
+	dest->AFSK_AfterBattleSkip = (FiberHandler)(peRootOffset + 0xF8CF0);
+	dest->SKIP_Skip = (FiberHandler)(peRootOffset + 0xF85B0);
+	dest->ENBT_EnterBattle = (FiberHandler)(peRootOffset + 0xF93B0);
+	dest->EXBT_ExitBattle = (FiberHandler)(peRootOffset + 0xF69F0);
+	dest->RDED_RoundEnd = (FiberHandler)(peRootOffset + 0xF8890);
+	dest->SCOR_ScoreAtRoundEnd = (FiberHandler)(peRootOffset + 0xF8F70);
+
+	return S_OK;
+}
+
 HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 

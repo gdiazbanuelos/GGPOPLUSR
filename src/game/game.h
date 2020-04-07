@@ -248,6 +248,46 @@ struct InputRewriteStruct {
     bool respect;
 };
 
+typedef void(WINAPI* FiberHandler)();
+
+typedef struct FiberHandlers {
+    FiberHandler BFBT_BeforeBattle;
+    FiberHandler HVORHL_HeavenOrHell;
+    FiberHandler LETS_RoundStartLetsText;
+    FiberHandler DUEL_RoundStartDuelText;
+    FiberHandler FIGMK1_RoundStartMetalWidgets1;
+    FiberHandler FIGMK2_RoundStartMetalWidgets2;
+    FiberHandler FIBG_RoundStartBackground;
+    FiberHandler AFBT_AfterBattle_Slash;
+    FiberHandler AFBT_AfterBattle_TimeOver;
+    FiberHandler SLH_SlashText;
+    FiberHandler WNDS_WinDisplay;
+    FiberHandler TOVR_TimeOverText;
+    FiberHandler DWDS_DrawRoundDisplay;
+    FiberHandler DEST_Destroyed;
+    FiberHandler DTRY_DestroyedText;
+    FiberHandler DEMY_DestroyedMay;
+    FiberHandler MYDS_MayDestroyedText;
+    FiberHandler DEZP_DestroyedZappa;
+    FiberHandler ZPDS_ZappaDestroyedText;
+    FiberHandler FOUT_FadeOut;
+    FiberHandler FIN_FadeIn;
+    FiberHandler NXBT_NextBattle;
+    FiberHandler PRFT_Perfect;
+    FiberHandler PFCT_PerfectText;
+    FiberHandler WKO_DoubleKOText;
+    FiberHandler DKDS_DoubleKODisplay;
+    FiberHandler LSDS_LoseRoundDisplay;
+    FiberHandler WIN_WinText;
+    FiberHandler LOSE_LoseText;
+    FiberHandler AFSK_AfterBattleSkip;
+    FiberHandler SKIP_Skip;
+    FiberHandler ENBT_EnterBattle;
+    FiberHandler EXBT_ExitBattle;
+    FiberHandler RDED_RoundEnd;
+    FiberHandler SCOR_ScoreAtRoundEnd;
+} FiberHandlers;
+
 typedef struct GameMethods {
     void(WINAPI* GenerateAndShadePrimitives)();
     int(WINAPI* SetupD3D9)();
