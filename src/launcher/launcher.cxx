@@ -187,11 +187,20 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR pCmdLine, int nCmdShow
 	char szSidecarConfigPathA[1024] = { 0 };
 	char szSidecarDllPathA[1024] = { 0 };
 
+	DWORD env_size = 0;
+
 	if (Update()) {
 		return 0;
 	}
 
-	FindGuilty(szGuiltyDirectory, szGuiltyExePath);
+	env_size = GetEnvironmentVariableW(L"GGPOPLUSR_LINUX_DIR", szGuiltyDirectory, 1024);
+
+	if (env_size > 0) {
+		PathCombineW(szGuiltyExePath, szGuiltyDirectory, L"GGXXACPR_Win.exe");
+	}
+	else {
+		FindGuilty(szGuiltyDirectory, szGuiltyExePath);
+	}
 	FindSidecar(szSidecarDllPathA);
 	FindConfigFile(szSidecarConfigPathA);
 	CreateAppIDFile(szGuiltyDirectory);
