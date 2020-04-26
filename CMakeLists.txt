@@ -46,12 +46,13 @@ target_link_libraries(Launcher
 )
 
 add_library(Overlay STATIC src/overlay/overlay.cxx src/overlay/overlay.h)
-target_link_libraries(Overlay PUBLIC DearImgui DearImgui_Win32 DearImgui_DX9 Game GGPO)
+target_link_libraries(Overlay PUBLIC "Xinput9_1_0" DearImgui DearImgui_Win32 DearImgui_DX9 Game GGPO)
 
 add_library(Sidecar SHARED src/sidecar/sidecar.cxx src/sidecar/ID3D9Wrapper.cxx src/sidecar/ID3D9Wrapper.h src/sidecar/ID3D9Wrapper_Device.cxx src/sidecar/ID3D9Wrapper_Device.h ${CMAKE_BINARY_DIR}/resources/rc/Sidecar.rc)
 target_link_libraries(Sidecar PRIVATE Detours Game GGPO Overlay ValveFileVDF)
 
 target_compile_definitions(Launcher PRIVATE -D_UNICODE -DUNICODE)
+target_compile_definitions(DearImgui_Win32 PRIVATE IMGUI_IMPL_WIN32_DISABLE_LINKING_XINPUT=1)
 
 configure_file("default_config.vdf" "config.vdf" COPYONLY)
 
