@@ -15,6 +15,7 @@
 #include <vdf_parser.hpp>
 
 #include "../game/game.h"
+#include "../game/trainingmodehelper.h"
 #include "../overlay/overlay.h"
 #include "sidecar.h"
 #include "ID3D9Wrapper.h"
@@ -119,58 +120,6 @@ void __cdecl FakeBeginSceneAndDrawGamePrimitives(int bShouldBeginScene) {
 	}
 }
 
-/* Parses input flags, which may be based on non-default button settings,
-and returns normalized input flags */
-unsigned int normalizeInput(unsigned int* input) {
-	int p = g_gameState.ggpoState.localPlayerIndex;
-	unsigned int normalizedInput = 0;
-
-	normalizedInput |= (*input & Up);
-	normalizedInput |= (*input & Down);
-	normalizedInput |= (*input & Left);
-	normalizedInput |= (*input & Right);
-
-	if (*input & g_gameState.arrPlayerData[p].ctrlP) {
-		normalizedInput |= Punch;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlK) {
-		normalizedInput |= Kick;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlS) {
-		normalizedInput |= Slash;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlH) {
-		normalizedInput |= HSlash;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlD) {
-		normalizedInput |= Dust;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlRespect) {
-		normalizedInput |= Respect;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlPKMacro) {
-		normalizedInput |= Punch;
-		normalizedInput |= Kick;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlPDMacro) {
-		normalizedInput |= Punch;
-		normalizedInput |= Dust;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlPKSMacro) {
-		normalizedInput |= Punch;
-		normalizedInput |= Kick;
-		normalizedInput |= Slash;
-	}
-	if (*input & g_gameState.arrPlayerData[p].ctrlPKSHMacro) {
-		normalizedInput |= Punch;
-		normalizedInput |= Kick;
-		normalizedInput |= Slash;
-		normalizedInput |= HSlash;
-	}
-
-	return normalizedInput;
-}
-
 /* Copies origin player's button settings to dest player's button settings*/
 void copyButtonSettings(int origin, int dest) {
 	g_gameState.arrPlayerData[dest].ctrlP = g_gameState.arrPlayerData[origin].ctrlP;
@@ -206,7 +155,7 @@ void FakePollForInputs() {
 		// Always use P1 controller
 		unsigned int* inputLocation = g_gameState.nP1CurrentFrameInputs;
 		
-		unsigned int normalizedInput = normalizeInput(inputLocation);
+		unsigned int normalizedInput = normalizeInput(inputLocation, &g_gameState);
 
 		// Despite notifying inputs via P1 controller, the simulation is still ran using both controller settings buffers.
 		// Thus, ggpo player 2 will use P2 controller settings.
@@ -289,6 +238,46 @@ void FakeIncrementRNGCursorWhileOffline() {
 	}
 }
 
+void FakeCheckForTrainingModeRestart() {
+	g_gameMethods.CheckForTrainingModeRestart();
+
+	//Training Mode Position
+	if (normalizeInput(g_gameState.nP1CurrentFrameInputs, &g_gameState) == Reset) {
+		//grab both playerOne and playerTwo object data
+		GameObjectData* playerOneObjectData = &(*g_gameState.arrCharacters)[0];
+		GameObjectData* playerTwoObjectData = &(*g_gameState.arrCharacters)[1];
+		int p1x = playerOneObjectData->xPos;
+		int p2x = playerTwoObjectData->xPos;
+
+		*g_gameState.nCameraHoldTimer = 0;
+		*g_gameState.nCameraZoom = 64000;
+
+		if (trainingmodehelper::positionState == trainingmodehelper::center) {
+			p1x = -14400;
+			p2x = 14400;
+		}
+		else if (trainingmodehelper::positionState == trainingmodehelper::leftCorner) {
+			*g_gameState.nCameraPlayerXPositionHistory = -200000;
+			p1x = -74000;
+			p2x = -59900;
+		}
+		else {
+			*g_gameState.nCameraPlayerXPositionHistory = 200000;
+			p1x = 59900;
+			p2x = 74000;
+		}
+
+		if (trainingmodehelper::swapState == trainingmodehelper::swappedSides) {
+			playerOneObjectData->xPos = p2x;
+			playerTwoObjectData->xPos = p1x;
+		}
+		else {
+			playerOneObjectData->xPos = p1x;
+			playerTwoObjectData->xPos = p2x;
+		}
+	}
+}
+
 HRESULT AttachInitialFunctionDetours(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->IsDebuggerPresent, FakeIsDebuggerPresent);
 	DetourAttach(&(PVOID&)src->SteamAPI_Init, FakeSteamAPI_Init);
@@ -307,6 +296,7 @@ HRESULT AttachInternalFunctionPointers(GameMethods* src) {
 	DetourAttach(&(PVOID&)src->SimulateCurrentState, FakeSimulateCurrentState);
 	DetourAttach(&(PVOID&)src->HandlePossibleSteamInvites, FakeHandlePossibleSteamInvites);
 	DetourAttach(&(PVOID&)src->IncrementRNGCursorWhileOffline, FakeIncrementRNGCursorWhileOffline);
+	DetourAttach(&(PVOID&)src->CheckForTrainingModeRestart, FakeCheckForTrainingModeRestart);
 
 	return S_OK;
 }

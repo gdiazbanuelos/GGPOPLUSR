@@ -18,9 +18,70 @@
 #include "vdf_parser.hpp"
 
 #include "./game.h"
+#include "./trainingmodehelper.h"
+
+namespace trainingmodehelper {
+	int positionState = 0;
+	int swapState = 0;
+}
 
 static GameMethods* g_lpGameMethods;
 static GameState* g_lpGameState;
+
+/* Parses input flags, which may be based on non-default button settings,
+and returns normalized input flags */
+unsigned int normalizeInput(unsigned int* input, GameState* g_lpGameState) {
+	int p = (g_lpGameState->ggpoState).localPlayerIndex;
+	unsigned int normalizedInput = 0;
+
+	normalizedInput |= (*input & Up);
+	normalizedInput |= (*input & Down);
+	normalizedInput |= (*input & Left);
+	normalizedInput |= (*input & Right);
+
+	if (*input & (g_lpGameState->arrPlayerData)[p].ctrlP) {
+		normalizedInput |= Punch;
+	}
+	if (*input & (g_lpGameState->arrPlayerData)[p].ctrlK) {
+		normalizedInput |= Kick;
+	}
+	if (*input & (g_lpGameState->arrPlayerData)[p].ctrlS) {
+		normalizedInput |= Slash;
+	}
+	if (*input & (g_lpGameState->arrPlayerData)[p].ctrlH) {
+		normalizedInput |= HSlash;
+	}
+	if (*input & (g_lpGameState->arrPlayerData)[p].ctrlD) {
+		normalizedInput |= Dust;
+	}
+	if (*input & (g_lpGameState->arrPlayerData)[p].ctrlRespect) {
+		normalizedInput |= Respect;
+	}
+	if (*input & (g_lpGameState->arrPlayerData)[p].ctrlPKMacro) {
+		normalizedInput |= Punch;
+		normalizedInput |= Kick;
+	}
+	if (*input & (g_lpGameState->arrPlayerData)[p].ctrlPDMacro) {
+		normalizedInput |= Punch;
+		normalizedInput |= Dust;
+	}
+	if (*input & (g_lpGameState->arrPlayerData)[p].ctrlPKSMacro) {
+		normalizedInput |= Punch;
+		normalizedInput |= Kick;
+		normalizedInput |= Slash;
+	}
+	if (*input & (g_lpGameState->arrPlayerData)[p].ctrlPKSHMacro) {
+		normalizedInput |= Punch;
+		normalizedInput |= Kick;
+		normalizedInput |= Slash;
+		normalizedInput |= HSlash;
+	}
+	if (*input & (g_lpGameState->arrPlayerData)[p].ctrlReset) {
+		normalizedInput |= Reset;
+	}
+
+	return normalizedInput;
+}
 
 /* Parses normalized input flags and returns translated input flags which will be compliant with local button settings */
 unsigned int translateFromNormalizedInput(unsigned int normalizedInput, int p, GameState* g_lpGameState) {
@@ -49,7 +110,12 @@ unsigned int translateFromNormalizedInput(unsigned int normalizedInput, int p, G
 	if (normalizedInput & Respect) {
 		translatedInput |= (g_lpGameState->arrPlayerData)[p].ctrlRespect;
 	}
-
+	if (normalizedInput & Reset) {
+		translatedInput |= (g_lpGameState->arrPlayerData)[p].ctrlReset;
+	}
+	if (normalizedInput & Pause) {
+		translatedInput |= (g_lpGameState->arrPlayerData)[p].ctrlPause;
+	}
 	return translatedInput;
 }
 
@@ -368,6 +434,9 @@ HRESULT LocateGameMethods(HMODULE peRoot, GameMethods* dest) {
 	dest->WaitForNextFrame = (void(WINAPI*)())(peRootOffset + 0x1475E0);
 	dest->MarkAllUnlocksOn = (void(WINAPI*)())(peRootOffset + 0x72790);
 	dest->MarkAllUnlocksOff = (void(WINAPI*)())(peRootOffset + 0x72660);
+	dest->PlayerGameObjectInitialization = (void(WINAPI*)())(peRootOffset + 0x6A070);
+	dest->CheckForTrainingModeRestart = (void(WINAPI*)())(peRootOffset + 0x1DA670);
+	dest->AdjustCamera = (void(WINAPI*)())(peRootOffset + 0x5EA40);
 	g_lpGameMethods = dest;
 
 	return S_OK;

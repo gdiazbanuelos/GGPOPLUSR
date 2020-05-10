@@ -31,7 +31,9 @@ enum gameinputs : unsigned short {
 	Kick = 0x2000,
 	Slash = 0x8000,
 	HSlash = 0x200,
-	Dust = 0x100
+	Dust = 0x100,
+    Reset = 0x1,
+    Pause = 0x8
 };
 
 typedef enum TensionMode {
@@ -245,6 +247,9 @@ typedef struct GameMethods {
     void(WINAPI* WaitForNextFrame)();
     void(WINAPI* MarkAllUnlocksOn)();
     void(WINAPI* MarkAllUnlocksOff)();
+    void(WINAPI* PlayerGameObjectInitialization)();
+    void(WINAPI* CheckForTrainingModeRestart)();
+    void(WINAPI* AdjustCamera)();
 } GameMethods;
 
 typedef struct GGPOState {
@@ -1118,3 +1123,4 @@ typedef struct TrainingModeRec {
 } TrainingModeRec;
 
 unsigned int translateFromNormalizedInput(unsigned int normalizedInput, int p, GameState* g_lpGameState);
+unsigned int normalizeInput(unsigned int* input, GameState* g_lpGameState);
