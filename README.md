@@ -54,7 +54,8 @@ To manually build and run GGPOPLUSR:
      provide custom overlays for new features and debugging. 
    * [JSON for Modern C++](https://github.com/nlohmann/json). JSON for Modern C++
      is used to parse JSON responses from GitHub's REST API.
-2. Build GGPO and Detours using x86-compatible build tools.
+2. Replace the Microsoft's Detours' [Makefile](https://github.com/microsoft/Detours/blob/master/Makefile) with [resources/detours_Makefile](https://github.com/bogedden/GGPOPLUSR/blob/master/detours_Makefile) and rename accordingly.
+3. Build GGPO and Detours using x86-compatible build tools.
    * GGXXAC+R is natively compiled for 32-bit x86, and using an entire 32-bit
      toolchain prevents us from needing to handle cross compilation.
    * GGPO and Detours are large enough that they benefit from precompilation-
