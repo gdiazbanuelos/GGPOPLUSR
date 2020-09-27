@@ -16,8 +16,8 @@ jobs:
         arch: x86 
     - name: Clone GGPO
       run: git clone https://github.com/pond3r/ggpo $Env:GITHUB_WORKSPACE\..\ggpo
-    #- name: Clone Detours
-    #  run: git clone https://github.com/microsoft/Detours $Env:GITHUB_WORKSPACE\..\Detours
+    - name: Clone Detours
+      run: git clone https://github.com/microsoft/Detours $Env:GITHUB_WORKSPACE\..\Detours
     - name: Clone ValveFileVDF
       run: git clone https://github.com/TinyTinni/ValveFileVDF $Env:GITHUB_WORKSPACE\..\ValveFileVDF
     - name: Clone Dear Imgui
