@@ -1,6 +1,6 @@
 ﻿# GGAC+R GGPO-BASED CASTER
 
-[![Build Status](https://raw.githubusercontent.com/dwyl/repo-badges/master/highresPNGs/build-passing.png)](https://github.com/adanducci/GGPOPLUSR/actions?query=workflow%3Abuild)
+[![Build Status](https://api.travis-ci.org/klugjo/hexo-autolinker.svg?branch=master)](https://github.com/adanducci/GGPOPLUSR/actions?query=workflow%3Abuild)
 
 A netplay implementation and quality-of-life tool bundle for the Steam release
 of _Guilty Gear XX Accent Core +R_.
