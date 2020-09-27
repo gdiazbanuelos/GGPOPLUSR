@@ -76,6 +76,11 @@ if (-not $?) {throw "Failed to build GGPO with Release configuration"}
 
 Write-Host "`nBuild Detours" -ForegroundColor Yellow
 cd $workspace_path\Detours
+
+#move makefile into Detours directory
+Copy-Item $ggpoplusr_filepath\resources\detours_Makefile
+Rename-Item Makefile Makefile.old
+Rename-Item detours_Makefile Makefile
 nmake
 if (-not $?) {throw "Failed to build Detours"}
 
