@@ -31,10 +31,10 @@ jobs:
         cd "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\"
         .\MSBuild.exe $Env:GITHUB_WORKSPACE\..\ggpo\build\src\GGPO.vcxproj /property:Configuration=Debug
         .\MSBuild.exe $Env:GITHUB_WORKSPACE\..\ggpo\build\src\GGPO.vcxproj /property:Configuration=Release
-    #- name: Build Detours
-    #  run: |
-    #    cd $Env:GITHUB_WORKSPACE\..\Detours
-    #    nmake
+    - name: Build Detours
+      run: |
+        cd $Env:GITHUB_WORKSPACE\..\Detours
+        nmake
     - name: Configure GGPOPLUSR
       run: | #Note that we download vc_redist.86.exe from Microsoft's download server during this step, and pass it to the CMake configuration
         mkdir build
